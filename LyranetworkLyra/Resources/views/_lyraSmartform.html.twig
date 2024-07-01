@@ -43,18 +43,16 @@
     <link rel="stylesheet" href="{{ lyraFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ lyraFormConfig.theme }}-reset.css">
     <script src="{{ lyraFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ lyraFormConfig.theme }}.js"></script>
 
-    <div class="kr-smart-form" {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
+    <div class="kr-smart-form" kr-single-payment-button {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
     {% if order is defined %}
         <script>
+            let fieldsChecked = false;
+
             function init() {
                 const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
-                const nextStepButton = $('form[name="sylius_checkout_select_payment"] button[type="submit"]');
                 if (lyraCheckBox) {
                     configureSmartform();
                     togglePaymentMethodTitle();
-                    if (lyraCheckBox.is(":checked")) {
-                        nextStepButton.prop('disabled', true);
-                    }
                 }
             }
 
@@ -75,40 +73,14 @@
                 $(".payment-item .checkbox input[type='radio']").on('change', handleButtonsDisplay);
                 const popin = '{{lyraFormConfig.popinMode}}' === '1';
                 const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
-                const nextStepButton = $('form[name="sylius_checkout_select_payment"] button[type="submit"]');
-                let showNext = true;
+                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
                 const smartform = $('#lyraPaymentMethodForm');
 
-                nextStepButton.prop('disabled', false);
-
-                if (! popin) {
-                    $(".kr-payment-button").each(function() {
-                        this.style.setProperty('display', 'flex', 'important')
-                    });
-                    showNext = false;
-
-                    const methods = await KR.getPaymentMethods().then(function(result) {
-                        return result;
-                    });
-
-                    // If only the card form is available, hide our payment button and use Sylius button.
-                    if ((methods.paymentMethods.length == 1) && (methods.paymentMethods[0] == 'CARDS')) {
-                        $(".kr-methods-list-card-form-wrapper .kr-card-form .kr-payment-button").hide();
-                        showNext = true;
-                    }
-                }
-
-                if (showNext) {
-                    nextStepButton.show();
-                    nextStepButton.on('click', openSmartform);
-                } else {
-                    nextStepButton.hide();
-                }
+                paymentForm.on('submit', openSmartform);
 
                 if (lyraCheckBox.is(":checked")) {
                     smartform.show();
                 } else {
-                    nextStepButton.show();
                     smartform.hide();
                 }
             }
@@ -117,14 +89,28 @@
                 const popin = '{{lyraFormConfig.popinMode}}' === '1';
                 const paymentForm = $('form[name="sylius_checkout_select_payment"]');
                 const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
-                if (lyraCheckBox.is(":checked")) {
+                if (lyraCheckBox.is(":checked") && ! fieldsChecked) {
                     event.preventDefault();
-                    paymentForm.removeClass('loading');
-                    if (popin) {
-                        KR.openPopin();
-                    } else {
-                        KR.submit();
-                    }
+                    fetch(event.target.action, {
+                        method: 'POST',
+                        body: new URLSearchParams(new FormData(event.target))
+                    }).then((response) => {
+                        return response;
+                    }).then((body) => {
+                        if (body.status === 200) {
+                            paymentForm.removeClass('loading');
+                            if (popin) {
+                                KR.openPopin();
+                            } else {
+                                KR.openSelectedPaymentMethod();
+                            }
+                        } else {
+                            fieldsChecked = true;
+                            paymentForm.submit();
+                        }
+                    }).catch((error) => {
+                        console.error(error)
+                    })
                 }
             }
 
