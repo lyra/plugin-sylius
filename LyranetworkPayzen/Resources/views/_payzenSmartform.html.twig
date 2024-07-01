@@ -1,0 +1,144 @@
+{#
+* Copyright © Lyra Network.
+* This file is part of PayZen plugin for Sylius. See COPYING.md for license details.
+*
+* @author    Lyra Network (https://www.lyra.com/)
+* @copyright Lyra Network
+* @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
+#}
+
+{% set methodCode = '' %}
+{% if instanceCode is defined %}
+    {% set methodCode = instanceCode %}
+{% else %}
+    {% set methodCode = method.code %}
+{% endif %}
+
+{% set payzenFormConfig = payzen_get_smartform_config(methodCode) %}
+
+{% if order is defined %}
+    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader = payzen_get_smartform_token(order, methodCode).formToken, path('payzen_return_url'), '', '', '' %}
+    {% if payzenFormConfig.popinMode %}
+        {% set popin = 'kr-popin' %}
+    {% endif %}
+
+    {% if payzenFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITH_LOGOS') or payzenFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITHOUT_LOGOS') %}
+        {% set dataEntryMode = 'kr-card-form-expanded' %}
+    {% endif %}
+
+    {% if payzenFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITHOUT_LOGOS') %}
+        {% set logoHeader = 'kr-no-card-logo-header ' %}
+    {% endif %}
+{% elseif accountToken is not empty %}
+    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader = accountToken, path('payzen_sylius_account_saved_cards'), '', 'kr-card-form-expanded', '' %}
+{% endif %}
+
+<div id="payzenPaymentMethodForm">
+    <script src="{{ payzenFormConfig.jsClient }}js/krypton-client/V4.0/stable/kr-payment-form.min.js"
+        kr-public-key="{{ payzenFormConfig.pubKey }}"
+        kr-language="{{ payzenFormConfig.language }}"
+        kr-post-url-success="{{ returnUrl }}"
+        kr-post-url-refused="{{ returnUrl }}"
+    ></script>
+    <link rel="stylesheet" href="{{ payzenFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ payzenFormConfig.theme }}-reset.css">
+    <script src="{{ payzenFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ payzenFormConfig.theme }}.js"></script>
+
+    <div class="kr-smart-form" kr-single-payment-button {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
+    {% if order is defined %}
+        <script>
+            let fieldsChecked = false;
+
+            function init() {
+                const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
+                if (payzenCheckBox) {
+                    configureSmartform();
+                    togglePaymentMethodTitle();
+                }
+            }
+
+            function togglePaymentMethodTitle() {
+                const popin = '{{payzenFormConfig.popinMode}}' === '1';
+                const nbMethod = $(".payment-item .checkbox input[type='radio']").length;
+                const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
+                if (popin || nbMethod > 1) {
+                    $(".payzenPaymentChoiceTitle").each(function () {
+                        this.style.setProperty('display', 'flex', 'important')
+                    });
+                }
+
+                payzenCheckBox.prop("checked", true);
+            }
+
+            async function handleButtonsDisplay() {
+                $(".payment-item .checkbox input[type='radio']").on('change', handleButtonsDisplay);
+                const popin = '{{payzenFormConfig.popinMode}}' === '1';
+                const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
+                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
+                const smartform = $('#payzenPaymentMethodForm');
+
+                paymentForm.on('submit', openSmartform);
+
+                if (payzenCheckBox.is(":checked")) {
+                    smartform.show();
+                } else {
+                    smartform.hide();
+                }
+            }
+
+            function openSmartform(event) {
+                const popin = '{{payzenFormConfig.popinMode}}' === '1';
+                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
+                const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
+                if (payzenCheckBox.is(":checked") && ! fieldsChecked) {
+                    event.preventDefault();
+                    fetch(event.target.action, {
+                        method: 'POST',
+                        body: new URLSearchParams(new FormData(event.target))
+                    }).then((response) => {
+                        return response;
+                    }).then((body) => {
+                        if (body.status === 200) {
+                            paymentForm.removeClass('loading');
+                            if (popin) {
+                                KR.openPopin();
+                            } else {
+                                KR.openSelectedPaymentMethod();
+                            }
+                        } else {
+                            fieldsChecked = true;
+                            paymentForm.submit();
+                        }
+                    }).catch((error) => {
+                        console.error(error)
+                    })
+                }
+            }
+
+            function configureSmartform() {
+                if ('{{payzenFormConfig.compactMode}}') {
+                    KR.setFormConfig({ cardForm: { layout: "compact" }, smartForm: { layout: "compact" }});
+                }
+
+                KR.setFormConfig({
+                    language: '{{payzenFormConfig.language}}',
+                    form: { smartform: { singlePaymentButton: { visibility: false }}}
+                });
+
+                KR.onFormReady(handleButtonsDisplay);
+            }
+
+            document.addEventListener("DOMContentLoaded", init, false);
+        </script>
+
+        <style>
+            .kr-smart-form-modal-button, .kr-methods-list-card-form-wrapper .kr-card-form .kr-payment-button {
+                display: none !important;
+            }
+
+            label.kr-method-label, label.kr-amount-label {
+                margin: 0 !important;
+                font-size: 13px !important;
+            }
+        </style>
+    {% endif %}
+</div>
