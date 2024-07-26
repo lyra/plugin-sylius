@@ -18,8 +18,10 @@
 
 {% if order is defined %}
     {% set formToken, returnUrl, popin, dataEntryMode, logoHeader = lyra_get_smartform_token(order, methodCode).formToken, path('lyra_return_url'), '', '', '' %}
+    {% set single = 'kr-single-payment-button' %}
     {% if lyraFormConfig.popinMode %}
         {% set popin = 'kr-popin' %}
+        {% set single = '' %}
     {% endif %}
 
     {% if lyraFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITH_LOGOS') or lyraFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITHOUT_LOGOS') %}
@@ -30,7 +32,7 @@
         {% set logoHeader = 'kr-no-card-logo-header ' %}
     {% endif %}
 {% elseif accountToken is not empty %}
-    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader = accountToken, path('lyra_sylius_account_saved_cards'), '', 'kr-card-form-expanded', '' %}
+    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader, single = accountToken, path('lyra_sylius_account_saved_cards'), '', 'kr-card-form-expanded', '', '' %}
 {% endif %}
 
 <div id="lyraPaymentMethodForm">
@@ -43,11 +45,9 @@
     <link rel="stylesheet" href="{{ lyraFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ lyraFormConfig.theme }}-reset.css">
     <script src="{{ lyraFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ lyraFormConfig.theme }}.js"></script>
 
-    <div class="kr-smart-form" kr-single-payment-button {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
+    <div class="kr-smart-form" {{ single }}  {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
     {% if order is defined %}
         <script>
-            let fieldsChecked = false;
-
             function init() {
                 const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
                 if (lyraCheckBox) {
@@ -70,13 +70,8 @@
             }
 
             async function handleButtonsDisplay() {
-                $(".payment-item .checkbox input[type='radio']").on('change', handleButtonsDisplay);
-                const popin = '{{lyraFormConfig.popinMode}}' === '1';
                 const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
-                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
                 const smartform = $('#lyraPaymentMethodForm');
-
-                paymentForm.on('submit', openSmartform);
 
                 if (lyraCheckBox.is(":checked")) {
                     smartform.show();
@@ -89,32 +84,20 @@
                 const popin = '{{lyraFormConfig.popinMode}}' === '1';
                 const paymentForm = $('form[name="sylius_checkout_select_payment"]');
                 const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
-                if (lyraCheckBox.is(":checked") && ! fieldsChecked) {
+                if (lyraCheckBox.is(":checked")) {
                     event.preventDefault();
-                    fetch(event.target.action, {
-                        method: 'POST',
-                        body: new URLSearchParams(new FormData(event.target))
-                    }).then((response) => {
-                        return response;
-                    }).then((body) => {
-                        if (body.status === 200) {
-                            paymentForm.removeClass('loading');
-                            if (popin) {
-                                KR.openPopin();
-                            } else {
-                                KR.openSelectedPaymentMethod();
-                            }
-                        } else {
-                            fieldsChecked = true;
-                            paymentForm.submit();
-                        }
-                    }).catch((error) => {
-                        console.error(error)
-                    })
+                    paymentForm.removeClass('loading');
+                    if (popin) {
+                        KR.openPopin();
+                    } else {
+                        KR.openSelectedPaymentMethod();
+                    }
                 }
             }
 
             function configureSmartform() {
+                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
+
                 if ('{{lyraFormConfig.compactMode}}') {
                     KR.setFormConfig({ cardForm: { layout: "compact" }, smartForm: { layout: "compact" }});
                 }
@@ -124,6 +107,8 @@
                     form: { smartform: { singlePaymentButton: { visibility: false }}}
                 });
 
+                paymentForm.on('submit', openSmartform);
+                $(".payment-item .checkbox input[type='radio']").on('change', handleButtonsDisplay);
                 KR.onFormReady(handleButtonsDisplay);
             }
 
