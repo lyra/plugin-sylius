@@ -10,29 +10,20 @@ PayZen for Sylius is an open source plugin that links e-commerce websites based 
 ```
 composer require lyranetwork/sylius-lyranetwork-plugin dev-payzen
 ```
-### With module zip file
-- Unzip module in your Sylius root folder.
-- Add in file `sylius/composer.json`, in autoload psr-4 the line:
-
-```
-"Lyranetwork\\Payzen\\": "LyranetworkPayzen/src/"
-```
-
-### Add module to bundles
-- Add the following line in  __bundles.php__  file located in `sylius/config/`:
+- Add the following line in  __bundles.php__  file located in `[sylius-root]/config/`:
 
 ```
 Lyranetwork\Payzen\LyranetworkPayzenPlugin::class => ['all' => true],
 ```
 
-- Add Payzen routes in `config/routes.yaml`
+- Add Payzen routes in  __routes.yaml__  file located in `[sylius-root]/config/`:
 
  ```yaml
  sylius_payzen:
     resource: "@LyranetworkPayzenPlugin/Resources/config/routing.yaml"
  ```
 
-- Execute this command in Sylius root directory to dump the autoload cache.
+- Dump the autoload cache using the following command:
 
 ```
 composer dump-autoload
@@ -48,17 +39,61 @@ SyliusAdminBundle\OrderShow\_payment.html.twig
 SyliusShopBundle\Checkout\SelectPayment\_choice.html.twig
 SyliusUiBundle\Form\theme.html.twig
 ```
-- If not, just copy them with the following command, if you used the zip method to install:
-
-```
-cp -R LyranetworkPayzen/Resources/views/bundles/* templates/bundles/
-```
-- Or this one if you used composer :
+- If not, just copy them with the following command :
 
 ```
 cp -R vendor/lyranetwork/sylius-lyranetwork-plugin/LyranetworkPayzen/Resources/views/bundles/* templates/bundles/
 ```
 
+- Empty the cache with the following command:
+
+```
+php bin/console cache:clear
+```
+
+The plugin should be now available in the list of payment methods that you can create.
+
+### With plugin zip file
+- Unzip module in your Sylius root folder.
+- Add in file `[sylius-root]/composer.json`, in autoload psr-4 the following line:
+
+```
+"Lyranetwork\\Payzen\\": "LyranetworkPayzen/src/"
+```
+- Add the following line in  __bundles.php__  file located in `[sylius-root]/config/`:
+
+```
+Lyranetwork\Payzen\LyranetworkPayzenPlugin::class => ['all' => true],
+```
+
+- Add Payzen routes in  __routes.yaml__  file located in `[sylius-root]/config/`:
+
+ ```yaml
+ sylius_payzen:
+    resource: "@LyranetworkPayzenPlugin/Resources/config/routing.yaml"
+ ```
+
+- Dump the autoload cache using the following command:
+
+```
+composer dump-autoload
+```
+
+**Careful**
+
+- Add the overrode templates. If you have already overrode one of the following files, you need to merge it with ours. You will find them in LyranetworkPayzen/Resources/views/bundles/ directory.
+
+```
+SyliusAdminBundle\PaymentMethod\_form.html.twig
+SyliusAdminBundle\OrderShow\_payment.html.twig
+SyliusShopBundle\Checkout\SelectPayment\_choice.html.twig
+SyliusUiBundle\Form\theme.html.twig
+```
+- If not, just copy them with the following command :
+
+```
+cp -R LyranetworkPayzen/Resources/views/bundles/* templates/bundles/
+```
 
 - Open command line in Sylius root directory, and run the following commands to extract the translations for the plugin:
 
@@ -103,13 +138,13 @@ composer remove lyranetwork/sylius-lyranetwork-plugin
 ```
 
 ### Remove and revert changes
-- Remove the following line in  __bundles.php__  file located in `sylius/config/`:
+- Remove the following line in  __bundles.php__  file located in `[sylius-root]/config/`:
 
 ```
 Lyranetwork\Payzen\LyranetworkPayzenPlugin::class => ['all' => true],
 ```
 
-- Remove Payzen routes in `config/routes.yaml`
+- Remove Payzen routes in  __routes.yaml__  file located in `[sylius-root]/config/`
 
 ```yaml
  sylius_payzen:

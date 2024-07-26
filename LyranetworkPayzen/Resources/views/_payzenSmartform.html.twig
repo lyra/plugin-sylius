@@ -18,8 +18,10 @@
 
 {% if order is defined %}
     {% set formToken, returnUrl, popin, dataEntryMode, logoHeader = payzen_get_smartform_token(order, methodCode).formToken, path('payzen_return_url'), '', '', '' %}
+    {% set single = 'kr-single-payment-button' %}
     {% if payzenFormConfig.popinMode %}
         {% set popin = 'kr-popin' %}
+        {% set single = '' %}
     {% endif %}
 
     {% if payzenFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITH_LOGOS') or payzenFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITHOUT_LOGOS') %}
@@ -30,7 +32,7 @@
         {% set logoHeader = 'kr-no-card-logo-header ' %}
     {% endif %}
 {% elseif accountToken is not empty %}
-    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader = accountToken, path('payzen_sylius_account_saved_cards'), '', 'kr-card-form-expanded', '' %}
+    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader, single = accountToken, path('payzen_sylius_account_saved_cards'), '', 'kr-card-form-expanded', '', '' %}
 {% endif %}
 
 <div id="payzenPaymentMethodForm">
@@ -43,11 +45,9 @@
     <link rel="stylesheet" href="{{ payzenFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ payzenFormConfig.theme }}-reset.css">
     <script src="{{ payzenFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ payzenFormConfig.theme }}.js"></script>
 
-    <div class="kr-smart-form" kr-single-payment-button {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
+    <div class="kr-smart-form" {{ single }}  {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
     {% if order is defined %}
         <script>
-            let fieldsChecked = false;
-
             function init() {
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
                 if (payzenCheckBox) {
@@ -70,13 +70,8 @@
             }
 
             async function handleButtonsDisplay() {
-                $(".payment-item .checkbox input[type='radio']").on('change', handleButtonsDisplay);
-                const popin = '{{payzenFormConfig.popinMode}}' === '1';
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
-                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
                 const smartform = $('#payzenPaymentMethodForm');
-
-                paymentForm.on('submit', openSmartform);
 
                 if (payzenCheckBox.is(":checked")) {
                     smartform.show();
@@ -89,32 +84,20 @@
                 const popin = '{{payzenFormConfig.popinMode}}' === '1';
                 const paymentForm = $('form[name="sylius_checkout_select_payment"]');
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
-                if (payzenCheckBox.is(":checked") && ! fieldsChecked) {
+                if (payzenCheckBox.is(":checked")) {
                     event.preventDefault();
-                    fetch(event.target.action, {
-                        method: 'POST',
-                        body: new URLSearchParams(new FormData(event.target))
-                    }).then((response) => {
-                        return response;
-                    }).then((body) => {
-                        if (body.status === 200) {
-                            paymentForm.removeClass('loading');
-                            if (popin) {
-                                KR.openPopin();
-                            } else {
-                                KR.openSelectedPaymentMethod();
-                            }
-                        } else {
-                            fieldsChecked = true;
-                            paymentForm.submit();
-                        }
-                    }).catch((error) => {
-                        console.error(error)
-                    })
+                    paymentForm.removeClass('loading');
+                    if (popin) {
+                        KR.openPopin();
+                    } else {
+                        KR.openSelectedPaymentMethod();
+                    }
                 }
             }
 
             function configureSmartform() {
+                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
+
                 if ('{{payzenFormConfig.compactMode}}') {
                     KR.setFormConfig({ cardForm: { layout: "compact" }, smartForm: { layout: "compact" }});
                 }
@@ -124,6 +107,8 @@
                     form: { smartform: { singlePaymentButton: { visibility: false }}}
                 });
 
+                paymentForm.on('submit', openSmartform);
+                $(".payment-item .checkbox input[type='radio']").on('change', handleButtonsDisplay);
                 KR.onFormReady(handleButtonsDisplay);
             }
 
