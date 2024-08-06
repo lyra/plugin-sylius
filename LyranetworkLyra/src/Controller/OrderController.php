@@ -37,6 +37,7 @@ use Sylius\Component\Core\OrderCheckoutTransitions;
 use Sylius\Component\Order\OrderTransitions;
 use Sylius\Component\Payment\PaymentTransitions;
 use Sylius\Calendar\Provider\DateTimeProviderInterface;
+use Sylius\Component\Core\OrderCheckoutStates;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -255,6 +256,8 @@ final class OrderController extends BaseOrderController
             'lyra_trans_uuid' => $lyraResponse->get('trans_uuid'),
             'lyra_card_brand' => $lyraResponse->get('vads_card_brand')
         );
+
+        $order->setCheckoutState(OrderCheckoutStates::STATE_COMPLETED);
         $order->setCheckoutCompletedAt($this->dateTimeProvider->now());
 
         $request->getSession()->set('sylius_order_id', $order->getId());
