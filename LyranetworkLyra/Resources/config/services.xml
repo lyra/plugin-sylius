@@ -45,6 +45,8 @@
 
         <service id="Lyranetwork\Lyra\Service\OrderService">
             <argument type="service" id="Lyranetwork\Lyra\Repository\OrderRepositoryInterface" />
+            <argument type="service" id="Sylius\Bundle\ShopBundle\EmailManager\OrderEmailManagerInterface" />
+            <argument type="service" id="logger" />
         </service>
 
         <service id="Lyranetwork\Lyra\Sdk\RestData">
