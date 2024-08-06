@@ -23,6 +23,29 @@ Lyranetwork\Payzen\LyranetworkPayzenPlugin::class => ['all' => true],
     resource: "@LyranetworkPayzenPlugin/Resources/config/routing.yaml"
  ```
 
+- Add Payzen callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+
+```yaml
+winzou_state_machine:
+  sylius_payment:
+    callbacks:
+      after:
+        custom_action:
+          on: ["process", "authorize", "complete"]
+          do: ["@lyranetworkpayzen.order_service", "sendConfirmationEmail"]
+          args: ["object"]
+```
+
+- Add Payzen services in  __services.yaml__  file located in `[sylius-root]/config` :
+
+```
+services:
+[...]
+    lyranetworkpayzen.order_service:
+      class: Lyranetwork\Payzen\Service\OrderService
+      public: true
+```
+
 - Dump the autoload cache using the following command:
 
 ```
@@ -72,6 +95,29 @@ Lyranetwork\Payzen\LyranetworkPayzenPlugin::class => ['all' => true],
  sylius_payzen:
     resource: "@LyranetworkPayzenPlugin/Resources/config/routing.yaml"
  ```
+
+- Add Payzen callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+
+```yaml
+winzou_state_machine:
+  sylius_payment:
+    callbacks:
+      after:
+        custom_action:
+          on: ["process", "authorize", "complete"]
+          do: ["@lyranetworkpayzen.order_service", "sendConfirmationEmail"]
+          args: ["object"]
+```
+
+- Add Payzen services in  __services.yaml__  file located in `[sylius-root]/config` :
+
+```
+services:
+[...]
+    lyranetworkpayzen.order_service:
+      class: Lyranetwork\Payzen\Service\OrderService
+      public: true
+```
 
 - Dump the autoload cache using the following command:
 
@@ -149,6 +195,29 @@ Lyranetwork\Payzen\LyranetworkPayzenPlugin::class => ['all' => true],
 ```yaml
  sylius_payzen:
     resource: "@LyranetworkPayzenPlugin/Resources/config/routing.yaml"
+```
+
+- Remove Payzen callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+
+```yaml
+winzou_state_machine:
+  sylius_payment:
+    callbacks:
+      after:
+        custom_action:
+          on: ["process", "authorize", "complete"]
+          do: ["@lyranetworkpayzen.order_service", "sendConfirmationEmail"]
+          args: ["object"]
+```
+
+- Remove Payzen services in  __services.yaml__  file located in `[sylius-root]/config` :
+
+```
+services:
+[...]
+    lyranetworkpayzen.order_service:
+      class: Lyranetwork\Payzen\Service\OrderService
+      public: true
 ```
 
 - Remove or unmerge all added template files in `templates/bundles/`

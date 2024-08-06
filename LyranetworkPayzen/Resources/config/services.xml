@@ -45,6 +45,8 @@
 
         <service id="Lyranetwork\Payzen\Service\OrderService">
             <argument type="service" id="Lyranetwork\Payzen\Repository\OrderRepositoryInterface" />
+            <argument type="service" id="Sylius\Bundle\ShopBundle\EmailManager\OrderEmailManagerInterface" />
+            <argument type="service" id="logger" />
         </service>
 
         <service id="Lyranetwork\Payzen\Sdk\RestData">

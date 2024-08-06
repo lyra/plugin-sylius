@@ -37,6 +37,7 @@ use Sylius\Component\Core\OrderCheckoutTransitions;
 use Sylius\Component\Order\OrderTransitions;
 use Sylius\Component\Payment\PaymentTransitions;
 use Sylius\Calendar\Provider\DateTimeProviderInterface;
+use Sylius\Component\Core\OrderCheckoutStates;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -255,6 +256,8 @@ final class OrderController extends BaseOrderController
             'payzen_trans_uuid' => $payzenResponse->get('trans_uuid'),
             'payzen_card_brand' => $payzenResponse->get('vads_card_brand')
         );
+
+        $order->setCheckoutState(OrderCheckoutStates::STATE_COMPLETED);
         $order->setCheckoutCompletedAt($this->dateTimeProvider->now());
 
         $request->getSession()->set('sylius_order_id', $order->getId());
