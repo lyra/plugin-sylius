@@ -23,6 +23,29 @@ Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
     resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
  ```
 
+- Add Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+
+```yaml
+winzou_state_machine:
+  sylius_payment:
+    callbacks:
+      after:
+        custom_action:
+          on: ["process", "authorize", "complete"]
+          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
+          args: ["object"]
+```
+
+- Add Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+
+```
+services:
+[...]
+    lyranetworklyra.order_service:
+      class: Lyranetwork\Lyra\Service\OrderService
+      public: true
+```
+
 - Dump the autoload cache using the following command:
 
 ```
@@ -72,6 +95,29 @@ Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
  sylius_lyra:
     resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
  ```
+
+- Add Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+
+```yaml
+winzou_state_machine:
+  sylius_payment:
+    callbacks:
+      after:
+        custom_action:
+          on: ["process", "authorize", "complete"]
+          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
+          args: ["object"]
+```
+
+- Add Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+
+```
+services:
+[...]
+    lyranetworklyra.order_service:
+      class: Lyranetwork\Lyra\Service\OrderService
+      public: true
+```
 
 - Dump the autoload cache using the following command:
 
@@ -149,6 +195,29 @@ Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
 ```yaml
  sylius_lyra:
     resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
+```
+
+- Remove Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+
+```yaml
+winzou_state_machine:
+  sylius_payment:
+    callbacks:
+      after:
+        custom_action:
+          on: ["process", "authorize", "complete"]
+          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
+          args: ["object"]
+```
+
+- Remove Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+
+```
+services:
+[...]
+    lyranetworklyra.order_service:
+      class: Lyranetwork\Lyra\Service\OrderService
+      public: true
 ```
 
 - Remove or unmerge all added template files in `templates/bundles/`
