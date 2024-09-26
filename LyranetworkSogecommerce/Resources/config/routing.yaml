@@ -1,0 +1,23 @@
+sogecommerce_return_url:
+  path: /sogecommerce/rest/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Sogecommerce\Controller\OrderController::paymentResponseAction'
+
+sogecommerce_rest_ipn:
+  path: /sogecommerce/rest/ipn
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Sogecommerce\Controller\OrderController::paymentResponseAction'
+
+sogecommerce_payment_refund:
+  path: /sogecommerce/orders/{orderId}/payments/{id}/refund
+  methods: [PUT, POST]
+  defaults:
+    _controller: 'Lyranetwork\Sogecommerce\Controller\RefundController::paymentRefundOrCancelAction'
+
+sogecommerce_sylius_account_saved_cards:
+  path: /{_locale}/sogecommerce/account/saved-cards
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Sogecommerce\Controller\CardController::savedCardsAction'

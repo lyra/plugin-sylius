@@ -1,6 +1,6 @@
-# Lyra Collect for Sylius
+# Sogecommerce for Sylius
 
-Lyra Collect for Sylius is an open source plugin that links e-commerce websites based on Sylius to Lyra Collect secure payment gateway developed by [Lyra Network](https://www.lyra.com/).
+Sogecommerce for Sylius is an open source plugin that links e-commerce websites based on Sylius to Sogecommerce secure payment gateway developed by [Lyra Network](https://www.lyra.com/).
 
 ## Installation & Upgrade
 
@@ -8,22 +8,22 @@ Lyra Collect for Sylius is an open source plugin that links e-commerce websites 
 - Require the plugin with composer using the following command:
 
 ```
-composer require lyranetwork/sylius-lyranetwork-plugin dev-lyra
+composer require lyranetwork/sylius-lyranetwork-plugin dev-sogecommerce
 ```
 - Add the following line in  __bundles.php__  file located in `[sylius-root]/config/`:
 
 ```
-Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
+Lyranetwork\Sogecommerce\LyranetworkSogecommercePlugin::class => ['all' => true],
 ```
 
-- Add Lyra routes in  __routes.yaml__  file located in `[sylius-root]/config/`:
+- Add Sogecommerce routes in  __routes.yaml__  file located in `[sylius-root]/config/`:
 
  ```yaml
- sylius_lyra:
-    resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
+ sylius_sogecommerce:
+    resource: "@LyranetworkSogecommercePlugin/Resources/config/routing.yaml"
  ```
 
-- Add Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+- Add Sogecommerce callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
 
 ```yaml
 winzou_state_machine:
@@ -32,17 +32,17 @@ winzou_state_machine:
       after:
         custom_action:
           on: ["process", "authorize", "complete"]
-          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
+          do: ["@lyranetworksogecommerce.order_service", "sendConfirmationEmail"]
           args: ["object"]
 ```
 
-- Add Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+- Add Sogecommerce services in  __services.yaml__  file located in `[sylius-root]/config` :
 
 ```
 services:
 [...]
-    lyranetworklyra.order_service:
-      class: Lyranetwork\Lyra\Service\OrderService
+    lyranetworksogecommerce.order_service:
+      class: Lyranetwork\Sogecommerce\Service\OrderService
       public: true
 ```
 
@@ -54,7 +54,7 @@ composer dump-autoload
 
 **Careful**
 
-- Add the overrode templates. If you have already overrode one of the following files, you need to merge it with ours. You will find them in LyranetworkLyra/Resources/views/bundles/ directory.
+- Add the overrode templates. If you have already overrode one of the following files, you need to merge it with ours. You will find them in LyranetworkSogecommerce/Resources/views/bundles/ directory.
 
 ```
 SyliusAdminBundle\PaymentMethod\_form.html.twig
@@ -65,7 +65,7 @@ SyliusUiBundle\Form\theme.html.twig
 - If not, just copy them with the following command :
 
 ```
-cp -R vendor/lyranetwork/sylius-lyranetwork-plugin/LyranetworkLyra/Resources/views/bundles/* templates/bundles/
+cp -R vendor/lyranetwork/sylius-lyranetwork-plugin/LyranetworkSogecommerce/Resources/views/bundles/* templates/bundles/
 ```
 
 - Empty the cache with the following command:
@@ -81,22 +81,22 @@ The plugin should be now available in the list of payment methods that you can c
 - Add in file `[sylius-root]/composer.json`, in autoload psr-4 the following line:
 
 ```
-"Lyranetwork\\Lyra\\": "LyranetworkLyra/src/"
+"Lyranetwork\\Sogecommerce\\": "LyranetworkSogecommerce/src/"
 ```
 - Add the following line in  __bundles.php__  file located in `[sylius-root]/config/`:
 
 ```
-Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
+Lyranetwork\Sogecommerce\LyranetworkSogecommercePlugin::class => ['all' => true],
 ```
 
-- Add Lyra routes in  __routes.yaml__  file located in `[sylius-root]/config/`:
+- Add Sogecommerce routes in  __routes.yaml__  file located in `[sylius-root]/config/`:
 
  ```yaml
- sylius_lyra:
-    resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
+ sylius_sogecommerce:
+    resource: "@LyranetworkSogecommercePlugin/Resources/config/routing.yaml"
  ```
 
-- Add Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+- Add Sogecommerce callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
 
 ```yaml
 winzou_state_machine:
@@ -105,17 +105,17 @@ winzou_state_machine:
       after:
         custom_action:
           on: ["process", "authorize", "complete"]
-          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
+          do: ["@lyranetworksogecommerce.order_service", "sendConfirmationEmail"]
           args: ["object"]
 ```
 
-- Add Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+- Add Sogecommerce services in  __services.yaml__  file located in `[sylius-root]/config` :
 
 ```
 services:
 [...]
-    lyranetworklyra.order_service:
-      class: Lyranetwork\Lyra\Service\OrderService
+    lyranetworksogecommerce.order_service:
+      class: Lyranetwork\Sogecommerce\Service\OrderService
       public: true
 ```
 
@@ -127,7 +127,7 @@ composer dump-autoload
 
 **Careful**
 
-- Add the overrode templates. If you have already overrode one of the following files, you need to merge it with ours. You will find them in LyranetworkLyra/Resources/views/bundles/ directory.
+- Add the overrode templates. If you have already overrode one of the following files, you need to merge it with ours. You will find them in LyranetworkSogecommerce/Resources/views/bundles/ directory.
 
 ```
 SyliusAdminBundle\PaymentMethod\_form.html.twig
@@ -138,18 +138,18 @@ SyliusUiBundle\Form\theme.html.twig
 - If not, just copy them with the following command :
 
 ```
-cp -R LyranetworkLyra/Resources/views/bundles/* templates/bundles/
+cp -R LyranetworkSogecommerce/Resources/views/bundles/* templates/bundles/
 ```
 
 - Open command line in Sylius root directory, and run the following commands to extract the translations for the plugin:
 
 ```
-php bin/console translation:extract en LyranetworkLyraPlugin --dump-messages
-php bin/console translation:extract fr LyranetworkLyraPlugin --dump-messages
-php bin/console translation:extract es LyranetworkLyraPlugin --dump-messages
-php bin/console translation:extract de LyranetworkLyraPlugin --dump-messages
-php bin/console translation:extract pt LyranetworkLyraPlugin --dump-messages
-php bin/console translation:extract br LyranetworkLyraPlugin --dump-messages
+php bin/console translation:extract en LyranetworkSogecommercePlugin --dump-messages
+php bin/console translation:extract fr LyranetworkSogecommercePlugin --dump-messages
+php bin/console translation:extract es LyranetworkSogecommercePlugin --dump-messages
+php bin/console translation:extract de LyranetworkSogecommercePlugin --dump-messages
+php bin/console translation:extract pt LyranetworkSogecommercePlugin --dump-messages
+php bin/console translation:extract br LyranetworkSogecommercePlugin --dump-messages
 ```
 
 - Empty the cache with the following command:
@@ -164,8 +164,8 @@ The plugin should be now available in the list of payment methods that you can c
 In the Sylius administration interface:
 - Go to `Configuration > Payment methods`.
 - Click on `Create` button on the top right of the page to display the list of available payment methods.
-- Choose `Payment by Lyra Collect` to add and configure it.
-- You can now enter your Lyra Collect credentials and configure your payment method. 
+- Choose `Payment by Sogecommerce` to add and configure it.
+- You can now enter your Sogecommerce credentials and configure your payment method. 
 - Don't forget to give your payment method a code, to set the name in the language sections at the bottom and to save by clicking the `Create` button.
 
 ## Uninstallation
@@ -176,28 +176,28 @@ composer remove lyranetwork/sylius-lyranetwork-plugin
 ```
 
 ### With module zip file
-- Delete LyranetworkLyra folder in your Sylius root folder
+- Delete LyranetworkSogecommerce folder in your Sylius root folder
 - Remove in file `sylius/composer.json`, in autoload psr-4 the line:
 
 ```
-"Lyranetwork\\Lyra\\": "LyranetworkLyra/src/"
+"Lyranetwork\\Sogecommerce\\": "LyranetworkSogecommerce/src/"
 ```
 
 ### Remove and revert changes
 - Remove the following line in  __bundles.php__  file located in `[sylius-root]/config/`:
 
 ```
-Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
+Lyranetwork\Sogecommerce\LyranetworkSogecommercePlugin::class => ['all' => true],
 ```
 
-- Remove Lyra routes in  __routes.yaml__  file located in `[sylius-root]/config/`
+- Remove Sogecommerce routes in  __routes.yaml__  file located in `[sylius-root]/config/`
 
 ```yaml
- sylius_lyra:
-    resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
+ sylius_sogecommerce:
+    resource: "@LyranetworkSogecommercePlugin/Resources/config/routing.yaml"
 ```
 
-- Remove Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
+- Remove Sogecommerce callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
 
 ```yaml
 winzou_state_machine:
@@ -206,17 +206,17 @@ winzou_state_machine:
       after:
         custom_action:
           on: ["process", "authorize", "complete"]
-          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
+          do: ["@lyranetworksogecommerce.order_service", "sendConfirmationEmail"]
           args: ["object"]
 ```
 
-- Remove Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+- Remove Sogecommerce services in  __services.yaml__  file located in `[sylius-root]/config` :
 
 ```
 services:
 [...]
-    lyranetworklyra.order_service:
-      class: Lyranetwork\Lyra\Service\OrderService
+    lyranetworksogecommerce.order_service:
+      class: Lyranetwork\Sogecommerce\Service\OrderService
       public: true
 ```
 
@@ -237,6 +237,6 @@ php bin/console cache:clear
 ```
 ## License
 
-Each Lyra Collect payment module source file included in this distribution is licensed under the The MIT License (MIT).
+Each Sogecommerce payment module source file included in this distribution is licensed under the The MIT License (MIT).
 
 Please see LICENSE.txt for the full text of the MIT license. It is also available through the world-wide-web at this URL: https://opensource.org/licenses/mit-license.html.

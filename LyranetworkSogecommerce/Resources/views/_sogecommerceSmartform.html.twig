@@ -1,0 +1,129 @@
+{#
+* Copyright © Lyra Network.
+* This file is part of Sogecommerce plugin for Sylius. See COPYING.md for license details.
+*
+* @author    Lyra Network (https://www.lyra.com/)
+* @copyright Lyra Network
+* @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
+#}
+
+{% set methodCode = '' %}
+{% if instanceCode is defined %}
+    {% set methodCode = instanceCode %}
+{% else %}
+    {% set methodCode = method.code %}
+{% endif %}
+
+{% set sogecommerceFormConfig = sogecommerce_get_smartform_config(methodCode) %}
+
+{% if order is defined %}
+    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader = sogecommerce_get_smartform_token(order, methodCode).formToken, path('sogecommerce_return_url'), '', '', '' %}
+    {% set single = 'kr-single-payment-button' %}
+    {% if sogecommerceFormConfig.popinMode %}
+        {% set popin = 'kr-popin' %}
+        {% set single = '' %}
+    {% endif %}
+
+    {% if sogecommerceFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITH_LOGOS') or sogecommerceFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITHOUT_LOGOS') %}
+        {% set dataEntryMode = 'kr-card-form-expanded' %}
+    {% endif %}
+
+    {% if sogecommerceFormConfig.cardDataEntryMode is same as('MODE_SMARTFORM_EXT_WITHOUT_LOGOS') %}
+        {% set logoHeader = 'kr-no-card-logo-header ' %}
+    {% endif %}
+{% elseif accountToken is not empty %}
+    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader, single = accountToken, path('sogecommerce_sylius_account_saved_cards'), '', 'kr-card-form-expanded', '', '' %}
+{% endif %}
+
+<div id="sogecommercePaymentMethodForm">
+    <script src="{{ sogecommerceFormConfig.jsClient }}js/krypton-client/V4.0/stable/kr-payment-form.min.js"
+        kr-public-key="{{ sogecommerceFormConfig.pubKey }}"
+        kr-language="{{ sogecommerceFormConfig.language }}"
+        kr-post-url-success="{{ returnUrl }}"
+        kr-post-url-refused="{{ returnUrl }}"
+    ></script>
+    <link rel="stylesheet" href="{{ sogecommerceFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ sogecommerceFormConfig.theme }}-reset.css">
+    <script src="{{ sogecommerceFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ sogecommerceFormConfig.theme }}.js"></script>
+
+    <div class="kr-smart-form" {{ single }}  {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
+    {% if order is defined %}
+        <script>
+            function init() {
+                const sogecommerceCheckBox = $(".sogecommercePaymentCheckBox input[type='radio']");
+                if (sogecommerceCheckBox) {
+                    configureSmartform();
+                    togglePaymentMethodTitle();
+                }
+            }
+
+            function togglePaymentMethodTitle() {
+                const popin = '{{sogecommerceFormConfig.popinMode}}' === '1';
+                const nbMethod = $(".payment-item .checkbox input[type='radio']").length;
+                const sogecommerceCheckBox = $(".sogecommercePaymentCheckBox input[type='radio']");
+                if (popin || nbMethod > 1) {
+                    $(".sogecommercePaymentChoiceTitle").each(function () {
+                        this.style.setProperty('display', 'flex', 'important')
+                    });
+                }
+
+                sogecommerceCheckBox.prop("checked", true);
+            }
+
+            async function handleButtonsDisplay() {
+                const sogecommerceCheckBox = $(".sogecommercePaymentCheckBox input[type='radio']");
+                const smartform = $('#sogecommercePaymentMethodForm');
+
+                if (sogecommerceCheckBox.is(":checked")) {
+                    smartform.show();
+                } else {
+                    smartform.hide();
+                }
+            }
+
+            function openSmartform(event) {
+                const popin = '{{sogecommerceFormConfig.popinMode}}' === '1';
+                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
+                const sogecommerceCheckBox = $(".sogecommercePaymentCheckBox input[type='radio']");
+                if (sogecommerceCheckBox.is(":checked")) {
+                    event.preventDefault();
+                    paymentForm.removeClass('loading');
+                    if (popin) {
+                        KR.openPopin();
+                    } else {
+                        KR.openSelectedPaymentMethod();
+                    }
+                }
+            }
+
+            function configureSmartform() {
+                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
+
+                if ('{{sogecommerceFormConfig.compactMode}}') {
+                    KR.setFormConfig({ cardForm: { layout: "compact" }, smartForm: { layout: "compact" }});
+                }
+
+                KR.setFormConfig({
+                    language: '{{sogecommerceFormConfig.language}}',
+                    form: { smartform: { singlePaymentButton: { visibility: false }}}
+                });
+
+                paymentForm.on('submit', openSmartform);
+                $(".payment-item .checkbox input[type='radio']").on('change', handleButtonsDisplay);
+                KR.onFormReady(handleButtonsDisplay);
+            }
+
+            document.addEventListener("DOMContentLoaded", init, false);
+        </script>
+
+        <style>
+            .kr-smart-form-modal-button, .kr-methods-list-card-form-wrapper .kr-card-form .kr-payment-button {
+                display: none !important;
+            }
+
+            label.kr-method-label, label.kr-amount-label {
+                margin: 0 !important;
+                font-size: 13px !important;
+            }
+        </style>
+    {% endif %}
+</div>
