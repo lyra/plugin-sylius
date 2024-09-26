@@ -1,0 +1,45 @@
+{#
+ * Copyright © Lyra Network.
+ * This file is part of Monetico Retail plugin for Sylius. See COPYING.md for license details.
+ *
+ * @author    Lyra Network (https://www.lyra.com/)
+ * @copyright Lyra Network
+ * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
+ #}
+
+<div class="ui message">
+    <div class="ui grid">
+        <div class="eight wide column">
+            <h2 class="ui header aligned left">
+                Monetico Retail
+            </h2>
+        </div>
+    </div>
+    <div class="ui grid">
+        <div class="four wide column">
+            {{ 'sylius_monetico_plugin.ui.monetico_developed_by'|trans }}
+            <b><a href="https://www.lyra.com/" target="_blank">Lyra Network</a></b>
+        </div>
+        <div class="eight wide column">
+            <i class="envelope icon"></i>
+            {{ 'sylius_monetico_plugin.ui.monetico_support_email'|trans }}
+            <b><a href="mailto:{{ moneticoSupport }}">{{ moneticoSupport }}</a></b>
+        </div>
+    </div>
+    <div class="ui grid">
+        <div class="four wide column">
+            {{ 'sylius_monetico_plugin.ui.monetico_module_version'|trans }} <b>{{ moneticoPluginVersion }}</b>
+        </div>
+        <div class="four wide column">
+            {{ 'sylius_monetico_plugin.ui.monetico_gateway_version'|trans }} <b>{{ moneticoGatewayVersion }}</b>
+        </div>
+    </div>
+    <div class="ui grid">
+        <div class="twelve wide column">
+            {{ 'sylius_monetico_plugin.ui.monetico_documentation_link'|trans }}
+            {% for lang, url in moneticoDocUrls %}
+                <a style="margin-left: 10px; font-weight: bold; text-transform: uppercase;" href="{{ url }}" target="_blank">{{ lang }}</a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
