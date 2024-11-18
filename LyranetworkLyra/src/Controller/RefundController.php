@@ -151,9 +151,8 @@ final class RefundController
             'Sylius'
         );
 
-        $amount = $order->getTotal();
-        $currency = LyraApi::findCurrencyByAlphaCode($order->getCurrencyCode());
-        $amount = $currency->convertAmountToFloat($amount);
+        $currency = LyraApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
+        $amount = $currency->convertAmountToFloat($payment->getAmount());
 
         $refundApi->refund($lyraOrderInfo, $amount);
 
