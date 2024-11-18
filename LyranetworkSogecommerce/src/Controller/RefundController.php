@@ -151,9 +151,8 @@ final class RefundController
             'Sylius'
         );
 
-        $amount = $order->getTotal();
-        $currency = SogecommerceApi::findCurrencyByAlphaCode($order->getCurrencyCode());
-        $amount = $currency->convertAmountToFloat($amount);
+        $currency = SogecommerceApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
+        $amount = $currency->convertAmountToFloat($payment->getAmount());
 
         $refundApi->refund($sogecommerceOrderInfo, $amount);
 

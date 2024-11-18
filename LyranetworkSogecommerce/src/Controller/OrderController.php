@@ -194,6 +194,11 @@ final class OrderController extends BaseOrderController
             ""
         );
 
+        // Ignore IPN call for adding card in the customer wallet.
+        if ($sogecommerceResponse->get('operation_type') === 'VERIFICATION') {
+            die();
+        }
+
         $orderId = $sogecommerceResponse->get('order_id');
         $orderIdDB = $sogecommerceResponse->getExtInfo('db_order_id');
         if (empty($orderIdDB) || empty($orderId) || ! ($order = $this->orderService->get($orderIdDB))) {
@@ -232,13 +237,26 @@ final class OrderController extends BaseOrderController
         $orderCheckoutStateMachine = $this->stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH);
         $orderStateMachine = $this->stateMachineFactory->get($order, OrderTransitions::GRAPH);
 
+        if ($orderCheckoutStateMachine->can('select_payment')) {
+            $orderCheckoutStateMachine->apply('select_payment');
+        }
+
         if ($orderStateMachine->can('create')) {
             $orderStateMachine->apply('create');
         }
 
+        $order->setNumber($orderId);
+
         $lastPayment = $order->getLastPayment();
+        $payments = $order->getPayments();
+        $cpt = count($payments);
+
+        while ($cpt > 0 && ! empty($lastPayment) && $lastPayment->getState() === 'refunded') {
+            $lastPayment = $payments[$cpt - 1];
+            $cpt--;
+        }
+
         if (! $sogecommerceResponse->isAcceptedPayment()) {
-            $payments = $order->getPayments();
             $lastPayment = ! empty($payments[count($payments) - 2]) ? $payments[count($payments) - 2] : $lastPayment;
             $redirect = $this->redirectToRoute('sylius_shop_order_show', ['tokenValue' => $order->getTokenValue(), '_locale' => $order->getLocaleCode()]);
         } else {
@@ -257,14 +275,40 @@ final class OrderController extends BaseOrderController
             'sogecommerce_card_brand' => $sogecommerceResponse->get('vads_card_brand')
         );
 
-        $order->setCheckoutState(OrderCheckoutStates::STATE_COMPLETED);
-        $order->setCheckoutCompletedAt($this->dateTimeProvider->now());
+        if ($orderCheckoutStateMachine->can('complete')) {
+            $orderCheckoutStateMachine->apply('complete');
+        }
 
         $request->getSession()->set('sylius_order_id', $order->getId());
+        $amount = $lastPayment->getAmount();
+
+        if ($sogecommerceResponse->get('vads_amount') < $amount) {
+            if ($sogecommerceResponse->get('operation_type') === 'DEBIT') {
+                $lastPayment->setAmount($sogecommerceResponse->get('vads_amount'));
+
+                $this->eventDispatcher->dispatchPostEvent(ResourceActions::UPDATE, $configuration, $lastPayment);
+            } else {
+                $refundedPayment = $this->container->get('sylius.factory.payment')->createNew();
+                $refundedPayment->setAmount($sogecommerceResponse->get('vads_amount'));
+                $refundedPayment->setDetails($details);
+                $refundedPayment->setMethod($this->paymentMethodRepository->findByGatewayNameAndCode(SyliusPaymentGatewayFactory::FACTORY_NAME, $instanceCode));
+                $refundedPayment->setCurrencyCode($lastPayment->getCurrencyCode());
+                $order->addPayment($refundedPayment);
+
+                $refundedPaymentStateMachine = $this->stateMachineFactory->get($refundedPayment, PaymentTransitions::GRAPH);
+                $refundedPaymentStateMachine->apply('create');
+                $refundedPaymentStateMachine->apply('complete');
+                $refundedPaymentStateMachine->apply('refund');
+            }
+
+            $this->manager->flush();
+        }
 
         $msg = "";
-        $newStatus = $this->getNewStatus($sogecommerceResponse);
-        if ($lastPayment->getState() !== $newStatus['payment'] || $order->getPaymentState() !== $newStatus['orderPayment']) {
+        $oldStatus = $lastPayment->getState();
+        $newStatus = $this->getNewStatus($sogecommerceResponse, $oldStatus, $amount);
+
+        if ($oldStatus !== $newStatus['payment'] || $order->getPaymentState() !== $newStatus['orderPayment']) {
             $lastPayment = $order->getLastPayment();
             $paymentStateMachine = $this->stateMachineFactory->get($lastPayment, PaymentTransitions::GRAPH);
 
@@ -296,13 +340,20 @@ final class OrderController extends BaseOrderController
                     $msg = 'payment_ok';
                 }
 
-                if ($orderPaymentStateMachine->can($newStatus['orderPaymentTransition']) && $paymentStateMachine->can($newStatus['paymentTransition'])) {
+                if ($orderPaymentStateMachine->can($newStatus['orderPaymentTransition'])) {
                     $orderPaymentStateMachine->apply($newStatus['orderPaymentTransition']);
+
+                    $this->logger->info("Order payment status processed successfully for order #$orderId.");
+                } else {
+                    $this->logger->info("Payment accepted, order payment status processing failed for order #$orderId.");
+                }
+
+                if ($paymentStateMachine->can($newStatus['paymentTransition'])) {
                     $paymentStateMachine->apply($newStatus['paymentTransition']);
 
-                    $this->logger->info("Payment processed successfully for order #$orderId.");
+                    $this->logger->info("Payment status processed successfully for order #$orderId.");
                 } else {
-                    $this->logger->info("Payment accepted processing failed for order #$orderId.");
+                    $this->logger->info("Payment accepted, payment status processing failed for order #$orderId.");
                 }
 
                 $lastPayment->setDetails($details);
@@ -316,6 +367,10 @@ final class OrderController extends BaseOrderController
                 if ($sogecommerceResponse->get('order_cycle') === 'CLOSED') {
                     if ($paymentStateMachine->can($newStatus['paymentTransition'])) {
                         $paymentStateMachine->apply($newStatus['paymentTransition']);
+                    }
+
+                    if (isset($newStatus['orderPaymentTransition']) && $orderPaymentStateMachine->can($newStatus['orderPaymentTransition'])) {
+                        $orderPaymentStateMachine->apply($newStatus['orderPaymentTransition']);
                     }
 
                     if ($orderCheckoutStateMachine->can('select_shipping')) {
@@ -354,7 +409,7 @@ final class OrderController extends BaseOrderController
         return new RedirectResponse($redirect->getTargetUrl());
     }
 
-    private function getNewStatus($sogecommerceResponse): array
+    private function getNewStatus($sogecommerceResponse, $oldStatus, $amount): array
     {
         $newStatus = array('orderPayment' => "awaiting_payment");
         if ($sogecommerceResponse->isPendingPayment()) {
@@ -365,10 +420,27 @@ final class OrderController extends BaseOrderController
             $newStatus['payment'] = 'completed';
             $newStatus['orderPaymentTransition'] = 'pay';
             $newStatus['paymentTransition'] = 'complete';
+
+            if ($sogecommerceResponse->get('vads_amount') < $amount) {
+                $newStatus['orderPayment'] = 'partially_refunded';
+                $newStatus['orderPaymentTransition'] = 'partially_refund';
+            } else if ($sogecommerceResponse->get('operation_type') === 'CREDIT') {
+                $newStatus['orderPayment'] = 'refunded';
+                $newStatus['payment'] = 'refunded';
+                $newStatus['orderPaymentTransition'] = 'refund';
+                $newStatus['paymentTransition'] = 'refund';
+            }
         } else {
             if ($sogecommerceResponse->isCancelledPayment()) {
                 $newStatus['payment'] = 'cancelled';
                 $newStatus['paymentTransition'] = 'cancel';
+
+                if ($oldStatus === 'completed') {
+                    $newStatus['orderPayment'] = 'refunded';
+                    $newStatus['payment'] = 'refunded';
+                    $newStatus['orderPaymentTransition'] = 'refund';
+                    $newStatus['paymentTransition'] = 'refund';
+                }
             } else {
                 $newStatus['payment'] = 'failed';
                 $newStatus['paymentTransition'] = 'fail';

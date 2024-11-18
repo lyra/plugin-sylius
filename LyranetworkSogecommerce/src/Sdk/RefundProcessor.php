@@ -65,6 +65,7 @@ class RefundProcessor implements Processor
         if ($errorCode === 'privateKey') {
             $this->requestStack->getSession()->getFlashBag()->add('error', $this->translate("sylius_sogecommerce_plugin.refund.error.private_key"));
         } else {
+            $message .= " " . sprintf($this->translate("sylius_sogecommerce_plugin.refund.error.backoffice_action"), Tools::getDefault('BACKOFFICE_NAME'));
             $this->requestStack->getSession()->getFlashBag()->add('error', $message);
         }
     }

@@ -89,6 +89,7 @@ sylius_sogecommerce_plugin:
     prodfaq: "PASSAGE EN PRODUCTION: Vous souhaitez savoir comment passer votre boutique en production, merci de consulter les chapitres « Procéder à la phase des tests » et « Passage d'une boutique en mode production » de la documentation du module."
   refund:
     error:
+      backoffice_action: "Pensez à apporter les modifications nécessaires dans le Back Office %1$s."
       private_key: "Impossible de rembourser la commande en ligne: le mot de passe n'est pas configuré."
 "Refund of split payment is not supported. Please, consider making necessary changes in %1$s Back Office.": "Refund of split payment is not supported. Please, consider making necessary changes in %1$s Back Office."
 "Remaining amount (%1$s %2$s) is less than requested refund amount (%3$s %2$s).": "Le montant restant (%1$s %2$s) est inférieur au montant du remboursement demandé (%3$s %2$s)."

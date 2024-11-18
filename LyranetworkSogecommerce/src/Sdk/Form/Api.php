@@ -232,12 +232,13 @@ class Api
             'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)', 'ONEY' => 'Paiement en 3 ou 4 fois par CB',
             'ONEY_10X_12X' => 'Paiement en 10 ou 12 fois Oney', 'ONEY_3X_4X' => 'Paiement en 3 ou 4 fois Oney',
             'ONEY_ENSEIGNE' => 'Cartes enseignes Oney', 'ONEY_PAYLATER' => 'Pay Later Oney',
-            'ONEY_SANDBOX' => 'Paiement en 3 ou 4 fois par CB (sandbox)', 'PAYBOX' => 'Paybox',
-            'PAYPAL' => 'PayPal', 'PAYPAL_SB' => 'PayPal Sandbox', 'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
-            'S-MONEY' => 'S-money', 'SCT' => 'Virement SEPA',
-            'SDD' => 'Prélèvement SEPA', 'SODEXO' => 'Pass Restaurant', 'SOFICARTE' => 'Soficarte', 'SOFORT_BANKING' => 'Sofort',
-            'SYGMA' => 'Sygma', 'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut', 'VILLAVERDE' => 'Carte Cadeau VillaVerde',
-            'VILLAVERDE_SB' => 'Carte Cadeau VillaVerde (sandbox)'
+            'ONEY_SANDBOX' => 'Paiement en 3 ou 4 fois par CB (sandbox)', 'PASS_BEAU_CDX' => 'Carte Cadeau Passion Beauté',
+            'PASS_BEAU_CDX_SB' => 'Carte Cadeau Passion Beauté (sandbox)', 'PAYBOX' => 'Paybox',
+            'PAYPAL' => 'PayPal', 'PAYPAL_BNPL' => 'PayPal Pay Later', 'PAYPAL_BNPL_SB' => 'PayPal Pay Later Sandbox',
+            'PAYPAL_SB' => 'PayPal Sandbox', 'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
+            'S-MONEY' => 'S-money', 'SCT' => 'Virement SEPA', 'SDD' => 'Prélèvement SEPA', 'SODEXO' => 'Pass Restaurant',
+            'SOFICARTE' => 'Soficarte', 'SOFORT_BANKING' => 'Sofort', 'SYGMA' => 'Sygma', 'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut',
+            'VILLAVERDE' => 'Carte Cadeau VillaVerde', 'VILLAVERDE_SB' => 'Carte Cadeau VillaVerde (sandbox)'
         );
     }
 
