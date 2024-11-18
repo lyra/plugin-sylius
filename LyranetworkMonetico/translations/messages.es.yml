@@ -89,6 +89,7 @@ sylius_monetico_plugin:
     prodfaq: "IR A PRODUCTION: Si desea saber cómo poner su tienda en modo production, lea los capítulos « Proceder a la fase de prueba » y « Paso de una tienda al modo producción » en la documentación del módulo."
   refund:
     error:
+      backoffice_action: "Considere hacer los cambios necesarios en el Back Office %1$s."
       private_key: "Imposible realizar el reembolso en línea del pedido: la contraseña no está configurada."
 "Refund of split payment is not supported. Please, consider making necessary changes in %1$s Back Office.": "No se admite reembolso de pago fraccionado. Considere hacer los cambios necesarios en el Back Office %1$s."
 "Remaining amount (%1$s %2$s) is less than requested refund amount (%3$s %2$s).": "El monto restante (%1$s %2$s) es menor al monto de reembolso solicitado (%3$s %2$s)."

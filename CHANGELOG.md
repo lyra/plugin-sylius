@@ -1,3 +1,9 @@
+# 1.2.0, 2024-11-18:
+- Manage extended IPN calls (transaction validation, refund and cancellation).
+- Use state machine to update order checkout status.
+- Take into account shipping status for virtual products.
+- Bug fix: Fix error related to order identifier management.
+
 # 1.1.2, 2024-08-06:
 - Bug fix: Fix error related to checkout state update at the end of the order.
 - Bug fix: Fix error related to sending confirmation email.

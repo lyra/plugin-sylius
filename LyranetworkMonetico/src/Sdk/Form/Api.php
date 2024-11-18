@@ -107,7 +107,8 @@ class Api
             array('HRK', '191', 2), array('CZK', '203', 2), array('DKK', '208', 2), array('EKK', '233', 2),
             array('GNF', '324', 0), array('HKD', '344', 2), array('HUF', '348', 2), array('INR', '356', 2),
             array('IDR', '360', 0), array('CHF', '756', 2), array('AED', '784', 2), array('GBP', '826', 2),
-            array('BGN', '975', 2), array('EUR', '978', 2), array('BRL', '986', 2)
+            array('BGN', '975', 2), array('EUR', '978', 2), array('BRL', '986', 2), array('JPY', '392', 0),
+            array('NOK', '578', 2), array('SEK', '752', 2), array('PLN', '985', 2), array('USD', '840', 2)
         );
 
         $supported_currencies = array();
@@ -210,16 +211,21 @@ class Api
             'APETIZ' => 'Apetiz', 'APPLE_PAY' => 'Apple Pay', 'AUCHAN' => 'Carte Auchan',
             'AUCHAN_SB' => 'Carte Auchan (sandbox)', 'BANCONTACT' => 'Bancontact Mistercash', 'BOULANGER' => 'Carte b+',
             'BOULANGER_SB' => 'Carte b+ (sandbox)', 'CA_DO_CARTE' => 'CA DO Carte', 'CHQ_DEJ' => 'Chèque Déjeuner',
-            'CONECS' => 'Conecs', 'CVCO' => 'Chèque-Vacances Connect', 'EDENRED' => 'Ticket Restaurant',
-            'GIROPAY' => 'Giropay', 'IDEAL' => 'iDEAL', 'MULTIBANCO' => 'Multibanco', 'MYBANK' => 'MyBank',
-            'NORAUTO' => 'Carte Norauto option Financement', 'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)',
-            'ONEY_10X_12X' => 'Paiement en 10 ou 12 fois Oney', 'ONEY_3X_4X' => 'Paiement en 3 ou 4 fois Oney',
-            'ONEY_ENSEIGNE' => 'Cartes enseignes Oney', 'ONEY_PAYLATER' => 'Pay Later Oney',
-            'PAYDIREKT' => 'Paydirekt', 'PAYPAL' => 'PayPal', 'PAYPAL_SB' => 'PayPal Sandbox',
-            'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
+            'COFIDIS_3X_BE' => 'Cofidis en 3 fois', 'COFIDIS_3X_FR' => 'Cofidis en 3 fois',
+            'COFIDIS_4X_ES' => 'Cofidis en 4 vencimientos', 'COFIDIS_4X_FR' => 'Cofidis en 4 fois',
+            'COFIDIS_DFPAY_FR' => 'Cofidis Pay Later', 'COFIDIS_LOAN_BE' => 'Cofidis en 6-12-18 fois',
+            'COFIDIS_LOAN_ES' => 'Cofidis en 6-12-24 vencimientos', 'COFIDIS_LOAN_FR' => 'Amortissable',
+            'COFIDIS_LOAN_IT' => 'Cofidis Pagodil', 'CONECS' => 'Conecs', 'CVCO' => 'Chèque-Vacances Connect',
+            'EDENRED' => 'Ticket Restaurant', 'GIROPAY' => 'Giropay', 'IDEAL' => 'iDEAL', 'MULTIBANCO' => 'Multibanco',
+            'MYBANK' => 'MyBank', 'NORAUTO' => 'Carte Norauto option Financement',
+            'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)', 'ONEY_10X_12X' => 'Paiement en 10 ou 12 fois Oney',
+            'ONEY_3X_4X' => 'Paiement en 3 ou 4 fois Oney', 'ONEY_ENSEIGNE' => 'Cartes enseignes Oney',
+            'ONEY_PAYLATER' => 'Pay Later Oney', 'PAYDIREKT' => 'Paydirekt', 'PAYPAL' => 'PayPal',
+            'PAYPAL_BNPL' => 'PayPal Pay Later', 'PAYPAL_BNPL_SB' => 'PayPal Pay Later Sandbox',
+            'PAYPAL_SB' => 'PayPal Sandbox', 'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
             'PRZELEWY24' => 'Przelewy24', 'S-MONEY' => 'S-money', 'SCT' => 'Virement SEPA',
             'SDD' => 'Prélèvement SEPA', 'SODEXO' => 'Pass Restaurant', 'SOFORT_BANKING' => 'Sofort',
-            'UNION_PAY' => 'UnionPay', 'WECHAT' => 'WeChat Pay'
+            'WECHAT' => 'WeChat Pay'
         );
     }
 

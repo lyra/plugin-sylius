@@ -151,9 +151,8 @@ final class RefundController
             'Sylius'
         );
 
-        $amount = $order->getTotal();
-        $currency = MoneticoApi::findCurrencyByAlphaCode($order->getCurrencyCode());
-        $amount = $currency->convertAmountToFloat($amount);
+        $currency = MoneticoApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
+        $amount = $currency->convertAmountToFloat($payment->getAmount());
 
         $refundApi->refund($moneticoOrderInfo, $amount);
 

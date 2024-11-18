@@ -89,6 +89,7 @@ sylius_monetico_plugin:
     prodfaq: "UMSTELLUNG AUF PRODUKTIONSUMFELD: Sie möchten wissen, wie Sie auf Produktionsumfeld umstellen können, bitte lesen Sie die Kapitel « Weiter zur Testphase » und « Verschieben des Shops in den Produktionsumfeld » in der Dokumentation des Moduls."
   refund:
     error:
+      backoffice_action: "Please, consider making necessary changes in %1$s Back Office."
       private_key: "Impossible to make online refund for the order: password is not configured."
 "Refund of split payment is not supported. Please, consider making necessary changes in %1$s Back Office.": "Refund of split payment is not supported. Please, consider making necessary changes in %1$s Back Office."
 "Remaining amount (%1$s %2$s) is less than requested refund amount (%3$s %2$s).": "Remaining amount (%1$s %2$s) is less than requested refund amount (%3$s %2$s)."
