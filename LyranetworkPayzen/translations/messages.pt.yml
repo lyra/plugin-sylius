@@ -89,6 +89,7 @@ sylius_payzen_plugin:
     prodfaq: "PASSAR EM PRODUÇÃO: Para saber como passar sua loja em produção, favor consultar os capítulos « Realizar a fase de teste » e « Passar uma loja em modo produção » da documentação do módulo."
   refund:
     error:
+      backoffice_action: "Não esqueça de fazer as modificações necessárias no Back Office %1$s."
       private_key: "Impossível fazer reembolso online para o pedido: a senha não está configurada."
 "Refund of split payment is not supported. Please, consider making necessary changes in %1$s Back Office.": "Reembolso de pagamento fracionado não é suportado. Não esqueça de fazer as modificações necessárias no Back Office %1$s."
 "Remaining amount (%1$s %2$s) is less than requested refund amount (%3$s %2$s).": "O valor faltando (%1$s %2$s) é inferior ao valor do reembolso solicitado (%3$s %2$s)."

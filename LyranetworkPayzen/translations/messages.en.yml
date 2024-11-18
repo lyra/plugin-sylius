@@ -89,6 +89,7 @@ sylius_payzen_plugin:
     prodfaq: "GOING INTO PRODUCTION: You want to know how to put your shop into production mode, please read chapters « Proceeding to test phase » and « Shifting the shop to production mode » in the documentation of the module."
   refund:
     error:
+      backoffice_action: "Please, consider making necessary changes in %1$s Back Office."
       private_key: "Impossible to make online refund for the order: password is not configured."
 "Refund of split payment is not supported. Please, consider making necessary changes in %1$s Back Office.": "Refund of split payment is not supported. Please, consider making necessary changes in %1$s Back Office."
 "Remaining amount (%1$s %2$s) is less than requested refund amount (%3$s %2$s).": "Remaining amount (%1$s %2$s) is less than requested refund amount (%3$s %2$s)."

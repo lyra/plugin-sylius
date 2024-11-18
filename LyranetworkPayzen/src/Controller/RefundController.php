@@ -151,9 +151,8 @@ final class RefundController
             'Sylius'
         );
 
-        $amount = $order->getTotal();
-        $currency = PayzenApi::findCurrencyByAlphaCode($order->getCurrencyCode());
-        $amount = $currency->convertAmountToFloat($amount);
+        $currency = PayzenApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
+        $amount = $currency->convertAmountToFloat($payment->getAmount());
 
         $refundApi->refund($payzenOrderInfo, $amount);
 
