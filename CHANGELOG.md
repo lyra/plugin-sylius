@@ -1,3 +1,7 @@
+# 1.2.1, 2024-12-10:
+- Bug fix: Fix error related to amount inconsistency on payment validation.
+- Improve custom theme management for plugin configuration page.
+
 # 1.2.0, 2024-11-18:
 - Manage extended IPN calls (transaction validation, refund and cancellation).
 - Use state machine to update order checkout status.

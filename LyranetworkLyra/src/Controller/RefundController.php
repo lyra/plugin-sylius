@@ -12,8 +12,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Lyra\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Lyranetwork\Lyra\Sdk\Tools as LyraTools;
-use Lyranetwork\Lyra\Service\ConfigService;
+use Lyranetwork\Lyra\Service\RefundService;
 use Sylius\Component\Core\Repository\PaymentRepositoryInterface;
 use Sylius\Component\Payment\PaymentTransitions;
 use Sylius\Component\Core\Model\PaymentInterface;
@@ -25,12 +24,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-use Lyranetwork\Lyra\Sdk\RefundProcessor as LyraRefundProcessor;
-use Lyranetwork\Lyra\Sdk\RestData;
 use Lyranetwork\Lyra\Sdk\Refund\OrderInfo as LyraOrderInfo;
-use Lyranetwork\Lyra\Sdk\Refund\Api as LyraRefund;
 use Lyranetwork\Lyra\Sdk\Form\Api as LyraApi;
-use Lyranetwork\Lyra\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 
 use Psr\Log\LoggerInterface;
 
@@ -64,45 +59,31 @@ final class RefundController
     private $requestStack;
 
     /**
-     * @var RestData
-     */
-    private $restData;
-
-    /**
-     * @var ConfigService
-     */
-    private $configService;
-
-    /**
-     * @var LyraRefundProcessor
-     */
-    private $refundProcessor;
-
-    /**
      * @var FactoryInterface
      */
     private $stateMachineFactory;
+
+    /**
+     * @var RefundService
+     */
+    private $refundService;
 
     public function __construct(
         PaymentRepositoryInterface $paymentRepository,
         LoggerInterface $logger,
         OrderService $orderService,
-        ConfigService $configService,
+        RefundService $refundService,
         EntityManagerInterface $paymentEntityManager,
         RequestStack $requestStack,
-        RestData $restData,
-        LyraRefundProcessor $refundProcessor,
         FactoryInterface $stateMachineFactory
     )
     {
         $this->paymentRepository = $paymentRepository;
         $this->logger = $logger;
         $this->orderService = $orderService;
-        $this->configService = $configService;
+        $this->refundService = $refundService;
         $this->paymentEntityManager = $paymentEntityManager;
         $this->requestStack = $requestStack;
-        $this->restData = $restData;
-        $this->refundProcessor = $refundProcessor;
         $this->stateMachineFactory = $stateMachineFactory;
     }
 
@@ -133,28 +114,12 @@ final class RefundController
         $orderId = $request->get('orderId');
         $order = $this->orderService->get($orderId);
 
-        $lyraOrderInfo = new LyraOrderInfo();
-        $lyraOrderInfo->setOrderRemoteId($order->getNumber());
-        $lyraOrderInfo->setOrderId($order->getNumber());
-        $lyraOrderInfo->setOrderReference($order->getNumber());
-        $lyraOrderInfo->setOrderCurrencyIsoCode($order->getCurrencyCode());
-        $lyraOrderInfo->setOrderCurrencySign($order->getCurrencyCode());
-        $lyraOrderInfo->setOrderUserInfo($this->getUserInfo());
-
         $paymentMethodCode = $paymentMethod->getCode();
-
-        $refundApi = new LyraRefund(
-            $this->refundProcessor->getProcessor(),
-            $this->restData->getPrivateKey($paymentMethodCode),
-            LyraTools::getDefault('REST_URL'),
-            $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'site_id', $paymentMethodCode),
-            'Sylius'
-        );
 
         $currency = LyraApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
         $amount = $currency->convertAmountToFloat($payment->getAmount());
 
-        $refundApi->refund($lyraOrderInfo, $amount);
+        $this->refundService->refund($paymentMethodCode, $order, $this->getUserInfo(), $amount);
 
         return $this->redirectToReferer($request);
     }
