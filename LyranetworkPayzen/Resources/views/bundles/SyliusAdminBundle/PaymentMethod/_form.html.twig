@@ -8,6 +8,7 @@
  #}
 
 {% import '@SyliusUi/Macro/flags.html.twig' as flags %}
+{% form_theme form '@LyranetworkPayzenPlugin/_payzenTheme.html.twig' %}
 
 {% set payzenGateway = constant('Lyranetwork\\Payzen\\Payum\\SyliusPaymentGatewayFactory::FACTORY_NAME') %}
 

@@ -21,3 +21,9 @@ payzen_sylius_account_saved_cards:
   methods: [POST, GET]
   defaults:
     _controller: 'Lyranetwork\Payzen\Controller\CardController::savedCardsAction'
+
+payzen_rest_form_token:
+  path: /payzen/rest/formtoken
+  methods: [POST]
+  defaults:
+    _controller: 'Lyranetwork\Payzen\Controller\OrderController::getFormToken'

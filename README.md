@@ -60,7 +60,6 @@ composer dump-autoload
 SyliusAdminBundle\PaymentMethod\_form.html.twig
 SyliusAdminBundle\OrderShow\_payment.html.twig
 SyliusShopBundle\Checkout\SelectPayment\_choice.html.twig
-SyliusUiBundle\Form\theme.html.twig
 ```
 - If not, just copy them with the following command :
 
@@ -133,7 +132,6 @@ composer dump-autoload
 SyliusAdminBundle\PaymentMethod\_form.html.twig
 SyliusAdminBundle\OrderShow\_payment.html.twig
 SyliusShopBundle\Checkout\SelectPayment\_choice.html.twig
-SyliusUiBundle\Form\theme.html.twig
 ```
 - If not, just copy them with the following command :
 
@@ -226,7 +224,6 @@ services:
 SyliusAdminBundle\PaymentMethod\_form.html.twig
 SyliusAdminBundle\OrderShow\_payment.html.twig
 SyliusShopBundle\Checkout\SelectPayment\_choice.html.twig
-SyliusUiBundle\Form\theme.html.twig
 ```
 
 - Open command line in Sylius root directory, and run the following commands:

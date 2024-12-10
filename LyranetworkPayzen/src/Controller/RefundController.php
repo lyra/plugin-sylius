@@ -12,8 +12,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Payzen\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Lyranetwork\Payzen\Sdk\Tools as PayzenTools;
-use Lyranetwork\Payzen\Service\ConfigService;
+use Lyranetwork\Payzen\Service\RefundService;
 use Sylius\Component\Core\Repository\PaymentRepositoryInterface;
 use Sylius\Component\Payment\PaymentTransitions;
 use Sylius\Component\Core\Model\PaymentInterface;
@@ -25,12 +24,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-use Lyranetwork\Payzen\Sdk\RefundProcessor as PayzenRefundProcessor;
-use Lyranetwork\Payzen\Sdk\RestData;
 use Lyranetwork\Payzen\Sdk\Refund\OrderInfo as PayzenOrderInfo;
-use Lyranetwork\Payzen\Sdk\Refund\Api as PayzenRefund;
 use Lyranetwork\Payzen\Sdk\Form\Api as PayzenApi;
-use Lyranetwork\Payzen\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 
 use Psr\Log\LoggerInterface;
 
@@ -64,45 +59,31 @@ final class RefundController
     private $requestStack;
 
     /**
-     * @var RestData
-     */
-    private $restData;
-
-    /**
-     * @var ConfigService
-     */
-    private $configService;
-
-    /**
-     * @var PayzenRefundProcessor
-     */
-    private $refundProcessor;
-
-    /**
      * @var FactoryInterface
      */
     private $stateMachineFactory;
+
+    /**
+     * @var RefundService
+     */
+    private $refundService;
 
     public function __construct(
         PaymentRepositoryInterface $paymentRepository,
         LoggerInterface $logger,
         OrderService $orderService,
-        ConfigService $configService,
+        RefundService $refundService,
         EntityManagerInterface $paymentEntityManager,
         RequestStack $requestStack,
-        RestData $restData,
-        PayzenRefundProcessor $refundProcessor,
         FactoryInterface $stateMachineFactory
     )
     {
         $this->paymentRepository = $paymentRepository;
         $this->logger = $logger;
         $this->orderService = $orderService;
-        $this->configService = $configService;
+        $this->refundService = $refundService;
         $this->paymentEntityManager = $paymentEntityManager;
         $this->requestStack = $requestStack;
-        $this->restData = $restData;
-        $this->refundProcessor = $refundProcessor;
         $this->stateMachineFactory = $stateMachineFactory;
     }
 
@@ -133,28 +114,12 @@ final class RefundController
         $orderId = $request->get('orderId');
         $order = $this->orderService->get($orderId);
 
-        $payzenOrderInfo = new PayzenOrderInfo();
-        $payzenOrderInfo->setOrderRemoteId($order->getNumber());
-        $payzenOrderInfo->setOrderId($order->getNumber());
-        $payzenOrderInfo->setOrderReference($order->getNumber());
-        $payzenOrderInfo->setOrderCurrencyIsoCode($order->getCurrencyCode());
-        $payzenOrderInfo->setOrderCurrencySign($order->getCurrencyCode());
-        $payzenOrderInfo->setOrderUserInfo($this->getUserInfo());
-
         $paymentMethodCode = $paymentMethod->getCode();
-
-        $refundApi = new PayzenRefund(
-            $this->refundProcessor->getProcessor(),
-            $this->restData->getPrivateKey($paymentMethodCode),
-            PayzenTools::getDefault('REST_URL'),
-            $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'site_id', $paymentMethodCode),
-            'Sylius'
-        );
 
         $currency = PayzenApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
         $amount = $currency->convertAmountToFloat($payment->getAmount());
 
-        $refundApi->refund($payzenOrderInfo, $amount);
+        $this->refundService->refund($paymentMethodCode, $order, $this->getUserInfo(), $amount);
 
         return $this->redirectToReferer($request);
     }
