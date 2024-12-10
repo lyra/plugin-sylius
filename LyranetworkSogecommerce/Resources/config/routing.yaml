@@ -21,3 +21,9 @@ sogecommerce_sylius_account_saved_cards:
   methods: [POST, GET]
   defaults:
     _controller: 'Lyranetwork\Sogecommerce\Controller\CardController::savedCardsAction'
+
+sogecommerce_rest_form_token:
+  path: /sogecommerce/rest/formtoken
+  methods: [POST]
+  defaults:
+    _controller: 'Lyranetwork\Sogecommerce\Controller\OrderController::getFormToken'

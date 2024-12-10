@@ -139,7 +139,7 @@ final class SyliusGatewayConfigurationType extends AbstractType
                 $this->PREFIX . 'config.smartform.mode_smartform_ext_without_logos' => 'MODE_SMARTFORM_EXT_WITHOUT_LOGOS'
             ],
             'help' => $this->PREFIX . 'ui.sogecommerce_card_data_entry_mode.helptext',
-            'data' => $config[self::$ADVANCED_FIELDS . 'card_data_entry_mode'] ?? 'MODE_SMARTFORM',
+            'data' => $config[self::$ADVANCED_FIELDS . 'card_data_entry_mode'] ?? 'MODE_SMARTFORM_EXT_WITH_LOGOS',
             'required' => false
         ])
         ->add(self::$ADVANCED_FIELDS . 'rest_popin_mode', CheckboxType::class, [

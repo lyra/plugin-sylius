@@ -87,11 +87,25 @@
                 if (sogecommerceCheckBox.is(":checked")) {
                     event.preventDefault();
                     paymentForm.removeClass('loading');
-                    if (popin) {
-                        KR.openPopin();
-                    } else {
-                        KR.openSelectedPaymentMethod();
-                    }
+
+                    // Refresh form token.
+                    jQuery.ajax({
+                        method: 'POST',
+                        url: '{{ path("sogecommerce_rest_form_token") }}',
+                        data: { 'orderIdDB': '{{ order.id }}', "instanceCode": '{{ methodCode }}' },
+                        success: function(data) {
+                            KR.setFormConfig({
+                                formToken: data.formToken
+                            }).then(function(v) {
+                                KR = v.KR;
+                                if (popin) {
+                                    KR.openPopin();
+                                } else {
+                                    KR.openSelectedPaymentMethod();
+                                }
+                            })
+                        }
+                    });
                 }
             }
 

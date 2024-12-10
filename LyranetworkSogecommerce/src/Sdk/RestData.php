@@ -20,6 +20,7 @@ use Lyranetwork\Sogecommerce\Sdk\Form\Request as SogecommerceRequest;
 
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 use Sylius\Component\Resource\Repository\RepositoryInterface;
 
@@ -47,17 +48,24 @@ class RestData
      */
     private $customerRepository;
 
+    /**
+     * @var RequestStack
+     */
+    private $requestStack;
+
     public function __construct(
         ConfigService $configService,
         LoggerInterface $logger,
         RouterInterface $router,
-        RepositoryInterface $customerRepository
+        RepositoryInterface $customerRepository,
+        RequestStack $requestStack
     )
     {
         $this->configService = $configService;
         $this->logger = $logger;
         $this->router = $router;
         $this->customerRepository = $customerRepository;
+        $this->requestStack = $requestStack;
     }
 
     public function getPrivateKey($instanceCode)
@@ -88,12 +96,27 @@ class RestData
     {
         $params = $this->getRestApiFormTokenData($order, $instanceCode);
 
+        $lastTokenData = $this->requestStack->getSession()->get('lastTokenData');
+        $lastToken = $this->requestStack->getSession()->get('lastToken');
+
+        $tokenData = base64_encode(serialize($params));
+        if ($lastToken && $lastTokenData && ($lastTokenData === $tokenData)) {
+            $this->logger->info("Cart data did not change since last payment attempt, use last created token for order #{$order->getNumber()}");
+
+            return $lastToken;
+        }
+
         $this->logger->info("Creating form token for order #{$order->getNumber()} with parameters: {$params}");
 
         try {
             $metadata = "order #{$order->getNumber()}";
 
-            return $this->createFormToken($params, $metadata, $instanceCode);
+            $token = $this->createFormToken($params, $metadata, $instanceCode);
+
+            $this->requestStack->getSession()->set('lastTokenData', $tokenData);
+            $this->requestStack->getSession()->set('lastToken', $token);
+
+            return $token;
         } catch (\Exception $e) {
             $this->logger->error($e->getMessage());
 
