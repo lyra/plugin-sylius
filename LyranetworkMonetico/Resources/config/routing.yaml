@@ -21,3 +21,9 @@ monetico_sylius_account_saved_cards:
   methods: [POST, GET]
   defaults:
     _controller: 'Lyranetwork\Monetico\Controller\CardController::savedCardsAction'
+
+monetico_rest_form_token:
+  path: /monetico/rest/formtoken
+  methods: [POST]
+  defaults:
+    _controller: 'Lyranetwork\Monetico\Controller\OrderController::getFormToken'

@@ -8,6 +8,7 @@
  #}
 
 {% import '@SyliusUi/Macro/flags.html.twig' as flags %}
+{% form_theme form '@LyranetworkMoneticoPlugin/_moneticoTheme.html.twig' %}
 
 {% set moneticoGateway = constant('Lyranetwork\\Monetico\\Payum\\SyliusPaymentGatewayFactory::FACTORY_NAME') %}
 

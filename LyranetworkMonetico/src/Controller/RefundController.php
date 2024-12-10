@@ -12,8 +12,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Monetico\Controller;
 
 use Doctrine\ORM\EntityManagerInterface;
-use Lyranetwork\Monetico\Sdk\Tools as MoneticoTools;
-use Lyranetwork\Monetico\Service\ConfigService;
+use Lyranetwork\Monetico\Service\RefundService;
 use Sylius\Component\Core\Repository\PaymentRepositoryInterface;
 use Sylius\Component\Payment\PaymentTransitions;
 use Sylius\Component\Core\Model\PaymentInterface;
@@ -25,12 +24,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-use Lyranetwork\Monetico\Sdk\RefundProcessor as MoneticoRefundProcessor;
-use Lyranetwork\Monetico\Sdk\RestData;
 use Lyranetwork\Monetico\Sdk\Refund\OrderInfo as MoneticoOrderInfo;
-use Lyranetwork\Monetico\Sdk\Refund\Api as MoneticoRefund;
 use Lyranetwork\Monetico\Sdk\Form\Api as MoneticoApi;
-use Lyranetwork\Monetico\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 
 use Psr\Log\LoggerInterface;
 
@@ -64,45 +59,31 @@ final class RefundController
     private $requestStack;
 
     /**
-     * @var RestData
-     */
-    private $restData;
-
-    /**
-     * @var ConfigService
-     */
-    private $configService;
-
-    /**
-     * @var MoneticoRefundProcessor
-     */
-    private $refundProcessor;
-
-    /**
      * @var FactoryInterface
      */
     private $stateMachineFactory;
+
+    /**
+     * @var RefundService
+     */
+    private $refundService;
 
     public function __construct(
         PaymentRepositoryInterface $paymentRepository,
         LoggerInterface $logger,
         OrderService $orderService,
-        ConfigService $configService,
+        RefundService $refundService,
         EntityManagerInterface $paymentEntityManager,
         RequestStack $requestStack,
-        RestData $restData,
-        MoneticoRefundProcessor $refundProcessor,
         FactoryInterface $stateMachineFactory
     )
     {
         $this->paymentRepository = $paymentRepository;
         $this->logger = $logger;
         $this->orderService = $orderService;
-        $this->configService = $configService;
+        $this->refundService = $refundService;
         $this->paymentEntityManager = $paymentEntityManager;
         $this->requestStack = $requestStack;
-        $this->restData = $restData;
-        $this->refundProcessor = $refundProcessor;
         $this->stateMachineFactory = $stateMachineFactory;
     }
 
@@ -133,28 +114,12 @@ final class RefundController
         $orderId = $request->get('orderId');
         $order = $this->orderService->get($orderId);
 
-        $moneticoOrderInfo = new MoneticoOrderInfo();
-        $moneticoOrderInfo->setOrderRemoteId($order->getNumber());
-        $moneticoOrderInfo->setOrderId($order->getNumber());
-        $moneticoOrderInfo->setOrderReference($order->getNumber());
-        $moneticoOrderInfo->setOrderCurrencyIsoCode($order->getCurrencyCode());
-        $moneticoOrderInfo->setOrderCurrencySign($order->getCurrencyCode());
-        $moneticoOrderInfo->setOrderUserInfo($this->getUserInfo());
-
         $paymentMethodCode = $paymentMethod->getCode();
-
-        $refundApi = new MoneticoRefund(
-            $this->refundProcessor->getProcessor(),
-            $this->restData->getPrivateKey($paymentMethodCode),
-            MoneticoTools::getDefault('REST_URL'),
-            $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'site_id', $paymentMethodCode),
-            'Sylius'
-        );
 
         $currency = MoneticoApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
         $amount = $currency->convertAmountToFloat($payment->getAmount());
 
-        $refundApi->refund($moneticoOrderInfo, $amount);
+        $this->refundService->refund($paymentMethodCode, $order, $this->getUserInfo(), $amount);
 
         return $this->redirectToReferer($request);
     }

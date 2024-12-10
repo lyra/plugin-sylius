@@ -49,11 +49,18 @@
             <argument type="service" id="logger" />
         </service>
 
+        <service id="Lyranetwork\Monetico\Service\RefundService">
+            <argument type="service" id="Lyranetwork\Monetico\Sdk\RestData" />
+            <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
+            <argument type="service" id="Lyranetwork\Monetico\Sdk\RefundProcessor" />
+        </service>
+
         <service id="Lyranetwork\Monetico\Sdk\RestData">
             <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
             <argument type="service" id="logger" />
             <argument type="service" id="router" />
             <argument type="service" id="sylius.repository.customer" />
+            <argument type="service" id="request_stack" />
         </service>
 
         <service id="Lyranetwork\Monetico\Sdk\RefundProcessor" public="true">
@@ -100,11 +107,9 @@
             <argument type="service" id="sylius.repository.payment" />
             <argument type="service" id="logger" />
             <argument type="service" id="Lyranetwork\Monetico\Service\OrderService" />
-            <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
+            <argument type="service" id="Lyranetwork\Monetico\Service\RefundService" />
             <argument type="service" id="sylius.manager.payment" />
             <argument type="service" id="request_stack" />
-            <argument type="service" id="Lyranetwork\Monetico\Sdk\RestData" />
-            <argument type="service" id="Lyranetwork\Monetico\Sdk\RefundProcessor" />
             <argument key="$stateMachineFactory" type="service" id="sm.factory" />
         </service>
 
@@ -113,6 +118,7 @@
             <argument type="service" id="Lyranetwork\Monetico\Sdk\RestData" />
             <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
             <argument type="service" id="Lyranetwork\Monetico\Service\OrderService" />
+            <argument type="service" id="Lyranetwork\Monetico\Service\RefundService" />
             <argument type="service" id="Lyranetwork\Monetico\Repository\PaymentMethodRepositoryInterface" />
             <argument type="service" id="Sylius\Calendar\Provider\DateTimeProviderInterface" />
             <argument type="service" id="translator" />
