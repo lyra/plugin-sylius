@@ -13,6 +13,7 @@ namespace Lyranetwork\Lyra\Controller;
 
 use Doctrine\Persistence\ObjectManager;
 use Lyranetwork\Lyra\Sdk\Tools;
+use Lyranetwork\Lyra\Service\RefundService;
 use Sylius\Bundle\OrderBundle\Controller\OrderController as BaseOrderController;
 use Sylius\Bundle\ResourceBundle\Controller\AuthorizationCheckerInterface;
 use Sylius\Bundle\ResourceBundle\Controller\EventDispatcherInterface;
@@ -51,6 +52,7 @@ use Psr\Log\LoggerInterface;
 
 use Lyranetwork\Lyra\Sdk\RestData;
 use Lyranetwork\Lyra\Sdk\Form\Response as LyraResponse;
+use Lyranetwork\Lyra\Sdk\Form\Api as LyraApi;
 use Lyranetwork\Lyra\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 use Lyranetwork\Lyra\Service\ConfigService;
 use Lyranetwork\Lyra\Service\OrderService;
@@ -78,6 +80,11 @@ final class OrderController extends BaseOrderController
      * @var OrderService
      */
     private $orderService;
+
+    /**
+     * @var RefundService
+     */
+    private $refundService;
 
     /**
      * @var PaymentMethodRepositoryInterface
@@ -121,6 +128,7 @@ final class OrderController extends BaseOrderController
         RestData $restData,
         ConfigService $configService,
         OrderService $orderService,
+        RefundService $refundService,
         PaymentMethodRepositoryInterface $paymentMethodRepository,
         DateTimeProviderInterface $dateTimeProvider,
         TranslatorInterface $translator,
@@ -149,6 +157,7 @@ final class OrderController extends BaseOrderController
         $this->restData = $restData;
         $this->configService = $configService;
         $this->orderService = $orderService;
+        $this->refundService = $refundService;
         $this->paymentMethodRepository = $paymentMethodRepository;
         $this->dateTimeProvider = $dateTimeProvider;
         $this->translator = $translator;
@@ -263,10 +272,6 @@ final class OrderController extends BaseOrderController
             $redirect = $this->redirectToRoute('sylius_shop_order_thank_you', ['_locale' => $order->getLocaleCode()]);
         }
 
-        if ($this->configService->get(GatewayConfiguration::$REST_FIELDS . 'mode', $instanceCode) === 'TEST' && Tools::$pluginFeatures['prodfaq']) {
-            $request->getSession()->getFlashBag()->add('info', $this->translator->trans('sylius_lyra_plugin.payment.prodfaq', locale: $order->getLocaleCode()));
-        }
-
         $lastPayment->setMethod($this->paymentMethodRepository->findByGatewayNameAndCode(SyliusPaymentGatewayFactory::FACTORY_NAME, $instanceCode));
         $details = array(
             'lyra_factory_name' => SyliusPaymentGatewayFactory::FACTORY_NAME,
@@ -281,10 +286,19 @@ final class OrderController extends BaseOrderController
 
         $request->getSession()->set('sylius_order_id', $order->getId());
         $amount = $lastPayment->getAmount();
+        $orderAmount = $order->getTotal();
 
-        if ($lyraResponse->get('vads_amount') < $amount) {
+        if ($lyraResponse->get('vads_amount') != $amount) {
             if ($lyraResponse->get('operation_type') === 'DEBIT') {
-                $lastPayment->setAmount($lyraResponse->get('vads_amount'));
+                if ($lyraResponse->get('vads_amount') > $amount) {
+                    $currency = LyraApi::findCurrencyByAlphaCode($lastPayment->getCurrencyCode());
+                    $amountToRefund = $currency->convertAmountToFloat($lyraResponse->get('vads_amount') - $amount);
+
+                    $this->refundService->refund($instanceCode, $order, "", $amountToRefund);
+                    $request->getSession()->getFlashBag()->clear();
+                } else {
+                    $lastPayment->setAmount($lyraResponse->get('vads_amount'));
+                }
 
                 $this->eventDispatcher->dispatchPostEvent(ResourceActions::UPDATE, $configuration, $lastPayment);
             } else {
@@ -306,7 +320,7 @@ final class OrderController extends BaseOrderController
 
         $msg = "";
         $oldStatus = $lastPayment->getState();
-        $newStatus = $this->getNewStatus($lyraResponse, $oldStatus, $amount);
+        $newStatus = $this->getNewStatus($lyraResponse, $oldStatus, $amount, $orderAmount);
 
         if ($oldStatus !== $newStatus['payment'] || $order->getPaymentState() !== $newStatus['orderPayment']) {
             $lastPayment = $order->getLastPayment();
@@ -406,10 +420,33 @@ final class OrderController extends BaseOrderController
 
         $this->logger->info("Return URL process end for order #$orderId.");
 
+        if ($this->configService->get(GatewayConfiguration::$REST_FIELDS . 'mode', $instanceCode) === 'TEST' && Tools::$pluginFeatures['prodfaq']) {
+            $request->getSession()->getFlashBag()->add('info', $this->translator->trans('sylius_lyra_plugin.payment.prodfaq', locale: $order->getLocaleCode()));
+        }
+
         return new RedirectResponse($redirect->getTargetUrl());
     }
 
-    private function getNewStatus($lyraResponse, $oldStatus, $amount): array
+    public function getFormToken(Request $request)
+    {
+        $configuration = $this->requestConfigurationFactory->create($this->metadata, $request);
+        $this->isGrantedOr403($configuration, ResourceActions::UPDATE);
+
+        $instanceCode = $request->get('instanceCode');
+        $orderIdDB = $request->get('orderIdDB');
+        $order = $this->orderService->get($orderIdDB);
+
+        $orderStateMachine = $this->stateMachineFactory->get($order, OrderTransitions::GRAPH);
+        if ($orderStateMachine->can('create')) {
+            $orderStateMachine->apply('create');
+        }
+
+        $formToken = $this->restData->getToken($order, $instanceCode);
+
+        return $this->json(['formToken' => $formToken]);
+    }
+
+    private function getNewStatus($lyraResponse, $oldStatus, $amount, $orderAmount): array
     {
         $newStatus = array('orderPayment' => "awaiting_payment");
         if ($lyraResponse->isPendingPayment()) {
@@ -422,13 +459,23 @@ final class OrderController extends BaseOrderController
             $newStatus['paymentTransition'] = 'complete';
 
             if ($lyraResponse->get('vads_amount') < $amount) {
-                $newStatus['orderPayment'] = 'partially_refunded';
-                $newStatus['orderPaymentTransition'] = 'partially_refund';
-            } else if ($lyraResponse->get('operation_type') === 'CREDIT') {
-                $newStatus['orderPayment'] = 'refunded';
-                $newStatus['payment'] = 'refunded';
-                $newStatus['orderPaymentTransition'] = 'refund';
-                $newStatus['paymentTransition'] = 'refund';
+                if ($oldStatus === 'new') {
+                    $newStatus['orderPayment'] = 'partially_paid';
+                    $newStatus['orderPaymentTransition'] = 'partially_pay';
+                } else {
+                    $newStatus['orderPayment'] = 'partially_refunded';
+                    $newStatus['orderPaymentTransition'] = 'partially_refund';
+                }
+            } else if ($lyraResponse->get('vads_amount') === $amount) {
+                if ($lyraResponse->get('operation_type') === 'CREDIT') {
+                    $newStatus['orderPayment'] = 'refunded';
+                    $newStatus['payment'] = 'refunded';
+                    $newStatus['orderPaymentTransition'] = 'refund';
+                    $newStatus['paymentTransition'] = 'refund';
+                } else if ($lyraResponse->get('vads_amount') < $orderAmount) {
+                    $newStatus['orderPayment'] = 'partially_paid';
+                    $newStatus['orderPaymentTransition'] = 'partially_pay';
+                }
             }
         } else {
             if ($lyraResponse->isCancelledPayment()) {
