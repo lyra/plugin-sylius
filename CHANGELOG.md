@@ -1,3 +1,6 @@
+# 1.3.0, 2024-12-17:
+- Plugin headless mode integration.
+
 # 1.2.1, 2024-12-10:
 - Bug fix: Fix error related to amount inconsistency on payment validation.
 - Improve custom theme management for plugin configuration page.

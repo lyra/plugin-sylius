@@ -122,6 +122,8 @@
             <argument type="service" id="Lyranetwork\Sogecommerce\Repository\PaymentMethodRepositoryInterface" />
             <argument type="service" id="Sylius\Calendar\Provider\DateTimeProviderInterface" />
             <argument type="service" id="translator" />
+            <argument type="service" id="sylius.context.locale" />
+            <argument type="service" id="router" />
             <argument key="$stateMachineFactory" type="service" id="sm.factory" />
         </service>
     </services>

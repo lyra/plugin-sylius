@@ -27,3 +27,9 @@ sogecommerce_rest_form_token:
   methods: [POST]
   defaults:
     _controller: 'Lyranetwork\Sogecommerce\Controller\OrderController::getFormToken'
+
+sogecommerce_headless_return_url:
+  path: /sogecommerce/rest/headless/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Sogecommerce\Controller\OrderController::paymentResponseAction'
