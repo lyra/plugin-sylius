@@ -27,3 +27,9 @@ monetico_rest_form_token:
   methods: [POST]
   defaults:
     _controller: 'Lyranetwork\Monetico\Controller\OrderController::getFormToken'
+
+monetico_headless_return_url:
+  path: /monetico/rest/headless/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Monetico\Controller\OrderController::paymentResponseAction'

@@ -78,4 +78,9 @@ class OrderService
             $this->logger->error($e->getMessage());
         }
     }
+
+    public function getByTokenValue($tokenValue)
+    {
+        return $this->orderRepository->findOneByTokenValue($tokenValue);
+    }
 }
