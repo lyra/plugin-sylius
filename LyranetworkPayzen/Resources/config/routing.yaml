@@ -27,3 +27,9 @@ payzen_rest_form_token:
   methods: [POST]
   defaults:
     _controller: 'Lyranetwork\Payzen\Controller\OrderController::getFormToken'
+
+payzen_headless_return_url:
+  path: /payzen/rest/headless/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Payzen\Controller\OrderController::paymentResponseAction'
