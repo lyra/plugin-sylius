@@ -27,3 +27,9 @@ lyra_rest_form_token:
   methods: [POST]
   defaults:
     _controller: 'Lyranetwork\Lyra\Controller\OrderController::getFormToken'
+
+lyra_headless_return_url:
+  path: /lyra/rest/headless/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Lyra\Controller\OrderController::paymentResponseAction'
