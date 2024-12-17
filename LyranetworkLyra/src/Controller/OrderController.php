@@ -39,6 +39,9 @@ use Sylius\Component\Order\OrderTransitions;
 use Sylius\Component\Payment\PaymentTransitions;
 use Sylius\Calendar\Provider\DateTimeProviderInterface;
 use Sylius\Component\Core\OrderCheckoutStates;
+use Sylius\Component\Locale\Context\LocaleContextInterface;
+use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\RouterInterface;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -106,6 +109,16 @@ final class OrderController extends BaseOrderController
      */
     private $stateMachineFactory;
 
+    /**
+     * @var LocaleContextInterface
+     */
+    private  $localeContext;
+
+    /**
+     * @var RouterInterface
+     */
+    private $router;
+
     public function __construct(
         MetadataInterface $metadata,
         RequestConfigurationFactoryInterface $requestConfigurationFactory,
@@ -132,6 +145,8 @@ final class OrderController extends BaseOrderController
         PaymentMethodRepositoryInterface $paymentMethodRepository,
         DateTimeProviderInterface $dateTimeProvider,
         TranslatorInterface $translator,
+        LocaleContextInterface $localeContext,
+        RouterInterface $router,
         \SM\Factory\FactoryInterface $stateMachineFactory
     ) {
         parent::__construct(
@@ -162,11 +177,14 @@ final class OrderController extends BaseOrderController
         $this->dateTimeProvider = $dateTimeProvider;
         $this->translator = $translator;
         $this->stateMachineFactory = $stateMachineFactory;
+        $this->localeContext = $localeContext;
+        $this->router = $router;
     }
 
     public function paymentResponseAction(Request $request)
     {
         $fromServer = (! empty($request->get("kr-hash-key"))) && ($request->get("kr-hash-key") !== "sha256_hmac");
+        $headlessMode = $request->getRequestUri() === "/lyra/rest/headless/return";
 
         $configuration = $this->requestConfigurationFactory->create($this->metadata, $request);
         $this->isGrantedOr403($configuration, ResourceActions::UPDATE);
@@ -176,6 +194,8 @@ final class OrderController extends BaseOrderController
             $this->logger->error('Invalid response received. Content: ' . json_encode($request));
             if ($fromServer) {
                 die('<span style="display:none">KO-Invalid IPN request received.' . "\n" . '</span>');
+            } else if ($headlessMode) {
+                return $this->json(["errorCode" => "500", "errorMessage" => "Invalid response received."], 500);
             } else {
                 $redirect = $this->redirectToRoute('sylius_shop_checkout_select_payment', ['_locale' => $request->getDefaultLocale()]);
 
@@ -188,6 +208,8 @@ final class OrderController extends BaseOrderController
             $this->logger->error('Invalid response received. Content of kr-answer: ' . json_encode($request->get('kr-answer')));
             if ($fromServer) {
                 die('<span style="display:none">KO-Invalid IPN request received.' . "\n" . '</span>');
+            } else if ($headlessMode) {
+                return $this->json(["errorCode" => "500", "errorMessage" => "Invalid response received."], 500);
             } else {
                 $redirect = $this->redirectToRoute('sylius_shop_checkout_select_payment', ['_locale' => $request->getDefaultLocale()]);
 
@@ -214,6 +236,8 @@ final class OrderController extends BaseOrderController
             $this->logger->error("Order #$orderId not found in database.");
             if ($fromServer) {
                 die($lyraResponse->getOutputForGateway('order_not_found'));
+            } else if ($headlessMode) {
+                return $this->json(["errorCode" => "500", "errorMessage" => "Order #$orderId was not found in database."], 500);
             } else {
                 $redirect = $this->redirectToRoute('sylius_shop_checkout_select_payment', ['_locale' => $request->getDefaultLocale()]);
 
@@ -228,6 +252,8 @@ final class OrderController extends BaseOrderController
             $this->logger->error('Signature algorithm selected in module settings must be the same as one selected in Lyra Expert Back Office.');
             if ($fromServer) {
                 die($lyraResponse->getOutputForGateway('auth_fail'));
+            } else if ($headlessMode) {
+                return $this->json(["errorCode" => "500", "errorMessage" => $lyraResponse->getOutputForGateway('auth_fail')], 500);
             } else {
                 $request->getSession()->getFlashBag()->add('error', $this->translator->trans('sylius_lyra_plugin.payment.fatal', locale: $order->getLocaleCode()));
                 $redirect = $this->redirectToRoute('sylius_shop_checkout_select_payment', ['_locale' => $order->getLocaleCode()]);
@@ -238,6 +264,8 @@ final class OrderController extends BaseOrderController
 
         if ($fromServer) {
             $this->logger->info("Server call process starts for order #$orderId.");
+        } else if ($headlessMode) {
+            $this->logger->info("Headless return call process starts for order #$orderId.");
         } else {
             $this->logger->info("Return call process starts for order #$orderId.");
         }
@@ -406,6 +434,10 @@ final class OrderController extends BaseOrderController
             if ($fromServer) {
                 $this->logger->info("IPN URL process end for order #$orderId.");
                 die($lyraResponse->getOutputForGateway('payment_ok_already_done'));
+            } else if ($headlessMode) {
+                $this->logger->info("Headless URL process end for order #$orderId.");
+
+                return $this->json(["orderId" => $orderId, "orderPaymentState" => $newStatus["payment"]], 200);
             }
         }
 
@@ -416,6 +448,10 @@ final class OrderController extends BaseOrderController
             $this->logger->info("IPN URL process end for order #$orderId.");
 
             die($lyraResponse->getOutputForGateway($msg));
+        } else if ($headlessMode) {
+            $this->logger->info("Headless URL process end for order #$orderId.");
+
+            return $this->json(["orderId" => $orderId, "orderPaymentState" => $newStatus["payment"]], 200);
         }
 
         $this->logger->info("Return URL process end for order #$orderId.");
@@ -433,8 +469,25 @@ final class OrderController extends BaseOrderController
         $this->isGrantedOr403($configuration, ResourceActions::UPDATE);
 
         $instanceCode = $request->get('instanceCode');
+        $tokenValue = $request->get('tokenValue');
         $orderIdDB = $request->get('orderIdDB');
-        $order = $this->orderService->get($orderIdDB);
+        if (! $instanceCode || (! $tokenValue && ! $orderIdDB)) {
+            return $this->json(['errorMessage' => 'Invalid request received.', 'errorCode' => '500'], 500);
+        }
+
+        $msg = '';
+        $order = null;
+        if ($tokenValue && ! $order = $this->orderService->getByTokenValue($tokenValue)) {
+            $msg = "Order not found in database for token value {$tokenValue} and instance [{$instanceCode}].";
+        }
+
+        if (! $order && $orderIdDB && ! $order = $this->orderService->get($orderIdDB)) {
+            $msg = "Order not found in database for orderId {$orderIdDB} and instance [{$instanceCode}].";
+        }
+
+        if (! $order) {
+            return $this->json(['errorMessage' => $msg, 'errorCode' => '500'], 500);
+        }
 
         $orderStateMachine = $this->stateMachineFactory->get($order, OrderTransitions::GRAPH);
         if ($orderStateMachine->can('create')) {
@@ -442,8 +495,34 @@ final class OrderController extends BaseOrderController
         }
 
         $formToken = $this->restData->getToken($order, $instanceCode);
+        $restPublicKey = $this->restData->getPublicKey($instanceCode);
+        $popin = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_popin_mode', $instanceCode);
+        $theme = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_theme', $instanceCode);
+        $compact = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_compact_mode', $instanceCode);
+        $language = substr($this->localeContext->getLocaleCode(), 0, 2);
+        $returnUrl = $this->router->generate('lyra_headless_return_url', [], UrlGenerator::ABSOLUTE_URL);
 
-        return $this->json(['formToken' => $formToken]);
+        $cardDataEntryMode = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'card_data_entry_mode', $instanceCode);
+        $formExpanded = ($cardDataEntryMode !== 'MODE_SMARTFORM');
+        $cardLogoHeader = ($cardDataEntryMode === 'MODE_SMARTFORM_EXT_WITHOUT_LOGOS');
+
+        $informations = [
+            'formToken' => $formToken,
+            'restPublicKey' => $restPublicKey,
+            'smartformConfig' => [
+                'theme' => $theme,
+                'popin' => $popin,
+                'compact' => $compact,
+                'form_expanded' => $formExpanded,
+                'card_logo_header' => $cardLogoHeader,
+                'language' => $language,
+                'url_success' => $returnUrl,
+                'url_refused' => $returnUrl,
+                'js_client_url' => Tools::getDefault('STATIC_URL')
+            ]
+        ];
+
+        return $this->json($informations);
     }
 
     private function getNewStatus($lyraResponse, $oldStatus, $amount, $orderAmount): array
