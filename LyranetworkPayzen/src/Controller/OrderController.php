@@ -494,6 +494,18 @@ final class OrderController extends BaseOrderController
             $orderStateMachine->apply('create');
         }
 
+        $orderCheckoutStateMachine = $this->stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH);
+        if ($orderCheckoutStateMachine->can('select_payment')) {
+            $orderCheckoutStateMachine->apply('select_payment');
+        }
+
+        if ($orderCheckoutStateMachine->can('complete')) {
+            $orderCheckoutStateMachine->apply('complete');
+        }
+
+        $this->eventDispatcher->dispatchPostEvent(ResourceActions::UPDATE, $configuration, $order);
+        $this->manager->flush();
+
         $formToken = $this->restData->getToken($order, $instanceCode);
         $restPublicKey = $this->restData->getPublicKey($instanceCode);
         $popin = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_popin_mode', $instanceCode);
@@ -501,7 +513,7 @@ final class OrderController extends BaseOrderController
         $compact = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_compact_mode', $instanceCode);
         $language = substr($this->localeContext->getLocaleCode(), 0, 2);
         $returnUrl = $this->router->generate('payzen_headless_return_url', [], UrlGenerator::ABSOLUTE_URL);
-
+        $redirectOnClose = $this->redirectToRoute('sylius_shop_order_show', ['tokenValue' => $order->getTokenValue(), '_locale' => $order->getLocaleCode()])->getTargetUrl();
         $cardDataEntryMode = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'card_data_entry_mode', $instanceCode);
         $formExpanded = ($cardDataEntryMode !== 'MODE_SMARTFORM');
         $cardLogoHeader = ($cardDataEntryMode === 'MODE_SMARTFORM_EXT_WITHOUT_LOGOS');
@@ -519,7 +531,8 @@ final class OrderController extends BaseOrderController
                 'url_success' => $returnUrl,
                 'url_refused' => $returnUrl,
                 'js_client_url' => Tools::getDefault('STATIC_URL')
-            ]
+            ],
+            'redirectOnClose' => $redirectOnClose
         ];
 
         return $this->json($informations);

@@ -94,6 +94,10 @@
                         url: '{{ path("payzen_rest_form_token") }}',
                         data: { 'orderIdDB': '{{ order.id }}', "instanceCode": '{{ methodCode }}' },
                         success: function(data) {
+                            KR.onPopinClosed(function(){
+                                document.location.href = data.redirectOnClose;
+                            });
+
                             KR.setFormConfig({
                                 formToken: data.formToken
                             }).then(function(v) {
