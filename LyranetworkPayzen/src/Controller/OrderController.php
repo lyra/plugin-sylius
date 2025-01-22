@@ -489,11 +489,6 @@ final class OrderController extends BaseOrderController
             return $this->json(['errorMessage' => $msg, 'errorCode' => '500'], 500);
         }
 
-        $orderStateMachine = $this->stateMachineFactory->get($order, OrderTransitions::GRAPH);
-        if ($orderStateMachine->can('create')) {
-            $orderStateMachine->apply('create');
-        }
-
         $orderCheckoutStateMachine = $this->stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH);
         if ($orderCheckoutStateMachine->can('select_payment')) {
             $orderCheckoutStateMachine->apply('select_payment');
@@ -501,6 +496,11 @@ final class OrderController extends BaseOrderController
 
         if ($orderCheckoutStateMachine->can('complete')) {
             $orderCheckoutStateMachine->apply('complete');
+        }
+
+        $orderStateMachine = $this->stateMachineFactory->get($order, OrderTransitions::GRAPH);
+        if ($orderStateMachine->can('create')) {
+            $orderStateMachine->apply('create');
         }
 
         $this->eventDispatcher->dispatchPostEvent(ResourceActions::UPDATE, $configuration, $order);
