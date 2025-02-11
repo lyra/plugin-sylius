@@ -48,6 +48,7 @@
     <div class="kr-smart-form" {{ single }}  {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
     {% if order is defined %}
         <script>
+            let redirectOnClose = "";
             function init() {
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
                 if (payzenCheckBox) {
@@ -77,6 +78,9 @@
                     smartform.show();
                 } else {
                     smartform.hide();
+                    if (redirectOnClose !== "") {
+                        document.location.href = redirectOnClose;
+                    }
                 }
             }
 
@@ -94,6 +98,8 @@
                         url: '{{ path("payzen_rest_form_token") }}',
                         data: { 'orderIdDB': '{{ order.id }}', "instanceCode": '{{ methodCode }}' },
                         success: function(data) {
+                            redirectOnClose = data.redirectOnClose;
+
                             KR.setFormConfig({
                                 formToken: data.formToken
                             }).then(function(v) {

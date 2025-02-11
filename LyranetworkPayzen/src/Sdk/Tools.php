@@ -28,7 +28,7 @@ class Tools
 
     private static $CMS_IDENTIFIER = 'Sylius_1.12.x';
     private static $SUPPORT_EMAIL = 'support@payzen.eu';
-    private static $PLUGIN_VERSION = '1.3.0';
+    private static $PLUGIN_VERSION = '1.3.1';
     private static $GATEWAY_VERSION = 'V2';
     private static $REST_URL = 'https://api.payzen.eu/api-payment/';
     private static $STATIC_URL = 'https://static.payzen.eu/static/';

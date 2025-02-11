@@ -1,7 +1,7 @@
 {
 	"name" : "lyranetwork/sylius-lyranetwork-plugin",
 	"description" : "This plugin enables you to setup the PayZen payment gateway on your Sylius website.",
-	"version" : "1.3.0",
+	"version" : "1.3.1",
 	"type" : "sylius-plugin",
 	"keywords" : [
 		"sylius",
