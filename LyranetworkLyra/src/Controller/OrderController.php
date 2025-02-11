@@ -13,7 +13,6 @@ namespace Lyranetwork\Lyra\Controller;
 
 use Doctrine\Persistence\ObjectManager;
 use Lyranetwork\Lyra\Sdk\Tools;
-use Lyranetwork\Lyra\Service\RefundService;
 use Sylius\Bundle\OrderBundle\Controller\OrderController as BaseOrderController;
 use Sylius\Bundle\ResourceBundle\Controller\AuthorizationCheckerInterface;
 use Sylius\Bundle\ResourceBundle\Controller\EventDispatcherInterface;
@@ -85,19 +84,9 @@ final class OrderController extends BaseOrderController
     private $orderService;
 
     /**
-     * @var RefundService
-     */
-    private $refundService;
-
-    /**
      * @var PaymentMethodRepositoryInterface
      */
     private $paymentMethodRepository;
-
-    /**
-     * @var DateTimeProviderInterface
-     */
-    private $dateTimeProvider;
 
     /**
      * @var TranslatorInterface
@@ -141,9 +130,7 @@ final class OrderController extends BaseOrderController
         RestData $restData,
         ConfigService $configService,
         OrderService $orderService,
-        RefundService $refundService,
         PaymentMethodRepositoryInterface $paymentMethodRepository,
-        DateTimeProviderInterface $dateTimeProvider,
         TranslatorInterface $translator,
         LocaleContextInterface $localeContext,
         RouterInterface $router,
@@ -172,9 +159,7 @@ final class OrderController extends BaseOrderController
         $this->restData = $restData;
         $this->configService = $configService;
         $this->orderService = $orderService;
-        $this->refundService = $refundService;
         $this->paymentMethodRepository = $paymentMethodRepository;
-        $this->dateTimeProvider = $dateTimeProvider;
         $this->translator = $translator;
         $this->stateMachineFactory = $stateMachineFactory;
         $this->localeContext = $localeContext;
@@ -272,17 +257,6 @@ final class OrderController extends BaseOrderController
 
         $orderPaymentStateMachine = $this->stateMachineFactory->get($order, OrderPaymentTransitions::GRAPH);
         $orderCheckoutStateMachine = $this->stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH);
-        $orderStateMachine = $this->stateMachineFactory->get($order, OrderTransitions::GRAPH);
-
-        if ($orderCheckoutStateMachine->can('select_payment')) {
-            $orderCheckoutStateMachine->apply('select_payment');
-        }
-
-        if ($orderStateMachine->can('create')) {
-            $orderStateMachine->apply('create');
-        }
-
-        $order->setNumber($orderId);
 
         $lastPayment = $order->getLastPayment();
         $payments = $order->getPayments();
@@ -300,31 +274,23 @@ final class OrderController extends BaseOrderController
             $redirect = $this->redirectToRoute('sylius_shop_order_thank_you', ['_locale' => $order->getLocaleCode()]);
         }
 
+        $request->getSession()->set('sylius_order_id', $order->getId());
+        $amount = $lastPayment->getAmount();
+
         $lastPayment->setMethod($this->paymentMethodRepository->findByGatewayNameAndCode(SyliusPaymentGatewayFactory::FACTORY_NAME, $instanceCode));
         $details = array(
             'lyra_factory_name' => SyliusPaymentGatewayFactory::FACTORY_NAME,
             'lyra_trans_id' => $lyraResponse->get('trans_id'),
             'lyra_trans_uuid' => $lyraResponse->get('trans_uuid'),
-            'lyra_card_brand' => $lyraResponse->get('vads_card_brand')
+            'lyra_card_brand' => $lyraResponse->get('vads_card_brand'),
+            'lyra_payment_initial_amount' => $amount
         );
 
-        if ($orderCheckoutStateMachine->can('complete')) {
-            $orderCheckoutStateMachine->apply('complete');
-        }
-
-        $request->getSession()->set('sylius_order_id', $order->getId());
-        $amount = $lastPayment->getAmount();
-        $orderAmount = $order->getTotal();
+        $initialAmount = $lastPayment->getDetails() && $lastPayment->getDetails()['lyra_payment_initial_amount'] ? $lastPayment->getDetails()['lyra_payment_initial_amount'] : $amount;
 
         if ($lyraResponse->get('vads_amount') != $amount) {
             if ($lyraResponse->get('operation_type') === 'DEBIT') {
-                if ($lyraResponse->get('vads_amount') > $amount) {
-                    $currency = LyraApi::findCurrencyByAlphaCode($lastPayment->getCurrencyCode());
-                    $amountToRefund = $currency->convertAmountToFloat($lyraResponse->get('vads_amount') - $amount);
-
-                    $this->refundService->refund($instanceCode, $order, "", $amountToRefund);
-                    $request->getSession()->getFlashBag()->clear();
-                } else {
+                if ($lyraResponse->get('vads_amount') < $amount) {
                     $lastPayment->setAmount($lyraResponse->get('vads_amount'));
                 }
 
@@ -348,7 +314,7 @@ final class OrderController extends BaseOrderController
 
         $msg = "";
         $oldStatus = $lastPayment->getState();
-        $newStatus = $this->getNewStatus($lyraResponse, $oldStatus, $amount, $orderAmount);
+        $newStatus = $this->getNewStatus($lyraResponse, $oldStatus, $amount, $initialAmount);
 
         if ($oldStatus !== $newStatus['payment'] || $order->getPaymentState() !== $newStatus['orderPayment']) {
             $lastPayment = $order->getLastPayment();
@@ -433,7 +399,9 @@ final class OrderController extends BaseOrderController
             $this->logger->info("Order #$orderId is already saved.");
             if ($fromServer) {
                 $this->logger->info("IPN URL process end for order #$orderId.");
-                die($lyraResponse->getOutputForGateway('payment_ok_already_done'));
+                $ipnMsg = $lyraResponse->getOutputForGateway('payment_ok_already_done');
+
+                die($ipnMsg);
             } else if ($headlessMode) {
                 $this->logger->info("Headless URL process end for order #$orderId.");
 
@@ -446,8 +414,9 @@ final class OrderController extends BaseOrderController
 
         if ($fromServer) {
             $this->logger->info("IPN URL process end for order #$orderId.");
+            $ipnMsg = $lyraResponse->getOutputForGateway($msg);
 
-            die($lyraResponse->getOutputForGateway($msg));
+            die($ipnMsg);
         } else if ($headlessMode) {
             $this->logger->info("Headless URL process end for order #$orderId.");
 
@@ -489,10 +458,22 @@ final class OrderController extends BaseOrderController
             return $this->json(['errorMessage' => $msg, 'errorCode' => '500'], 500);
         }
 
+        $orderCheckoutStateMachine = $this->stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH);
+        if ($orderCheckoutStateMachine->can('select_payment')) {
+            $orderCheckoutStateMachine->apply('select_payment');
+        }
+
+        if ($orderCheckoutStateMachine->can('complete')) {
+            $orderCheckoutStateMachine->apply('complete');
+        }
+
         $orderStateMachine = $this->stateMachineFactory->get($order, OrderTransitions::GRAPH);
         if ($orderStateMachine->can('create')) {
             $orderStateMachine->apply('create');
         }
+
+        $this->eventDispatcher->dispatchPostEvent(ResourceActions::UPDATE, $configuration, $order);
+        $this->manager->flush();
 
         $formToken = $this->restData->getToken($order, $instanceCode);
         $restPublicKey = $this->restData->getPublicKey($instanceCode);
@@ -501,7 +482,7 @@ final class OrderController extends BaseOrderController
         $compact = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_compact_mode', $instanceCode);
         $language = substr($this->localeContext->getLocaleCode(), 0, 2);
         $returnUrl = $this->router->generate('lyra_headless_return_url', [], UrlGenerator::ABSOLUTE_URL);
-
+        $redirectOnClose = $this->redirectToRoute('sylius_shop_order_show', ['tokenValue' => $order->getTokenValue(), '_locale' => $order->getLocaleCode()])->getTargetUrl();
         $cardDataEntryMode = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'card_data_entry_mode', $instanceCode);
         $formExpanded = ($cardDataEntryMode !== 'MODE_SMARTFORM');
         $cardLogoHeader = ($cardDataEntryMode === 'MODE_SMARTFORM_EXT_WITHOUT_LOGOS');
@@ -519,13 +500,14 @@ final class OrderController extends BaseOrderController
                 'url_success' => $returnUrl,
                 'url_refused' => $returnUrl,
                 'js_client_url' => Tools::getDefault('STATIC_URL')
-            ]
+            ],
+            'redirectOnClose' => $redirectOnClose
         ];
 
         return $this->json($informations);
     }
 
-    private function getNewStatus($lyraResponse, $oldStatus, $amount, $orderAmount): array
+    private function getNewStatus($lyraResponse, $oldStatus, $amount, $initialAmount): array
     {
         $newStatus = array('orderPayment' => "awaiting_payment");
         if ($lyraResponse->isPendingPayment()) {
@@ -545,16 +527,14 @@ final class OrderController extends BaseOrderController
                     $newStatus['orderPayment'] = 'partially_refunded';
                     $newStatus['orderPaymentTransition'] = 'partially_refund';
                 }
-            } else if ($lyraResponse->get('vads_amount') === $amount) {
-                if ($lyraResponse->get('operation_type') === 'CREDIT') {
-                    $newStatus['orderPayment'] = 'refunded';
-                    $newStatus['payment'] = 'refunded';
-                    $newStatus['orderPaymentTransition'] = 'refund';
-                    $newStatus['paymentTransition'] = 'refund';
-                } else if ($lyraResponse->get('vads_amount') < $orderAmount) {
-                    $newStatus['orderPayment'] = 'partially_paid';
-                    $newStatus['orderPaymentTransition'] = 'partially_pay';
-                }
+            } else if ($lyraResponse->get('vads_amount') === $amount && $lyraResponse->get('operation_type') === 'CREDIT') {
+                $newStatus['orderPayment'] = 'refunded';
+                $newStatus['payment'] = 'refunded';
+                $newStatus['orderPaymentTransition'] = 'refund';
+                $newStatus['paymentTransition'] = 'refund';
+            } else if ($lyraResponse->get('vads_amount') === $amount && $lyraResponse->get('vads_amount') < $initialAmount) {
+                $newStatus['orderPayment'] = 'partially_paid';
+                $newStatus['orderPaymentTransition'] = 'partially_pay';
             }
         } else {
             if ($lyraResponse->isCancelledPayment()) {
