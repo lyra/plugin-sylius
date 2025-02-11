@@ -118,9 +118,7 @@
             <argument type="service" id="Lyranetwork\Monetico\Sdk\RestData" />
             <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
             <argument type="service" id="Lyranetwork\Monetico\Service\OrderService" />
-            <argument type="service" id="Lyranetwork\Monetico\Service\RefundService" />
             <argument type="service" id="Lyranetwork\Monetico\Repository\PaymentMethodRepositoryInterface" />
-            <argument type="service" id="Sylius\Calendar\Provider\DateTimeProviderInterface" />
             <argument type="service" id="translator" />
             <argument type="service" id="sylius.context.locale" />
             <argument type="service" id="router" />
