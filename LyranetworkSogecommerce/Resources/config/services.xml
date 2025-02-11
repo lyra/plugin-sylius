@@ -118,9 +118,7 @@
             <argument type="service" id="Lyranetwork\Sogecommerce\Sdk\RestData" />
             <argument type="service" id="Lyranetwork\Sogecommerce\Service\ConfigService" />
             <argument type="service" id="Lyranetwork\Sogecommerce\Service\OrderService" />
-            <argument type="service" id="Lyranetwork\Sogecommerce\Service\RefundService" />
             <argument type="service" id="Lyranetwork\Sogecommerce\Repository\PaymentMethodRepositoryInterface" />
-            <argument type="service" id="Sylius\Calendar\Provider\DateTimeProviderInterface" />
             <argument type="service" id="translator" />
             <argument type="service" id="sylius.context.locale" />
             <argument type="service" id="router" />
