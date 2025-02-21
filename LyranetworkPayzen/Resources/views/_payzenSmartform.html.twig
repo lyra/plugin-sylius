@@ -48,6 +48,7 @@
     <div class="kr-smart-form" {{ single }}  {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
     {% if order is defined %}
         <script>
+            let redirectOnClose = "";
             function init() {
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
                 if (payzenCheckBox) {
@@ -69,6 +70,11 @@
                 payzenCheckBox.prop("checked", true);
             }
 
+            function toggleSubmitButton(enabled) {
+                const submitButton = $("form[name='sylius_checkout_select_payment'] button[type='submit']");
+                submitButton.prop('disabled', !enabled);
+            }
+
             async function handleButtonsDisplay() {
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
                 const smartform = $('#payzenPaymentMethodForm');
@@ -77,6 +83,9 @@
                     smartform.show();
                 } else {
                     smartform.hide();
+                    if (redirectOnClose !== "") {
+                        document.location.href = redirectOnClose;
+                    }
                 }
             }
 
@@ -86,6 +95,7 @@
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
                 if (payzenCheckBox.is(":checked")) {
                     event.preventDefault();
+                    toggleSubmitButton(false);
                     paymentForm.removeClass('loading');
 
                     // Refresh form token.
@@ -94,9 +104,7 @@
                         url: '{{ path("payzen_rest_form_token") }}',
                         data: { 'orderIdDB': '{{ order.id }}', "instanceCode": '{{ methodCode }}' },
                         success: function(data) {
-                            KR.onPopinClosed(function(){
-                                document.location.href = data.redirectOnClose;
-                            });
+                            redirectOnClose = data.redirectOnClose;
 
                             KR.setFormConfig({
                                 formToken: data.formToken
@@ -123,6 +131,14 @@
                 KR.setFormConfig({
                     language: '{{payzenFormConfig.language}}',
                     form: { smartform: { singlePaymentButton: { visibility: false }}}
+                });
+
+                KR.onError(function() {
+                    toggleSubmitButton(true);
+                });
+
+                KR.onPopinClosed(function() {
+                    toggleSubmitButton(true)
                 });
 
                 paymentForm.on('submit', openSmartform);

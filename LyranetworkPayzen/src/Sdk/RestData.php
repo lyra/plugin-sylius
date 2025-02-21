@@ -368,7 +368,6 @@ class RestData
             'amount' => $request->get('amount'),
             'metadata' => [
                 'db_order_id'=> $order->getId(),
-                'db_payment_id' => $order->getLastPayment()->getId(),
                 'db_method_code' => $instanceCode
             ]
         ];
@@ -520,6 +519,7 @@ class RestData
             return false;
         } else {
             $this->logger->info("Form token created successfully for {$metadata}.");
+            $this->logger->info("Form token : {$response['answer']['formToken']}.");
 
             return $response['answer']['formToken'];
         }
