@@ -70,6 +70,11 @@
                 sogecommerceCheckBox.prop("checked", true);
             }
 
+            function toggleSubmitButton(enabled) {
+                const submitButton = $("form[name='sylius_checkout_select_payment'] button[type='submit']");
+                submitButton.prop('disabled', !enabled);
+            }
+
             async function handleButtonsDisplay() {
                 const sogecommerceCheckBox = $(".sogecommercePaymentCheckBox input[type='radio']");
                 const smartform = $('#sogecommercePaymentMethodForm');
@@ -90,6 +95,7 @@
                 const sogecommerceCheckBox = $(".sogecommercePaymentCheckBox input[type='radio']");
                 if (sogecommerceCheckBox.is(":checked")) {
                     event.preventDefault();
+                    toggleSubmitButton(false);
                     paymentForm.removeClass('loading');
 
                     // Refresh form token.
@@ -125,6 +131,14 @@
                 KR.setFormConfig({
                     language: '{{sogecommerceFormConfig.language}}',
                     form: { smartform: { singlePaymentButton: { visibility: false }}}
+                });
+
+                KR.onError(function() {
+                    toggleSubmitButton(true);
+                });
+
+                KR.onPopinClosed(function() {
+                    toggleSubmitButton(true)
                 });
 
                 paymentForm.on('submit', openSmartform);
