@@ -1,3 +1,6 @@
+# 1.3.2, 2025-02-25:
+- Bug fix: Fix error related to multiple submissions of the payment form.
+
 # 1.3.1, 2025-02-11:
 - Bug fix: Fix error related to order number duplication.
 - Bug fix: Fix error related to updating cart when payment process started.
