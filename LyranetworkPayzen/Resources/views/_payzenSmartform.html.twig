@@ -70,6 +70,11 @@
                 payzenCheckBox.prop("checked", true);
             }
 
+            function toggleSubmitButton(enabled) {
+                const submitButton = $("form[name='sylius_checkout_select_payment'] button[type='submit']");
+                submitButton.prop('disabled', !enabled);
+            }
+
             async function handleButtonsDisplay() {
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
                 const smartform = $('#payzenPaymentMethodForm');
@@ -90,6 +95,7 @@
                 const payzenCheckBox = $(".payzenPaymentCheckBox input[type='radio']");
                 if (payzenCheckBox.is(":checked")) {
                     event.preventDefault();
+                    toggleSubmitButton(false);
                     paymentForm.removeClass('loading');
 
                     // Refresh form token.
@@ -125,6 +131,14 @@
                 KR.setFormConfig({
                     language: '{{payzenFormConfig.language}}',
                     form: { smartform: { singlePaymentButton: { visibility: false }}}
+                });
+
+                KR.onError(function() {
+                    toggleSubmitButton(true);
+                });
+
+                KR.onPopinClosed(function() {
+                    toggleSubmitButton(true)
                 });
 
                 paymentForm.on('submit', openSmartform);
