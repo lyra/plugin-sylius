@@ -70,6 +70,11 @@
                 lyraCheckBox.prop("checked", true);
             }
 
+            function toggleSubmitButton(enabled) {
+                const submitButton = $("form[name='sylius_checkout_select_payment'] button[type='submit']");
+                submitButton.prop('disabled', !enabled);
+            }
+
             async function handleButtonsDisplay() {
                 const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
                 const smartform = $('#lyraPaymentMethodForm');
@@ -90,6 +95,7 @@
                 const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
                 if (lyraCheckBox.is(":checked")) {
                     event.preventDefault();
+                    toggleSubmitButton(false);
                     paymentForm.removeClass('loading');
 
                     // Refresh form token.
@@ -125,6 +131,14 @@
                 KR.setFormConfig({
                     language: '{{lyraFormConfig.language}}',
                     form: { smartform: { singlePaymentButton: { visibility: false }}}
+                });
+
+                KR.onError(function() {
+                    toggleSubmitButton(true);
+                });
+
+                KR.onPopinClosed(function() {
+                    toggleSubmitButton(true)
                 });
 
                 paymentForm.on('submit', openSmartform);
