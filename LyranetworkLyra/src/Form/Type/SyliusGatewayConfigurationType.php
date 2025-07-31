@@ -103,12 +103,6 @@ final class SyliusGatewayConfigurationType extends AbstractType
             'label' => $this->PREFIX . 'ui.lyra_private_prod_key.label',
             'required' => false
         ])
-        ->add(self::$REST_FIELDS . 'rest_server_url', TextType::class, [
-            'label' => $this->PREFIX . 'ui.lyra_rest_server_url.label',
-            'data' => LyraTools::getDefault('REST_URL'),
-            'required' => false,
-            'disabled' => true
-        ])
         ->add(self::$REST_FIELDS . 'public_test_key', TextType::class, [
             'label' => $this->PREFIX . 'ui.lyra_public_test_key.label',
             'required' => false
@@ -124,12 +118,6 @@ final class SyliusGatewayConfigurationType extends AbstractType
         ->add(self::$REST_FIELDS . 'hmac_prod_key', PasswordType::class, [
             'label' => $this->PREFIX . 'ui.lyra_hmac_prod_key.label',
             'required' => false
-        ])
-        ->add(self::$REST_FIELDS . 'js_client_url', TextType::class, [
-            'label' => $this->PREFIX . 'ui.lyra_js_client_url.label',
-            'data' => LyraTools::getDefault('STATIC_URL'),
-            'required' => false,
-            'disabled' => true
         ])
         ->add(self::$ADVANCED_FIELDS . 'card_data_entry_mode', ChoiceType::class, [
             'label' => $this->PREFIX . 'ui.lyra_card_data_entry_mode.label',

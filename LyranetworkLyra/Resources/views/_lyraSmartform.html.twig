@@ -45,12 +45,12 @@
     <link rel="stylesheet" href="{{ lyraFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ lyraFormConfig.theme }}-reset.css">
     <script src="{{ lyraFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ lyraFormConfig.theme }}.js"></script>
 
-    <div class="kr-smart-form" {{ single }}  {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
+    <div class="kr-smart-form" {{ single }} {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{formToken}}" style="z-index: 3; width: 100%;"></div>
     {% if order is defined %}
         <script>
             let redirectOnClose = "";
             function init() {
-                const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
+                const lyraCheckBox = $("input[type='radio'][value='{{ methodCode }}']");
                 if (lyraCheckBox) {
                     configureSmartform();
                     togglePaymentMethodTitle();
@@ -59,11 +59,11 @@
 
             function togglePaymentMethodTitle() {
                 const popin = '{{lyraFormConfig.popinMode}}' === '1';
-                const nbMethod = $(".payment-item .checkbox input[type='radio']").length;
-                const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
-                if (popin || nbMethod > 1) {
+                const nbMethod = $("input[type='radio']").length;
+                const lyraCheckBox = $("input[type='radio'][value='{{ methodCode }}']");
+                if (! popin && nbMethod == 1) {
                     $(".lyraPaymentChoiceTitle").each(function () {
-                        this.style.setProperty('display', 'flex', 'important')
+                        this.style.setProperty('display', 'none', 'important')
                     });
                 }
 
@@ -76,7 +76,7 @@
             }
 
             async function handleButtonsDisplay() {
-                const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
+                const lyraCheckBox = $("input[type='radio'][value='{{ methodCode }}']");
                 const smartform = $('#lyraPaymentMethodForm');
 
                 if (lyraCheckBox.is(":checked")) {
@@ -91,16 +91,19 @@
 
             function openSmartform(event) {
                 const popin = '{{lyraFormConfig.popinMode}}' === '1';
-                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
-                const lyraCheckBox = $(".lyraPaymentCheckBox input[type='radio']");
+                let paymentForm = $('form[name="sylius_shop_checkout_select_payment"]');
+                if (paymentForm.length < 1) {
+                    paymentForm = $('form[name="sylius_checkout_select_payment"]');
+                }
+                const lyraCheckBox = $("input[type='radio'][value='{{ methodCode }}']");
                 if (lyraCheckBox.is(":checked")) {
                     event.preventDefault();
                     toggleSubmitButton(false);
                     paymentForm.removeClass('loading');
 
                     // Refresh form token.
-                    jQuery.ajax({
-                        method: 'POST',
+                    $.ajax({
+                        type: 'POST',
                         url: '{{ path("lyra_rest_form_token") }}',
                         data: { 'orderIdDB': '{{ order.id }}', "instanceCode": '{{ methodCode }}' },
                         success: function(data) {
@@ -122,7 +125,10 @@
             }
 
             function configureSmartform() {
-                const paymentForm = $('form[name="sylius_checkout_select_payment"]');
+                let paymentForm = $('form[name="sylius_shop_checkout_select_payment"]');
+                if (paymentForm.length < 1) {
+                    paymentForm = $('form[name="sylius_checkout_select_payment"]');
+                }
 
                 if ('{{lyraFormConfig.compactMode}}') {
                     KR.setFormConfig({ cardForm: { layout: "compact" }, smartForm: { layout: "compact" }});
@@ -142,7 +148,7 @@
                 });
 
                 paymentForm.on('submit', openSmartform);
-                $(".payment-item .checkbox input[type='radio']").on('change', handleButtonsDisplay);
+                $("input[type='radio']").on('change', handleButtonsDisplay);
                 KR.onFormReady(handleButtonsDisplay);
             }
 

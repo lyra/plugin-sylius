@@ -8,7 +8,7 @@ Lyra Collect for Sylius is an open source plugin that links e-commerce websites 
 - Require the plugin with composer using the following command:
 
 ```
-composer require lyranetwork/sylius-lyranetwork-plugin dev-lyra
+composer require lyranetwork/sylius-lyranetwork-plugin dev-lyra-v2
 ```
 - Add the following line in  __bundles.php__  file located in `[sylius-root]/config/`:
 
@@ -23,48 +23,18 @@ Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
     resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
  ```
 
-- Add Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
-
-```yaml
-winzou_state_machine:
-  sylius_payment:
-    callbacks:
-      after:
-        custom_action:
-          on: ["process", "authorize", "complete"]
-          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
-          args: ["object"]
-```
-
-- Add Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+- Add Lyra config in ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
 
 ```
-services:
+imports:
 [...]
-    lyranetworklyra.order_service:
-      class: Lyranetwork\Lyra\Service\OrderService
-      public: true
+    - { resource: "@LyranetworkLyraPlugin/Resources/config/config.yaml" }
 ```
 
 - Dump the autoload cache using the following command:
 
 ```
 composer dump-autoload
-```
-
-**Careful**
-
-- Add the overrode templates. If you have already overrode one of the following files, you need to merge it with ours. You will find them in LyranetworkLyra/Resources/views/bundles/ directory.
-
-```
-SyliusAdminBundle\PaymentMethod\_form.html.twig
-SyliusAdminBundle\OrderShow\_payment.html.twig
-SyliusShopBundle\Checkout\SelectPayment\_choice.html.twig
-```
-- If not, just copy them with the following command :
-
-```
-cp -R vendor/lyranetwork/sylius-lyranetwork-plugin/LyranetworkLyra/Resources/views/bundles/* templates/bundles/
 ```
 
 - Empty the cache with the following command:
@@ -95,48 +65,18 @@ Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
     resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
  ```
 
-- Add Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
-
-```yaml
-winzou_state_machine:
-  sylius_payment:
-    callbacks:
-      after:
-        custom_action:
-          on: ["process", "authorize", "complete"]
-          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
-          args: ["object"]
-```
-
-- Add Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+- Add Lyra config in ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
 
 ```
-services:
+imports:
 [...]
-    lyranetworklyra.order_service:
-      class: Lyranetwork\Lyra\Service\OrderService
-      public: true
+    - { resource: "@LyranetworkLyraPlugin/Resources/config/config.yaml" }
 ```
 
 - Dump the autoload cache using the following command:
 
 ```
 composer dump-autoload
-```
-
-**Careful**
-
-- Add the overrode templates. If you have already overrode one of the following files, you need to merge it with ours. You will find them in LyranetworkLyra/Resources/views/bundles/ directory.
-
-```
-SyliusAdminBundle\PaymentMethod\_form.html.twig
-SyliusAdminBundle\OrderShow\_payment.html.twig
-SyliusShopBundle\Checkout\SelectPayment\_choice.html.twig
-```
-- If not, just copy them with the following command :
-
-```
-cp -R LyranetworkLyra/Resources/views/bundles/* templates/bundles/
 ```
 
 - Open command line in Sylius root directory, and run the following commands to extract the translations for the plugin:
@@ -195,35 +135,12 @@ Lyranetwork\Lyra\LyranetworkLyraPlugin::class => ['all' => true],
     resource: "@LyranetworkLyraPlugin/Resources/config/routing.yaml"
 ```
 
-- Remove Lyra callbacks in  ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
-
-```yaml
-winzou_state_machine:
-  sylius_payment:
-    callbacks:
-      after:
-        custom_action:
-          on: ["process", "authorize", "complete"]
-          do: ["@lyranetworklyra.order_service", "sendConfirmationEmail"]
-          args: ["object"]
-```
-
-- Remove Lyra services in  __services.yaml__  file located in `[sylius-root]/config` :
+- Remove Lyra config in ___sylius.yaml__  file located in `[sylius-root]/config/packages` :
 
 ```
-services:
+imports:
 [...]
-    lyranetworklyra.order_service:
-      class: Lyranetwork\Lyra\Service\OrderService
-      public: true
-```
-
-- Remove or unmerge all added template files in `templates/bundles/`
-
-```
-SyliusAdminBundle\PaymentMethod\_form.html.twig
-SyliusAdminBundle\OrderShow\_payment.html.twig
-SyliusShopBundle\Checkout\SelectPayment\_choice.html.twig
+    - { resource: "@LyranetworkLyraPlugin/Resources/config/config.yaml" }
 ```
 
 - Open command line in Sylius root directory, and run the following commands:
