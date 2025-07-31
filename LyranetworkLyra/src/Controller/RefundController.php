@@ -16,7 +16,7 @@ use Lyranetwork\Lyra\Service\RefundService;
 use Sylius\Component\Core\Repository\PaymentRepositoryInterface;
 use Sylius\Component\Payment\PaymentTransitions;
 use Sylius\Component\Core\Model\PaymentInterface;
-use SM\Factory\FactoryInterface;
+use Sylius\Abstraction\StateMachine\StateMachineInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -59,9 +59,9 @@ final class RefundController
     private $requestStack;
 
     /**
-     * @var FactoryInterface
+     * @var StateMachineInterface
      */
-    private $stateMachineFactory;
+    private $stateMachine;
 
     /**
      * @var RefundService
@@ -75,7 +75,7 @@ final class RefundController
         RefundService $refundService,
         EntityManagerInterface $paymentEntityManager,
         RequestStack $requestStack,
-        FactoryInterface $stateMachineFactory
+        StateMachineInterface $stateMachine
     )
     {
         $this->paymentRepository = $paymentRepository;
@@ -84,7 +84,7 @@ final class RefundController
         $this->refundService = $refundService;
         $this->paymentEntityManager = $paymentEntityManager;
         $this->requestStack = $requestStack;
-        $this->stateMachineFactory = $stateMachineFactory;
+        $this->stateMachine = $stateMachine;
     }
 
     public function paymentRefundOrCancelAction(Request $request)
@@ -102,7 +102,7 @@ final class RefundController
         $gatewayConfig = $paymentMethod->getGatewayConfig();
         $factoryName = $gatewayConfig->getFactoryName() ?? null;
 
-        if ($factoryName !== constant('Lyranetwork\Lyra\Payum\SyliusPaymentGatewayFactory::FACTORY_NAME')) {
+        if ($factoryName !== constant('Lyranetwork\Lyra\Sdk\Tools::FACTORY_NAME')) {
             $this->applyStateMachineTransition($payment);
 
             $this->requestStack->getSession()->getFlashBag()->add('success', 'sylius.payment.refunded');
@@ -126,13 +126,11 @@ final class RefundController
 
     private function applyStateMachineTransition(PaymentInterface $payment): void
     {
-        $stateMachine = $this->stateMachineFactory->get($payment, PaymentTransitions::GRAPH);
-
-        if (! $stateMachine->can(PaymentTransitions::TRANSITION_REFUND)) {
+        if (! $this->stateMachine->can($payment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_REFUND)) {
             throw new BadRequestHttpException();
         }
 
-        $stateMachine->apply(PaymentTransitions::TRANSITION_REFUND);
+        $this->stateMachine->apply($payment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_REFUND);
         $this->paymentEntityManager->flush();
     }
 

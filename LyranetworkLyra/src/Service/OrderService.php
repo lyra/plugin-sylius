@@ -14,7 +14,7 @@ namespace Lyranetwork\Lyra\Service;
 
 use Lyranetwork\Lyra\Repository\OrderRepositoryInterface;
 
-use Sylius\Bundle\ShopBundle\EmailManager\OrderEmailManagerInterface;
+use Sylius\Bundle\CoreBundle\Mailer\OrderEmailManagerInterface;
 use App\Entity\Payment\Payment;
 use Symfony\Component\HttpClient\Exception\TransportException;
 
@@ -65,7 +65,7 @@ class OrderService
         try {
             Assert::isInstanceOf($payment, Payment::class);
 
-            $gatewayName = constant('Lyranetwork\Lyra\Payum\SyliusPaymentGatewayFactory::FACTORY_NAME');
+            $gatewayName = constant('Lyranetwork\Lyra\Sdk\Tools::FACTORY_NAME');
             $factoryName = $payment->getMethod()->getGatewayConfig()->getFactoryName();
             if ($gatewayName === $factoryName) {
                 $order = $payment->getOrder();

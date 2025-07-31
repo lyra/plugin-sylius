@@ -20,8 +20,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Sylius\Component\Core\Repository\OrderRepositoryInterface;
 use Sylius\Component\Payment\PaymentTransitions;
 use Sylius\Component\Core\Model\PaymentInterface;
-
-use SM\Factory\FactoryInterface;
+use Sylius\Abstraction\StateMachine\StateMachineInterface;
 
 use Psr\Log\LoggerInterface;
 
@@ -37,7 +36,7 @@ class RefundProcessor implements Processor
 
     private EntityManagerInterface $paymentEntityManager;
 
-    private FactoryInterface $stateMachineFactory;
+    private StateMachineInterface $stateMachine;
 
     public function __construct(
         LoggerInterface $logger,
@@ -45,7 +44,7 @@ class RefundProcessor implements Processor
         RequestStack $requestStack,
         OrderRepositoryInterface $orderRepository,
         EntityManagerInterface $paymentEntityManager,
-        FactoryInterface $stateMachineFactory
+        StateMachineInterface $stateMachine
     )
     {
         $this->logger = $logger;
@@ -53,7 +52,7 @@ class RefundProcessor implements Processor
         $this->requestStack = $requestStack;
         $this->orderRepository = $orderRepository;
         $this->paymentEntityManager = $paymentEntityManager;
-        $this->stateMachineFactory = $stateMachineFactory;
+        $this->stateMachine = $stateMachine;
     }
 
     /**
@@ -89,10 +88,8 @@ class RefundProcessor implements Processor
             }
 
             if (isset($paymentToRefund)) {
-                $stateMachine = $this->stateMachineFactory->get($paymentToRefund, PaymentTransitions::GRAPH);
-
-                if ($stateMachine->can(PaymentTransitions::TRANSITION_REFUND)) {
-                    $stateMachine->apply(PaymentTransitions::TRANSITION_REFUND);
+                if ($this->stateMachine->can($paymentToRefund, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_REFUND)) {
+                    $this->stateMachine->apply($paymentToRefund, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_REFUND);
                 }
 
                 $this->paymentEntityManager->flush();

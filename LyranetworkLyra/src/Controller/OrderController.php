@@ -12,7 +12,6 @@ declare(strict_types=1);
 namespace Lyranetwork\Lyra\Controller;
 
 use Doctrine\Persistence\ObjectManager;
-use Lyranetwork\Lyra\Sdk\Tools;
 use Sylius\Bundle\OrderBundle\Controller\OrderController as BaseOrderController;
 use Sylius\Bundle\ResourceBundle\Controller\AuthorizationCheckerInterface;
 use Sylius\Bundle\ResourceBundle\Controller\EventDispatcherInterface;
@@ -52,6 +51,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 
 use Psr\Log\LoggerInterface;
 
+use Lyranetwork\Lyra\Sdk\Tools;
 use Lyranetwork\Lyra\Sdk\RestData;
 use Lyranetwork\Lyra\Sdk\Form\Response as LyraResponse;
 use Lyranetwork\Lyra\Sdk\Form\Api as LyraApi;
@@ -59,7 +59,6 @@ use Lyranetwork\Lyra\Form\Type\SyliusGatewayConfigurationType as GatewayConfigur
 use Lyranetwork\Lyra\Service\ConfigService;
 use Lyranetwork\Lyra\Service\OrderService;
 use Lyranetwork\Lyra\Repository\PaymentMethodRepositoryInterface;
-use Lyranetwork\Lyra\Payum\SyliusPaymentGatewayFactory;
 
 final class OrderController extends BaseOrderController
 {
@@ -94,11 +93,6 @@ final class OrderController extends BaseOrderController
     private $translator;
 
     /**
-     * @var \SM\Factory\FactoryInterface
-     */
-    private $stateMachineFactory;
-
-    /**
      * @var LocaleContextInterface
      */
     private  $localeContext;
@@ -107,6 +101,11 @@ final class OrderController extends BaseOrderController
      * @var RouterInterface
      */
     private $router;
+
+    /**
+     * @var Sylius\Abstraction\StateMachine\StateMachineInterface;
+     */
+    private $stateMachineInterface;
 
     public function __construct(
         MetadataInterface $metadata,
@@ -134,7 +133,7 @@ final class OrderController extends BaseOrderController
         TranslatorInterface $translator,
         LocaleContextInterface $localeContext,
         RouterInterface $router,
-        \SM\Factory\FactoryInterface $stateMachineFactory
+        \Sylius\Abstraction\StateMachine\StateMachineInterface $stateMachineInterface
     ) {
         parent::__construct(
             $metadata,
@@ -161,9 +160,9 @@ final class OrderController extends BaseOrderController
         $this->orderService = $orderService;
         $this->paymentMethodRepository = $paymentMethodRepository;
         $this->translator = $translator;
-        $this->stateMachineFactory = $stateMachineFactory;
         $this->localeContext = $localeContext;
         $this->router = $router;
+        $this->stateMachineInterface = $stateMachineInterface;
     }
 
     public function paymentResponseAction(Request $request)
@@ -202,7 +201,9 @@ final class OrderController extends BaseOrderController
             }
         }
 
-        $params = $this->restData->convertRestResult(json_decode($request->get('kr-answer'), true));
+        $answer["kr-src"] = $request->get('kr-src');
+
+        $params = $this->restData->convertRestResult($answer);
         $lyraResponse = new LyraResponse(
             $params,
             "",
@@ -217,6 +218,16 @@ final class OrderController extends BaseOrderController
 
         $orderId = $lyraResponse->get('order_id');
         $orderIdDB = $lyraResponse->getExtInfo('db_order_id');
+
+        // Ignore IPN on cancelation for already registered orders.
+        if (($lyraResponse->getTransStatus() === 'ABANDONED') ||
+            (($lyraResponse->getTransStatus() === 'CANCELLED')
+                && ((($lyraResponse->get('order_status') === 'UNPAID') && ($lyraResponse->get('order_cycle') === 'CLOSED')) || ($lyraResponse->get('url_check_src') !== 'MERCH_BO')))) {
+            $this->logger->info('Server call on cancellation for order #' . $orderId . '. No order will be updated.');
+
+            die('<span style="display:none">KO-Payment abandoned.' . "\n" . '</span>');
+        }
+
         if (empty($orderIdDB) || empty($orderId) || ! ($order = $this->orderService->get($orderIdDB))) {
             $this->logger->error("Order #$orderId not found in database.");
             if ($fromServer) {
@@ -255,9 +266,6 @@ final class OrderController extends BaseOrderController
             $this->logger->info("Return call process starts for order #$orderId.");
         }
 
-        $orderPaymentStateMachine = $this->stateMachineFactory->get($order, OrderPaymentTransitions::GRAPH);
-        $orderCheckoutStateMachine = $this->stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH);
-
         $lastPayment = $order->getLastPayment();
         $payments = $order->getPayments();
         $cpt = count($payments);
@@ -277,9 +285,9 @@ final class OrderController extends BaseOrderController
         $request->getSession()->set('sylius_order_id', $order->getId());
         $amount = $lastPayment->getAmount();
 
-        $lastPayment->setMethod($this->paymentMethodRepository->findByGatewayNameAndCode(SyliusPaymentGatewayFactory::FACTORY_NAME, $instanceCode));
+        $lastPayment->setMethod($this->paymentMethodRepository->findByGatewayNameAndCode(Tools::FACTORY_NAME, $instanceCode));
         $details = array(
-            'lyra_factory_name' => SyliusPaymentGatewayFactory::FACTORY_NAME,
+            'lyra_factory_name' => Tools::FACTORY_NAME,
             'lyra_trans_id' => $lyraResponse->get('trans_id'),
             'lyra_trans_uuid' => $lyraResponse->get('trans_uuid'),
             'lyra_card_brand' => $lyraResponse->get('vads_card_brand'),
@@ -299,14 +307,13 @@ final class OrderController extends BaseOrderController
                 $refundedPayment = $this->container->get('sylius.factory.payment')->createNew();
                 $refundedPayment->setAmount($lyraResponse->get('vads_amount'));
                 $refundedPayment->setDetails($details);
-                $refundedPayment->setMethod($this->paymentMethodRepository->findByGatewayNameAndCode(SyliusPaymentGatewayFactory::FACTORY_NAME, $instanceCode));
+                $refundedPayment->setMethod($this->paymentMethodRepository->findByGatewayNameAndCode(Tools::FACTORY_NAME, $instanceCode));
                 $refundedPayment->setCurrencyCode($lastPayment->getCurrencyCode());
                 $order->addPayment($refundedPayment);
 
-                $refundedPaymentStateMachine = $this->stateMachineFactory->get($refundedPayment, PaymentTransitions::GRAPH);
-                $refundedPaymentStateMachine->apply('create');
-                $refundedPaymentStateMachine->apply('complete');
-                $refundedPaymentStateMachine->apply('refund');
+                $this->stateMachineInterface->apply($refundedPayment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_CREATE);
+                $this->stateMachineInterface->apply($refundedPayment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_COMPLETE);
+                $this->stateMachineInterface->apply($refundedPayment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_REFUND);
             }
 
             $this->manager->flush();
@@ -318,10 +325,9 @@ final class OrderController extends BaseOrderController
 
         if ($oldStatus !== $newStatus['payment'] || $order->getPaymentState() !== $newStatus['orderPayment']) {
             $lastPayment = $order->getLastPayment();
-            $paymentStateMachine = $this->stateMachineFactory->get($lastPayment, PaymentTransitions::GRAPH);
 
-            if ($paymentStateMachine->can('create')) {
-                $paymentStateMachine->apply('create');
+            if ($this->stateMachineInterface->can($lastPayment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_CREATE)) {
+                $this->stateMachineInterface->apply($lastPayment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_CREATE);
             }
 
             if (! $fromServer) {
@@ -330,12 +336,12 @@ final class OrderController extends BaseOrderController
 
             if ($lyraResponse->isPendingPayment()) {
                 $this->logger->info("Payment pending for order #$orderId. New payment status: " . $newStatus['payment']);
-                if ($paymentStateMachine->can($newStatus['paymentTransition'])) {
+                if ($this->stateMachineInterface->can($lastPayment, PaymentTransitions::GRAPH, $newStatus['paymentTransition'])) {
                     if ($fromServer) {
                         $msg = 'payment_ok';
                     }
 
-                    $paymentStateMachine->apply($newStatus['paymentTransition']);
+                    $this->stateMachineInterface->apply($lastPayment, PaymentTransitions::GRAPH, $newStatus['paymentTransition']);
                     $this->logger->info("Pending payment processed successfully for order #$orderId.");
                 } else {
                     $this->logger->info("Payment pending processing failed for order #$orderId.");
@@ -348,16 +354,16 @@ final class OrderController extends BaseOrderController
                     $msg = 'payment_ok';
                 }
 
-                if ($orderPaymentStateMachine->can($newStatus['orderPaymentTransition'])) {
-                    $orderPaymentStateMachine->apply($newStatus['orderPaymentTransition']);
+                if ($this->stateMachineInterface->can($order, OrderPaymentTransitions::GRAPH, $newStatus['orderPaymentTransition'])) {
+                    $this->stateMachineInterface->apply($order, OrderPaymentTransitions::GRAPH, $newStatus['orderPaymentTransition']);
 
                     $this->logger->info("Order payment status processed successfully for order #$orderId.");
                 } else {
                     $this->logger->info("Payment accepted, order payment status processing failed for order #$orderId.");
                 }
 
-                if ($paymentStateMachine->can($newStatus['paymentTransition'])) {
-                    $paymentStateMachine->apply($newStatus['paymentTransition']);
+                if ($this->stateMachineInterface->can($lastPayment, PaymentTransitions::GRAPH, $newStatus['paymentTransition'])) {
+                    $this->stateMachineInterface->apply($lastPayment, PaymentTransitions::GRAPH, $newStatus['paymentTransition']);
 
                     $this->logger->info("Payment status processed successfully for order #$orderId.");
                 } else {
@@ -367,31 +373,30 @@ final class OrderController extends BaseOrderController
                 $lastPayment->setDetails($details);
             } else {
                 $this->logger->info("Payment failed or cancelled for order #$orderId. {$lyraResponse->getLogMessage()}");
-                if ($fromServer) {
-                    $this->logger->info("Payment processed successfully by IPN URL call.");
-                    $msg = 'payment_ko';
-                }
-
-                if ($lyraResponse->get('order_cycle') === 'CLOSED') {
-                    if ($paymentStateMachine->can($newStatus['paymentTransition'])) {
-                        $paymentStateMachine->apply($newStatus['paymentTransition']);
+                if ($lyraResponse->get('order_cycle') === 'CLOSED' || ($lyraResponse->get('url_check_src') === 'MERCH_BO')) {
+                    if ($this->stateMachineInterface->can($lastPayment, PaymentTransitions::GRAPH, $newStatus['paymentTransition'])) {
+                        $this->stateMachineInterface->apply($lastPayment, PaymentTransitions::GRAPH, $newStatus['paymentTransition']);
                     }
 
-                    if (isset($newStatus['orderPaymentTransition']) && $orderPaymentStateMachine->can($newStatus['orderPaymentTransition'])) {
-                        $orderPaymentStateMachine->apply($newStatus['orderPaymentTransition']);
+                    if (isset($newStatus['orderPaymentTransition']) && $this->stateMachineInterface->can($order, OrderPaymentTransitions::GRAPH, $newStatus['orderPaymentTransition'])) {
+                        $this->stateMachineInterface->apply($order, OrderPaymentTransitions::GRAPH, $newStatus['orderPaymentTransition']);
                     }
 
-                    if ($orderCheckoutStateMachine->can('select_shipping')) {
-                        $orderCheckoutStateMachine->apply('select_shipping');
+                    if ($this->stateMachineInterface->can($order, OrderCheckoutTransitions::GRAPH, OrderCheckoutTransitions::TRANSITION_SELECT_SHIPPING)) {
+                        $this->stateMachineInterface->apply($order, OrderCheckoutTransitions::GRAPH, OrderCheckoutTransitions::TRANSITION_SELECT_SHIPPING);
                     }
 
                     $lastPayment->setDetails($details);
 
                     // Update the lastPayment to let the buyer retry.
                     $lastPayment = $order->getLastPayment();
-                    $paymentStateMachine = $this->stateMachineFactory->get($lastPayment, PaymentTransitions::GRAPH);
-                    if ($paymentStateMachine->can('create')) {
-                        $paymentStateMachine->apply('create');
+                    if ($this->stateMachineInterface->can($lastPayment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_CREATE)) {
+                        $this->stateMachineInterface->apply($lastPayment, PaymentTransitions::GRAPH, PaymentTransitions::TRANSITION_CREATE);
+                    }
+
+                    if ($fromServer) {
+                        $this->logger->info("Payment processed successfully by IPN URL call.");
+                        $msg = 'payment_ko';
                     }
                 }
             }
@@ -458,18 +463,16 @@ final class OrderController extends BaseOrderController
             return $this->json(['errorMessage' => $msg, 'errorCode' => '500'], 500);
         }
 
-        $orderCheckoutStateMachine = $this->stateMachineFactory->get($order, OrderCheckoutTransitions::GRAPH);
-        if ($orderCheckoutStateMachine->can('select_payment')) {
-            $orderCheckoutStateMachine->apply('select_payment');
+        if ($this->stateMachineInterface->can($order, OrderCheckoutTransitions::GRAPH, OrderCheckoutTransitions::TRANSITION_SELECT_PAYMENT)) {
+            $this->stateMachineInterface->apply($order, OrderCheckoutTransitions::GRAPH, OrderCheckoutTransitions::TRANSITION_SELECT_PAYMENT);
         }
 
-        if ($orderCheckoutStateMachine->can('complete')) {
-            $orderCheckoutStateMachine->apply('complete');
+        if ($this->stateMachineInterface->can($order, OrderCheckoutTransitions::GRAPH, OrderCheckoutTransitions::TRANSITION_COMPLETE)) {
+            $this->stateMachineInterface->apply($order, OrderCheckoutTransitions::GRAPH, OrderCheckoutTransitions::TRANSITION_COMPLETE);
         }
 
-        $orderStateMachine = $this->stateMachineFactory->get($order, OrderTransitions::GRAPH);
-        if ($orderStateMachine->can('create')) {
-            $orderStateMachine->apply('create');
+        if ($this->stateMachineInterface->can($order, OrderTransitions::GRAPH, OrderTransitions::TRANSITION_CREATE)) {
+            $this->stateMachine->apply($order, OrderTransitions::GRAPH, OrderTransitions::TRANSITION_CREATE);
         }
 
         $this->eventDispatcher->dispatchPostEvent(ResourceActions::UPDATE, $configuration, $order);
