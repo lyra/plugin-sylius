@@ -1,0 +1,14 @@
+sylius_twig_hooks:
+  hooks:
+    'sylius_shop.checkout.select_payment.content.form.select_payment.payment.choice.monetico_sylius_payment':
+      details:
+        template: '@LyranetworkMoneticoPlugin/shop/checkout/select-payment/monetico_choice.html.twig'
+        priority: 150
+    'sylius_shop.order.show.content.form.select_payment.payment.choice.monetico_sylius_payment':
+      details:
+        template: '@LyranetworkMoneticoPlugin/shop/checkout/select-payment/monetico_choice.html.twig'
+        priority: 150
+    'sylius_shop.account.monetico.saved_cards.index.content.main':
+      section:
+        template: '@LyranetworkMoneticoPlugin/shop/account/saved_cards/section.html.twig'
+        priority: 150

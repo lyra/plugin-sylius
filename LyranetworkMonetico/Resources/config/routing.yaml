@@ -1,0 +1,35 @@
+monetico_return_url:
+  path: /monetico/rest/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Monetico\Controller\OrderController::paymentResponseAction'
+
+monetico_rest_ipn:
+  path: /monetico/rest/ipn
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Monetico\Controller\OrderController::paymentResponseAction'
+
+monetico_payment_refund:
+  path: /monetico/orders/{orderId}/payments/{id}/refund
+  methods: [PUT, POST]
+  defaults:
+    _controller: 'Lyranetwork\Monetico\Controller\RefundController::paymentRefundOrCancelAction'
+
+monetico_sylius_account_saved_cards:
+  path: /{_locale}/monetico/account/saved-cards
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Monetico\Controller\CardController::savedCardsAction'
+
+monetico_rest_form_token:
+  path: /monetico/rest/formtoken
+  methods: [POST]
+  defaults:
+    _controller: 'Lyranetwork\Monetico\Controller\OrderController::getFormToken'
+
+monetico_headless_return_url:
+  path: /monetico/rest/headless/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Monetico\Controller\OrderController::paymentResponseAction'
