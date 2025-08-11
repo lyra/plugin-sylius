@@ -29,7 +29,7 @@ class Tools
     private static $LANGUAGE = 'fr';
 
     private static $CMS_IDENTIFIER = 'Sylius_2.x';
-    private static $SUPPORT_EMAIL = 'https://support.lyra.com/hc/fr/requests/new';
+    private static $SUPPORT_EMAIL = 'https://gateway.monetico-retail.support.lyra.com/hc/fr/requests/new';
     private static $PLUGIN_VERSION = '2.0.0';
     private static $GATEWAY_VERSION = 'V2';
     private static $REST_URL = 'https://api.gateway.monetico-retail.com/api-payment/';
