@@ -3,6 +3,7 @@ sylius_monetico_plugin:
     monetico_payment_method_title: Payment by Monetico Retail
     monetico_developed_by: Developed by
     monetico_support_email: 'Contact us: '
+    monetico_click_here: 'Click here'
     monetico_module_version: 'Module version: '
     monetico_gateway_version: 'Gateway version: '
     monetico_documentation_link: 'Click to view the module configuration documentation: '
@@ -39,16 +40,16 @@ sylius_monetico_plugin:
       label: JavaScript client URL
     monetico_card_data_entry_mode:
       label: Payment data entry mode
-      helptext: Select how the payment data will be entered. Attention, to use the Smartform, you must ensure that you have subscribed to this option with Monetico Retail.
+      helptext: Select how the payment data will be entered. Attention, to use the embedded payment fields, you must ensure that you have subscribed to this option with Monetico Retail.
     monetico_rest_popin_mode:
       label: Display in a pop-in
-      helptext: This option allows to display the Smartform in a pop-in.
+      helptext: This option allows to display the embedded payment fields in a pop-in.
     monetico_rest_theme:
       label: Theme
-      helptext: Select a theme to use to display the Smartform.
+      helptext: Select a theme to use to display the embedded payment fields.
     monetico_rest_compact_mode:
       label: Compact mode
-      helptext: This option allows to display the Smartform in a compact mode.
+      helptext: This option allows to display the embedded payment fields in a compact mode.
     monetico_capture_delay:
       label: Capture delay (if applicable)
       helptext: The number of days before the bank capture (adjustable in your Monetico Retail Back Office).
@@ -73,9 +74,9 @@ sylius_monetico_plugin:
     test: TEST
     production: PRODUCTION
     smartform:
-      mode_smartform: Embedded Smartform on merchant site (REST API)
-      mode_smartform_ext_with_logos: Embedded Smartform extended on merchant site with logos (REST API)
-      mode_smartform_ext_without_logos: Embedded Smartform extended on merchant site without logos (REST API)
+      mode_smartform: Embedded payment fields on merchant site (REST API)
+      mode_smartform_ext_with_logos: Embedded payment fields extended on merchant site with logos (REST API)
+      mode_smartform_ext_without_logos: Embedded payment fields extended on merchant site without logos (REST API)
     theme:
       neon: Neon
       classic: Classic

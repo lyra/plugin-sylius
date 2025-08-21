@@ -214,9 +214,12 @@ class Api
             'COFIDIS_3X_BE' => 'Cofidis en 3 fois', 'COFIDIS_3X_FR' => 'Cofidis en 3 fois',
             'COFIDIS_4X_ES' => 'Cofidis en 4 vencimientos', 'COFIDIS_4X_FR' => 'Cofidis en 4 fois',
             'COFIDIS_DFPAY_FR' => 'Cofidis Pay Later', 'COFIDIS_LOAN_BE' => 'Cofidis en 6-12-18 fois',
-            'COFIDIS_LOAN_ES' => 'Cofidis en 6-12-24 vencimientos', 'COFIDIS_LOAN_FR' => 'Amortissable',
-            'COFIDIS_LOAN_IT' => 'Cofidis Pagodil', 'CONECS' => 'Conecs', 'CVCO' => 'Chèque-Vacances Connect',
-            'EDENRED' => 'Ticket Restaurant', 'GIROPAY' => 'Giropay', 'IDEAL' => 'iDEAL', 'MULTIBANCO' => 'Multibanco',
+            'COFIDIS_LOAN_CB' => 'Cofidis in 5-12 installments', 'COFIDIS_LOAN_ES' => 'Cofidis en 6-12-24 vencimientos',
+            'COFIDIS_LOAN_FR' => 'Amortissable', 'COFIDIS_LOAN_IT' => 'Cofidis Pagodil',
+            'COFIDIS_PAY_FR' => 'Cofidis Pay', 'CONECS' => 'Conecs', 'CVCO' => 'Chèque-Vacances Connect',
+            'EDENRED' => 'Ticket Restaurant', 'GIROPAY' => 'Giropay', 'GOOGLEPAY' => 'Google Pay', 'IDEAL' => 'iDEAL', 
+            'ILLICADO' => 'Carte Illicado', 'KADEOS_CULTURE' => 'Carte Kadéos Culture',
+            'KADEOS_GIFT' => 'Carte Kadéos Zénith', 'MULTIBANCO' => 'Multibanco',
             'MYBANK' => 'MyBank', 'NORAUTO' => 'Carte Norauto option Financement',
             'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)', 'ONEY_10X_12X' => 'Paiement en 10 ou 12 fois Oney',
             'ONEY_3X_4X' => 'Paiement en 3 ou 4 fois Oney', 'ONEY_ENSEIGNE' => 'Cartes enseignes Oney',
@@ -342,37 +345,47 @@ class Api
     }
 
     /**
-     * Format a given list of e-mails separated by commas and render them as HTML links.
-     * @param string $emails
+     * Format a given list of e-mails / URLs separated by commas and render them as HTML links.
+     * @param string $links
      * @return string
      */
-    public static function formatSupportEmails($emails)
+    public static function formatSupportEmails($links, $label = "Click here")
     {
         $formatted = '';
 
-        $parts = explode(', ', $emails);
+        $parts = explode(', ', $links);
         foreach ($parts as $part) {
-            $elts = explode(':', $part);
-            if (count($elts) === 2) {
-                $label = trim($elts[0]) . ': ';
-                $email = $elts[1];
-            } elseif (count($elts) === 1) {
-                $label = '';
-                $email = $elts[0];
+            if (strpos($part, '@')) {
+                $elts = explode(':', $part);
+                if (count($elts) === 2) {
+                    $label = trim($elts[0]) . ': ';
+                    $email = $elts[1];
+                } elseif (count($elts) === 1) {
+                    $label = '';
+                    $email = $elts[0];
+                } else {
+                    throw new \InvalidArgumentException("Invalid support e-mails string passed: {$links}.");
+                }
+
+                $email = trim($email);
+
+                if (! empty($formatted)) {
+                    $formatted .= '<br />';
+                }
+
+                $formatted .= $label . '<a href="mailto:' . $email . '">' . $email . '</a>';
             } else {
-                throw new \InvalidArgumentException("Invalid support e-mails string passed: {$emails}.");
+                $link = trim($part);
+                $formatted .= '<a href="'. $link.'" target="_blank" rel="noopener noreferrer">' . $label . '</a>';
             }
-
-            $email = trim($email);
-
-            if (! empty($formatted)) {
-                $formatted .= '<br />';
-            }
-
-            $formatted .= $label . '<a href="mailto:' . $email . '">' . $email . '</a>';
         }
 
         return $formatted;
+    }
+
+    public static function getSupportComponentEmail()
+    {
+        return '###COMPONENT_EMAIL###';
     }
 
     /**

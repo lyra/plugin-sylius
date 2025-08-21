@@ -19,10 +19,22 @@ use Sylius\Component\Customer\Context\CustomerContextInterface;
 use Lyranetwork\Monetico\Sdk\Form\Api as MoneticoApi;
 use Lyranetwork\Monetico\Sdk\Tools as MoneticoTools;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 final class ConfigurationContextProvider implements ContextProviderInterface
 {
-    public function __construct()
+    private TranslatorInterface $translator;
+
+    private RequestStack $requestStack;
+
+    public function __construct(
+        TranslatorInterface $translator,
+        RequestStack $requestStack
+        )
     {
+        $this->translator = $translator;
+        $this->requestStack = $requestStack;
     }
 
     public function provide(array $templateContext, TemplateBlock $templateBlock): array
@@ -33,7 +45,7 @@ final class ConfigurationContextProvider implements ContextProviderInterface
         }
 
         $templateContext['moneticoDocUrls'] = $docsUrls;
-        $templateContext['moneticoSupport'] = MoneticoTools::getDefault('SUPPORT_EMAIL');
+        $templateContext['moneticoSupport'] = MoneticoApi::formatSupportEmails(MoneticoTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_monetico_plugin.ui.monetico_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale')));
         $templateContext['moneticoPluginVersion'] = MoneticoTools::getDefault('PLUGIN_VERSION');
         $templateContext['moneticoGatewayVersion'] = MoneticoTools::getDefault('GATEWAY_VERSION');
 
