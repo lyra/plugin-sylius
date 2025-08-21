@@ -17,10 +17,23 @@ use Lyranetwork\Payzen\Sdk\Form\Api as PayzenApi;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 class ConfigurationProvider extends AbstractExtension
 {
+    private TranslatorInterface $translator;
 
-    public function __construct(){}
+    private RequestStack $requestStack;
+
+    public function __construct(
+        TranslatorInterface $translator,
+        RequestStack $requestStack
+    )
+    {
+        $this->translator = $translator;
+        $this->requestStack = $requestStack;
+    }
 
     public function getFunctions(): array
     {
@@ -38,7 +51,7 @@ class ConfigurationProvider extends AbstractExtension
 
         return [
             'payzenDocUrls' => $docsUrls,
-            'payzenSupport' => PayzenApi::formatSupportEmails(PayzenTools::getDefault('SUPPORT_EMAIL')),
+            'payzenSupport' => PayzenApi::formatSupportEmails(PayzenTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_payzen_plugin.ui.payzen_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale'))),
             'payzenPluginVersion' => PayzenTools::getDefault('PLUGIN_VERSION'),
             'payzenGatewayVersion' => PayzenTools::getDefault('GATEWAY_VERSION')
         ];

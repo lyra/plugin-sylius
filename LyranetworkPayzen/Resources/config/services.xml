@@ -78,6 +78,8 @@
         </service>
 
         <service id="sylius_payzen_plugin.twig.extension.configuration_provider" class="Lyranetwork\Payzen\Twig\Extensions\ConfigurationProvider">
+            <argument type="service" id="translator" />
+            <argument type="service" id="request_stack" />
             <tag name="twig.extension" />
         </service>
 
