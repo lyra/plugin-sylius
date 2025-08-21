@@ -78,6 +78,8 @@
         </service>
 
         <service id="sylius_monetico_plugin.twig.extension.configuration_provider" class="Lyranetwork\Monetico\Twig\Extensions\ConfigurationProvider">
+            <argument type="service" id="translator" />
+            <argument type="service" id="request_stack" />
             <tag name="twig.extension" />
         </service>
 

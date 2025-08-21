@@ -3,6 +3,7 @@ sylius_monetico_plugin:
     monetico_payment_method_title: Zahlung per Monetico Retail
     monetico_developed_by: Entwickelt von
     monetico_support_email: 'E-Mail-Adresse: '
+    monetico_click_here: 'Klicken Sie hier'
     monetico_module_version: 'Modulversion: '
     monetico_gateway_version: 'Kompatibel mit Zahlungsschnittstelle: '
     monetico_documentation_link: 'Klicken Sie, um die Modul-Konfigurationsdokumentation zu finden: '
@@ -39,16 +40,16 @@ sylius_monetico_plugin:
       label: JavaScript client URL
     monetico_card_data_entry_mode:
       label: Eingabemodus für Zahlungsdaten
-      helptext: Wählen Sie aus, wie die Zahlungsdaten eingegeben werden. Achtung, um das Smartform zu verwenden, müssen Sie diese Option bei Monetico Retail unterschrieben haben.
+      helptext: Wählen Sie aus, wie die Zahlungsdaten eingegeben werden. Achtung, um eingebettete Zahlungsfelder zu verwenden, müssen Sie diese Option bei Monetico Retail unterschrieben haben.
     monetico_rest_popin_mode:
       label: Display in a pop-in
-      helptext: This option allows to display the Smartform in a pop-in.
+      helptext: This option allows to display the embedded payment fields in a pop-in.
     monetico_rest_theme:
       label: Thema
-      helptext: Select a theme to use to display the Smartform.
+      helptext: Select a theme to use to display the embedded payment fields.
     monetico_rest_compact_mode:
       label: Kompakter Modus
-      helptext: Diese Option ermöglicht es, die Smartform in einem kompakten Modus anzuzeigen.
+      helptext: Diese Option ermöglicht es, die Zahlungsfelder in einem kompakten Modus anzuzeigen.
     monetico_capture_delay:
       label: Zeitspanne vor Kassenschnitt (falls zutreffend)
       helptext: Anzahl der Tage bis zum Einzug der Zahlung (Einstellung über Ihr Monetico Retail Back Office).
@@ -73,9 +74,9 @@ sylius_monetico_plugin:
     test: TEST
     production: PRODUKTION
     smartform:
-      mode_smartform: Eingebettete Smartform Zahlungsfelder auf Händlerwebseite (REST-API)
-      mode_smartform_ext_with_logos: Eingebettete Smartform erweitert Zahlungsfelder auf Händlerwebseite mit Logos (REST-API)
-      mode_smartform_ext_without_logos: Eingebettete Smartform erweitert Zahlungsfelder auf Händlerwebseite ohne Logos (REST-API)
+      mode_smartform: Eingebettete Zahlungsfelder auf Händlerwebseite (REST-API)
+      mode_smartform_ext_with_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite mit Logos (REST-API)
+      mode_smartform_ext_without_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite ohne Logos (REST-API)
     theme:
       neon: Neon
       classic: Classic

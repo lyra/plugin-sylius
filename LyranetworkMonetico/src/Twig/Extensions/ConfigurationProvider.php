@@ -17,10 +17,23 @@ use Lyranetwork\Monetico\Sdk\Form\Api as MoneticoApi;
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 class ConfigurationProvider extends AbstractExtension
 {
+    private TranslatorInterface $translator;
 
-    public function __construct(){}
+    private RequestStack $requestStack;
+
+    public function __construct(
+        TranslatorInterface $translator,
+        RequestStack $requestStack
+    )
+    {
+        $this->translator = $translator;
+        $this->requestStack = $requestStack;
+    }
 
     public function getFunctions(): array
     {
@@ -38,7 +51,7 @@ class ConfigurationProvider extends AbstractExtension
 
         return [
             'moneticoDocUrls' => $docsUrls,
-            'moneticoSupport' => MoneticoApi::formatSupportEmails(MoneticoTools::getDefault('SUPPORT_EMAIL')),
+            'moneticoSupport' => MoneticoApi::formatSupportEmails(MoneticoTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_monetico_plugin.ui.monetico_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale'))),
             'moneticoPluginVersion' => MoneticoTools::getDefault('PLUGIN_VERSION'),
             'moneticoGatewayVersion' => MoneticoTools::getDefault('GATEWAY_VERSION')
         ];
