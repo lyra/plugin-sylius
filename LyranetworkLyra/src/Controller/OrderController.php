@@ -331,7 +331,7 @@ final class OrderController extends BaseOrderController
             }
 
             if (! $fromServer) {
-                $request->getSession()->getFlashBag()->add('warning', $this->translator->trans('sylius_lyra_plugin.payment.check_url_warn',  locale: $order->getLocaleCode()));
+                $request->getSession()->getFlashBag()->add('warning', $this->translator->trans('sylius_lyra_plugin.payment.check_url_warn', locale: $order->getLocaleCode()));
             }
 
             if ($lyraResponse->isPendingPayment()) {
