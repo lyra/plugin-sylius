@@ -19,10 +19,22 @@ use Sylius\Component\Customer\Context\CustomerContextInterface;
 use Lyranetwork\Lyra\Sdk\Form\Api as LyraApi;
 use Lyranetwork\Lyra\Sdk\Tools as LyraTools;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 final class ConfigurationContextProvider implements ContextProviderInterface
 {
-    public function __construct()
+    private TranslatorInterface $translator;
+
+    private RequestStack $requestStack;
+
+    public function __construct(
+        TranslatorInterface $translator,
+        RequestStack $requestStack
+        )
     {
+        $this->translator = $translator;
+        $this->requestStack = $requestStack;
     }
 
     public function provide(array $templateContext, TemplateBlock $templateBlock): array
@@ -33,7 +45,7 @@ final class ConfigurationContextProvider implements ContextProviderInterface
         }
 
         $templateContext['lyraDocUrls'] = $docsUrls;
-        $templateContext['lyraSupport'] = LyraTools::getDefault('SUPPORT_EMAIL');
+        $templateContext['lyraSupport'] = LyraApi::formatSupportEmails(LyraTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_lyra_plugin.ui.lyra_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale')));
         $templateContext['lyraPluginVersion'] = LyraTools::getDefault('PLUGIN_VERSION');
         $templateContext['lyraGatewayVersion'] = LyraTools::getDefault('GATEWAY_VERSION');
 
