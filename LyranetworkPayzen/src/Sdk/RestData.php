@@ -28,6 +28,10 @@ use Psr\Log\LoggerInterface;
 
 class RestData
 {
+    const PAYZEN_CART_MAX_NB_PRODUCTS = 85;
+    const PRODUCT_LABEL_REGEX_NOT_ALLOWED = '#[^A-Z0-9ÁÀÂÄÉÈÊËÍÌÎÏÓÒÔÖÚÙÛÜÇ ]#ui';
+    const SHIPPING_METHOD_NAME_NOT_ALLOWED = "#[^A-Z0-9ÁÀÂÄÉÈÊËÍÌÎÏÓÒÔÖÚÙÛÜÇ -]#ui";
+
     /**
      * @var ConfigService
      */
@@ -347,15 +351,19 @@ class RestData
                 'reference' => $request->get('cust_id'),
                 'billingDetails' => [
                     'language' => $request->get('language'),
-                    'title' => $request->get('cust_title'),
                     'firstName' => $request->get('cust_first_name'),
                     'lastName' => $request->get('cust_last_name'),
                     'address' => $request->get('cust_address'),
-                    'zipCode' => $request->get('cust_zipcode'),
+                    'zipCode' => $request->get('cust_zip'),
+                    'state' => $request->get('cust_state'),
                     'city' => $request->get('cust_city'),
                     'phoneNumber' => $request->get('cust_phone'),
-                    'cellPhoneNumber' => $request->get('cust_cell_phone'),
-                    'country' => $request->get('cust_country')
+                    'country' => $request->get('cust_country'),
+                    'category' => $request->get('cust_status')
+                ],
+                'shoppingCart' => [
+                    'shippingAmount' => $request->get('shipping_amount'),
+                    'cartItemInfo' => $this->getCartData($request)
                 ]
             ],
             'transactionOptions' => [
@@ -371,6 +379,10 @@ class RestData
                 'db_method_code' => $instanceCode
             ]
         ];
+
+        if ($request->get('tax_amount')) {
+            $data['customer']['shoppingCart']['taxAmount'] = $request->get('tax_amount');
+        }
 
         // In case of Smartform, only payment means supporting capture delay will be shown.
         $captureDelay = $this->configService->get(GatewayConfiguration::$PAYMENT_OPTIONS . 'capture_delay', $instanceCode);
@@ -394,11 +406,13 @@ class RestData
             $data['customer']['shippingDetails'] = [
                 'firstName' => $request->get('ship_to_first_name'),
                 'lastName' => $request->get('ship_to_last_name'),
+                'phoneNumber' => $request->get('ship_to_phone_num'),
                 'address' => $request->get('ship_to_street'),
                 'zipCode' => $request->get('ship_to_zip'),
                 'city' => $request->get('ship_to_city'),
                 'state' => $request->get('ship_to_state'),
-                'country' => $request->get('ship_to_country')
+                'country' => $request->get('ship_to_country'),
+                'deliveryCompanyName' => $request->get('ship_to_delivery_company_name')
             ];
         }
 
@@ -449,30 +463,53 @@ class RestData
             // Customer info.
             'cust_id' => $customer->getId(),
             'cust_email' => $customer->getEmail(),
-            'cust_phone' => $customer->getPhoneNumber(),
-            'cust_cell_phone' => $customer->getPhoneNumber(),
-            'cust_first_name' => $customer->getFirstName(),
-            'cust_last_name' => $customer->getLastName(),
+            'cust_phone' => $customer->getPhoneNumber() ? $customer->getPhoneNumber() : $billingAddress->getPhoneNumber(),
+            'cust_first_name' => $customer->getFirstName() ? $customer->getFirstName() : $billingAddress->getFirstName(),
+            'cust_last_name' => $customer->getLastName() ? $customer->getLastName() : $billingAddress->getLastName(),
             'cust_address' => $billingAddress->getStreet(),
             'cust_city' => $billingAddress->getCity(),
-            'cust_state' => $billingAddress->getProvinceCode(),
+            'cust_state' => $billingAddress->getProvinceName(),
             'cust_zip' => $billingAddress->getPostcode(),
             'cust_country' => $billingAddress->getCountryCode(),
+
+            // By default Sylius doesn't manage customer type.
+            'cust_status' => 'PRIVATE',
+
+            'shipping_amount' => $order->getAdjustmentsTotal(),
+            'tax_amount' => $order->getTaxTotal(),
         ];
 
         // Delivery data.
-        $shippingAddress = $order->getBillingAddress();
+        $shippingAddress = $order->getShippingAddress();
         if ($shippingAddress) {
+            $address = $shippingAddress->getStreet();
+            $zipCode = $shippingAddress->getPostcode();
+            $city = $shippingAddress->getCity();
+
             $data['ship_to_first_name'] = $shippingAddress->getFirstName();
             $data['ship_to_last_name'] = $shippingAddress->getLastName();
-            $data['ship_to_street'] = $shippingAddress->getStreet();
-            $data['ship_to_city'] = $shippingAddress->getCity();
-            $data['ship_to_state'] = $shippingAddress->getProvinceCode();
+            $data['ship_to_street'] = $address;
+            $data['ship_to_city'] = $city;
+            $data['ship_to_state'] = $shippingAddress->getProvinceName();
             $data['ship_to_country'] = $shippingAddress->getCountryCode();
-            $data['ship_to_zip'] =$shippingAddress->getPostcode();
+            $data['ship_to_zip'] = $zipCode;
+            $data['ship_to_phone_num'] = $shippingAddress->getPhoneNumber();
+
+            $shippingMethod = $this->getShippingMethod($order);
+
+            if ($shippingMethod && $shippingMethod->getName()) {
+                $delivery_company = preg_replace(self::SHIPPING_METHOD_NAME_NOT_ALLOWED, ' ', $shippingMethod->getName());
+            } else {
+                $delivery_company = preg_replace(self::SHIPPING_METHOD_NAME_NOT_ALLOWED, ' ', $address . ' ' . $zipCode . ' ' . $city);
+            }
+
+            $data['ship_to_delivery_company_name'] = $delivery_company;
         }
 
         $request->setFromArray($data);
+
+        // Send shopping cart details.
+        $this->setCartData($order, $request);
 
         return $request;
     }
@@ -523,5 +560,66 @@ class RestData
 
             return $response['answer']['formToken'];
         }
+    }
+
+    private function setCartData($order, &$request)
+    {
+        $items = $order->getItems();
+        if (count($items) > self::PAYZEN_CART_MAX_NB_PRODUCTS) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            // Get item tax rate.
+            $totalTax = 0;
+
+            $taxAdjustments = $item->getAdjustmentsRecursively('tax');
+            foreach ($taxAdjustments as $adjustment) {
+                $totalTax += $adjustment->getAmount();
+            }
+
+            $request->addProduct(
+                substr(preg_replace(self::PRODUCT_LABEL_REGEX_NOT_ALLOWED, ' ', $item->getProductName()), 0, 255),
+                $item->getUnitPrice(),
+                (int) $item->getQuantity(),
+                $item->getId(),
+                number_format($totalTax, 4, '.', '')
+            );
+        }
+    }
+
+    private function getCartData($request)
+    {
+        $nbProducts = $request->get("nb_products");
+        if (! $nbProducts) {
+            return array();
+        }
+
+        $products = array();
+        for ($index = 0; $index < $nbProducts; ++$index) {
+            $product = array(
+                "productLabel" => $request->get("product_label" . $index),
+                "productRef" => $request->get("product_ref" . $index),
+                "productQty" => $request->get("product_qty" . $index),
+                "productAmount" => $request->get("product_amount" . $index),
+                "productVat" => $request->get("product_vat" . $index)
+            );
+
+            array_push($products, $product);
+        }
+
+        return $products;
+    }
+
+    private function getShippingMethod($order)
+    {
+        $shipments = $order->getShipments();
+        foreach ($shipments as $shipment) {
+            if ($shipment->getMethod()) {
+                return $shipment->getMethod();
+            }
+        }
+
+        return null;
     }
 }

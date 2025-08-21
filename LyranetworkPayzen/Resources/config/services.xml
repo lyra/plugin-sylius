@@ -36,6 +36,8 @@
         </service>
 
         <service id="Lyranetwork\Payzen\ContextProvider\ConfigurationContextProvider" class="Lyranetwork\Payzen\ContextProvider\ConfigurationContextProvider">
+            <argument type="service" id="translator" />
+            <argument type="service" id="request_stack" />
             <tag name="sylius.ui.template_event.context_provider" />
         </service>
 

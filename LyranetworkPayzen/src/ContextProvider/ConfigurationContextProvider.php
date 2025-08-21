@@ -19,10 +19,22 @@ use Sylius\Component\Customer\Context\CustomerContextInterface;
 use Lyranetwork\Payzen\Sdk\Form\Api as PayzenApi;
 use Lyranetwork\Payzen\Sdk\Tools as PayzenTools;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 final class ConfigurationContextProvider implements ContextProviderInterface
 {
-    public function __construct()
+    private TranslatorInterface $translator;
+
+    private RequestStack $requestStack;
+
+    public function __construct(
+        TranslatorInterface $translator,
+        RequestStack $requestStack
+        )
     {
+        $this->translator = $translator;
+        $this->requestStack = $requestStack;
     }
 
     public function provide(array $templateContext, TemplateBlock $templateBlock): array
@@ -33,7 +45,7 @@ final class ConfigurationContextProvider implements ContextProviderInterface
         }
 
         $templateContext['payzenDocUrls'] = $docsUrls;
-        $templateContext['payzenSupport'] = PayzenTools::getDefault('SUPPORT_EMAIL');
+        $templateContext['payzenSupport'] = PayzenApi::formatSupportEmails(PayzenTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_payzen_plugin.ui.payzen_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale')));
         $templateContext['payzenPluginVersion'] = PayzenTools::getDefault('PLUGIN_VERSION');
         $templateContext['payzenGatewayVersion'] = PayzenTools::getDefault('GATEWAY_VERSION');
 
