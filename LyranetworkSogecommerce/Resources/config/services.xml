@@ -36,6 +36,8 @@
         </service>
 
         <service id="Lyranetwork\Sogecommerce\ContextProvider\ConfigurationContextProvider" class="Lyranetwork\Sogecommerce\ContextProvider\ConfigurationContextProvider">
+            <argument type="service" id="translator" />
+            <argument type="service" id="request_stack" />
             <tag name="sylius.ui.template_event.context_provider" />
         </service>
 

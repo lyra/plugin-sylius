@@ -3,6 +3,7 @@ sylius_sogecommerce_plugin:
     sogecommerce_payment_method_title: Zahlung per Sogecommerce
     sogecommerce_developed_by: Entwickelt von
     sogecommerce_support_email: 'E-Mail-Adresse: '
+    sogecommerce_click_here: 'Klicken Sie hier'
     sogecommerce_module_version: 'Modulversion: '
     sogecommerce_gateway_version: 'Kompatibel mit Zahlungsschnittstelle: '
     sogecommerce_documentation_link: 'Klicken Sie, um die Modul-Konfigurationsdokumentation zu finden: '
@@ -39,16 +40,16 @@ sylius_sogecommerce_plugin:
       label: JavaScript client URL
     sogecommerce_card_data_entry_mode:
       label: Eingabemodus für Zahlungsdaten
-      helptext: Wählen Sie aus, wie die Zahlungsdaten eingegeben werden. Achtung, um das Smartform zu verwenden, müssen Sie diese Option bei Sogecommerce unterschrieben haben.
+      helptext: Wählen Sie aus, wie die Zahlungsdaten eingegeben werden. Achtung, um eingebettete Zahlungsfelder zu verwenden, müssen Sie diese Option bei Sogecommerce unterschrieben haben.
     sogecommerce_rest_popin_mode:
       label: Display in a pop-in
-      helptext: This option allows to display the Smartform in a pop-in.
+      helptext: This option allows to display the embedded payment fields in a pop-in.
     sogecommerce_rest_theme:
       label: Thema
-      helptext: Select a theme to use to display the Smartform.
+      helptext: Select a theme to use to display the embedded payment fields.
     sogecommerce_rest_compact_mode:
       label: Kompakter Modus
-      helptext: Diese Option ermöglicht es, die Smartform in einem kompakten Modus anzuzeigen.
+      helptext: Diese Option ermöglicht es, die Zahlungsfelder in einem kompakten Modus anzuzeigen.
     sogecommerce_capture_delay:
       label: Zeitspanne vor Kassenschnitt (falls zutreffend)
       helptext: Anzahl der Tage bis zum Einzug der Zahlung (Einstellung über Ihr Sogecommerce Back Office).
@@ -73,9 +74,9 @@ sylius_sogecommerce_plugin:
     test: TEST
     production: PRODUKTION
     smartform:
-      mode_smartform: Eingebettete Smartform Zahlungsfelder auf Händlerwebseite (REST-API)
-      mode_smartform_ext_with_logos: Eingebettete Smartform erweitert Zahlungsfelder auf Händlerwebseite mit Logos (REST-API)
-      mode_smartform_ext_without_logos: Eingebettete Smartform erweitert Zahlungsfelder auf Händlerwebseite ohne Logos (REST-API)
+      mode_smartform: Eingebettete Zahlungsfelder auf Händlerwebseite (REST-API)
+      mode_smartform_ext_with_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite mit Logos (REST-API)
+      mode_smartform_ext_without_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite ohne Logos (REST-API)
     theme:
       neon: Neon
       classic: Classic

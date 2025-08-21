@@ -19,10 +19,22 @@ use Sylius\Component\Customer\Context\CustomerContextInterface;
 use Lyranetwork\Sogecommerce\Sdk\Form\Api as SogecommerceApi;
 use Lyranetwork\Sogecommerce\Sdk\Tools as SogecommerceTools;
 
+use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 final class ConfigurationContextProvider implements ContextProviderInterface
 {
-    public function __construct()
+    private TranslatorInterface $translator;
+
+    private RequestStack $requestStack;
+
+    public function __construct(
+        TranslatorInterface $translator,
+        RequestStack $requestStack
+        )
     {
+        $this->translator = $translator;
+        $this->requestStack = $requestStack;
     }
 
     public function provide(array $templateContext, TemplateBlock $templateBlock): array
@@ -33,7 +45,7 @@ final class ConfigurationContextProvider implements ContextProviderInterface
         }
 
         $templateContext['sogecommerceDocUrls'] = $docsUrls;
-        $templateContext['sogecommerceSupport'] = SogecommerceTools::getDefault('SUPPORT_EMAIL');
+        $templateContext['sogecommerceSupport'] = SogecommerceApi::formatSupportEmails(SogecommerceTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_sogecommerce_plugin.ui.sogecommerce_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale')));
         $templateContext['sogecommercePluginVersion'] = SogecommerceTools::getDefault('PLUGIN_VERSION');
         $templateContext['sogecommerceGatewayVersion'] = SogecommerceTools::getDefault('GATEWAY_VERSION');
 

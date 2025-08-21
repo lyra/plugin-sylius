@@ -211,12 +211,19 @@ class Api
             'ACCORD_STORE' => 'Cartes Enseignes Partenaires', 'ACCORD_STORE_SB' => 'Cartes Enseignes Partenaires (sandbox)',
             'ALINEA' => 'Carte myalinea', 'ALINEA_CDX' => 'Carte Cadeau Alinéa', 'ALINEA_CDX_SB' => 'Carte Cadeau Alinéa (sandbox)',
             'ALINEA_SB' => 'Carte myalinea (sandbox)', 'ALLOBEBE_CDX' => 'Carte Cadeau Allobébé',
-            'ALLOBEBE_CDX_SB' => 'Carte Cadeau Allobébé (sandbox)', 'APETIZ' => 'Apetiz', 'AUCHAN' => 'Carte Auchan',
+            'ALLOBEBE_CDX_SB' => 'Carte Cadeau Allobébé (sandbox)', 'ALMA' => 'Alma en 1 fois', 'ALMA_10X' => 'Alma en 10 fois',
+            'ALMA_12X' => 'Alma en 12 fois', 'ALMA_2X' => 'Alma en 2 fois', 'ALMA_3X' => 'Alma en 3 fois',
+            'ALMA_4X' => 'Alma en 4 fois', 'APETIZ' => 'Apetiz', 'APPLE_PAY' => 'Apple Pay', 'AUCHAN' => 'Carte Auchan',
             'AUCHAN_SB' => 'Carte Auchan (sandbox)', 'AURORE-MULTI' => 'Cpay Aurore', 'BANCONTACT' => 'Bancontact Mistercash',
             'BIZZBEE_CDX' => 'Carte Cadeau Bizzbee', 'BIZZBEE_CDX_SB' => 'Carte Cadeau Bizzbee (sandbox)', 'BOULANGER' => 'Carte b+',
             'BOULANGER_SB' => 'Carte b+ (sandbox)', 'BRICE_CDX' => 'Carte Cadeau Brice', 'BRICE_CDX_SB' => 'Carte Cadeau Brice (sandbox)',
-            'BUT' => 'But', 'CASINO' => 'Banque Casino', 'CA_DO_CARTE' => 'CA DO Carte', 'CDISCOUNT' => 'CDiscount',
-            'CHQ_DEJ' => 'Chèque Déjeuner', 'COFINOGA' => 'Cofinoga', 'COM_BARRY_CDX' => 'Carte Cadeau Comtesse du Barry',
+            'BUT' => 'But', 'CASINO' => 'Banque Casino', 'CA_DO_CARTE' => 'CA DO Carte', 'CDISCOUNT' => 'CDiscount', 'CHQ_DEJ' => 'Chèque Déjeuner',
+            'COFIDIS_3X_BE' => 'Cofidis in 3 installments', 'COFIDIS_3X_FR' => 'Cofidis en 3 fois',
+            'COFIDIS_4X_ES' => 'Cofidis en 4 vencimientos', 'COFIDIS_4X_FR' => 'Cofidis en 4 fois', 'COFIDIS_DFPAY_FR' => 'Cofidis Pay Later',
+            'COFIDIS_LOAN_BE' => 'Cofidis in 6-12-18 installments', 'COFIDIS_LOAN_CB' => 'Cofidis in 5-12 installments',
+            'COFIDIS_LOAN_ES' => 'Cofidis en 6-12-24 vencimientos', 'COFIDIS_LOAN_FR' => 'Amortissable',
+            'COFIDIS_LOAN_IT' => 'Cofidis Pagodil', 'COFIDIS_PAY_FR' => 'Cofidis Pay',
+            'COFINOGA' => 'Cofinoga', 'COM_BARRY_CDX' => 'Carte Cadeau Comtesse du Barry',
             'COM_BARRY_CDX_SB' => 'Carte Cadeau Comtesse du Barry (sandbox)', 'CONECS' => 'Conecs', 'CONFORAMA' => 'Conforama',
             'CORA' => 'Cora', 'CORA_BLANCHE' => 'Cora blanche', 'CORA_PREM' => 'Cora Visa Premier', 'CORA_VISA' => 'Cora Visa',
             'CVCO' => 'Chèque-Vacances Connect', 'DINERS' => 'Diners', 'DISCOVER' => 'Discover', 'ECCARD' => 'EC Card',
@@ -226,7 +233,7 @@ class Api
             'ILLICADO' => 'Carte Illicado', 'ILLICADO_SB' => 'Carte Illicado (sandbox)', 'JCB' => 'JCB',
             'JOUECLUB_CDX' => 'Carte Cadeau Joué Club', 'JOUECLUB_CDX_SB' => 'Carte Cadeau Joué Club (sandbox)',
             'JULES_CDX' => 'Carte Cadeau Jules', 'JULES_CDX_SB' => 'Carte Cadeau Jules (sandbox)',
-            'KLARNA' => 'Klarna', 'LECLERC' => 'Carte Reglo',
+            'KADEOS_CULTURE' => 'Carte Kadéos Culture', 'KADEOS_GIFT' => 'Carte Kadéos Zénith', 'KLARNA' => 'Klarna', 'LECLERC' => 'Carte Reglo',
             'LEROY-MERLIN' => 'Carte Maison Financement', 'LEROY-MERLIN_SB' => 'Carte Maison Financement (sandbox)',
             'MASTERPASS' => 'MasterPass', 'NORAUTO' => 'Carte Norauto option Financement',
             'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)', 'ONEY' => 'Paiement en 3 ou 4 fois par CB',
@@ -238,7 +245,7 @@ class Api
             'PAYPAL_SB' => 'PayPal Sandbox', 'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
             'S-MONEY' => 'S-money', 'SCT' => 'Virement SEPA', 'SDD' => 'Prélèvement SEPA', 'SODEXO' => 'Pass Restaurant',
             'SOFICARTE' => 'Soficarte', 'SOFORT_BANKING' => 'Sofort', 'SYGMA' => 'Sygma', 'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut',
-            'VILLAVERDE' => 'Carte Cadeau VillaVerde', 'VILLAVERDE_SB' => 'Carte Cadeau VillaVerde (sandbox)'
+            'VILLAVERDE' => 'Carte Cadeau VillaVerde', 'VILLAVERDE_SB' => 'Carte Cadeau VillaVerde (sandbox)', 'WERO' => 'Wero'
         );
     }
 
@@ -355,37 +362,47 @@ class Api
     }
 
     /**
-     * Format a given list of e-mails separated by commas and render them as HTML links.
-     * @param string $emails
+     * Format a given list of e-mails / URLs separated by commas and render them as HTML links.
+     * @param string $links
      * @return string
      */
-    public static function formatSupportEmails($emails)
+    public static function formatSupportEmails($links, $label = "Click here")
     {
         $formatted = '';
 
-        $parts = explode(', ', $emails);
+        $parts = explode(', ', $links);
         foreach ($parts as $part) {
-            $elts = explode(':', $part);
-            if (count($elts) === 2) {
-                $label = trim($elts[0]) . ': ';
-                $email = $elts[1];
-            } elseif (count($elts) === 1) {
-                $label = '';
-                $email = $elts[0];
+            if (strpos($part, '@')) {
+                $elts = explode(':', $part);
+                if (count($elts) === 2) {
+                    $label = trim($elts[0]) . ': ';
+                    $email = $elts[1];
+                } elseif (count($elts) === 1) {
+                    $label = '';
+                    $email = $elts[0];
+                } else {
+                    throw new \InvalidArgumentException("Invalid support e-mails string passed: {$links}.");
+                }
+
+                $email = trim($email);
+
+                if (! empty($formatted)) {
+                    $formatted .= '<br />';
+                }
+
+                $formatted .= $label . '<a href="mailto:' . $email . '">' . $email . '</a>';
             } else {
-                throw new \InvalidArgumentException("Invalid support e-mails string passed: {$emails}.");
+                $link = trim($part);
+                $formatted .= '<a href="'. $link.'" target="_blank" rel="noopener noreferrer">' . $label . '</a>';
             }
-
-            $email = trim($email);
-
-            if (! empty($formatted)) {
-                $formatted .= '<br />';
-            }
-
-            $formatted .= $label . '<a href="mailto:' . $email . '">' . $email . '</a>';
         }
 
         return $formatted;
+    }
+
+    public static function getSupportComponentEmail()
+    {
+        return '###COMPONENT_EMAIL###';
     }
 
     /**
