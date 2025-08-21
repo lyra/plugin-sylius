@@ -1,3 +1,10 @@
+# 1.4.0, 2025-08-21:
+- Bug fix: Fix shipping data mapping in payment request.
+- Send shopping cart content in payment request.
+- Update some configuration fields translations.
+- Update list of supported payment means.
+- Update list of supported currencies.
+
 # 1.3.2, 2025-02-25:
 - Bug fix: Fix error related to multiple submissions of the payment form.
 

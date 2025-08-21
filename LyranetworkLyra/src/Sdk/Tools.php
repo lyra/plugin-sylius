@@ -27,8 +27,8 @@ class Tools
     private static $LANGUAGE = 'en';
 
     private static $CMS_IDENTIFIER = 'Sylius_1.12.x';
-    private static $SUPPORT_EMAIL = 'support-ecommerce@lyra-collect.com';
-    private static $PLUGIN_VERSION = '1.3.2';
+    private static $SUPPORT_EMAIL = 'https://support.lyra.com/hc/fr/requests/new';
+    private static $PLUGIN_VERSION = '1.4.0';
     private static $GATEWAY_VERSION = 'V2';
     private static $REST_URL = 'https://api.lyra.com/api-payment/';
     private static $STATIC_URL = 'https://static.lyra.com/static/';
