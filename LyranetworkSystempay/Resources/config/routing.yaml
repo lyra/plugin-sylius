@@ -1,0 +1,35 @@
+systempay_return_url:
+  path: /systempay/rest/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Systempay\Controller\OrderController::paymentResponseAction'
+
+systempay_rest_ipn:
+  path: /systempay/rest/ipn
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Systempay\Controller\OrderController::paymentResponseAction'
+
+systempay_payment_refund:
+  path: /systempay/orders/{orderId}/payments/{id}/refund
+  methods: [PUT, POST]
+  defaults:
+    _controller: 'Lyranetwork\Systempay\Controller\RefundController::paymentRefundOrCancelAction'
+
+systempay_sylius_account_saved_cards:
+  path: /{_locale}/systempay/account/saved-cards
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Systempay\Controller\CardController::savedCardsAction'
+
+systempay_rest_form_token:
+  path: /systempay/rest/formtoken
+  methods: [POST]
+  defaults:
+    _controller: 'Lyranetwork\Systempay\Controller\OrderController::getFormToken'
+
+systempay_headless_return_url:
+  path: /systempay/rest/headless/return
+  methods: [POST, GET]
+  defaults:
+    _controller: 'Lyranetwork\Systempay\Controller\OrderController::paymentResponseAction'
