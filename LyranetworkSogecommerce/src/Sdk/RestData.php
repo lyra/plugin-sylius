@@ -362,7 +362,6 @@ class RestData
                     'category' => $request->get('cust_status')
                 ],
                 'shoppingCart' => [
-                    'shippingAmount' => $request->get('shipping_amount'),
                     'cartItemInfo' => $this->getCartData($request)
                 ]
             ],
@@ -382,6 +381,10 @@ class RestData
 
         if ($request->get('tax_amount')) {
             $data['customer']['shoppingCart']['taxAmount'] = $request->get('tax_amount');
+        }
+
+        if ($request->get('shipping_amount')) {
+            $data['customer']['shoppingCart']['shippingAmount'] = $request->get('shipping_amount');
         }
 
         // In case of Smartform, only payment means supporting capture delay will be shown.
