@@ -28,7 +28,7 @@ class Tools
 
     private static $CMS_IDENTIFIER = 'Sylius_1.12.x';
     private static $SUPPORT_EMAIL = 'https://support.sogecommerce.com/hc/fr/requests/new';
-    private static $PLUGIN_VERSION = '1.4.0';
+    private static $PLUGIN_VERSION = '1.4.1';
     private static $GATEWAY_VERSION = 'V2';
     private static $REST_URL = 'https://api-sogecommerce.societegenerale.eu/api-payment/';
     private static $STATIC_URL = 'https://api-sogecommerce.societegenerale.eu/static/';
