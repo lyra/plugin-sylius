@@ -1,3 +1,6 @@
+# 1.4.1, 2025-11-04:
+- Bug fix: Fix embedded payment form display error triggered when shipping fee is zero.
+
 # 1.4.0, 2025-08-21:
 - Bug fix: Fix shipping data mapping in payment request.
 - Send shopping cart content in payment request.
