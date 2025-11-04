@@ -362,7 +362,6 @@ class RestData
                     'category' => $request->get('cust_status')
                 ],
                 'shoppingCart' => [
-                    'shippingAmount' => $request->get('shipping_amount'),
                     'cartItemInfo' => $this->getCartData($request)
                 ]
             ],
@@ -379,6 +378,11 @@ class RestData
                 'db_method_code' => $instanceCode
             ]
         ];
+
+        $shippingAmount = $request->get('shipping_amount');
+        if (! empty($shippingAmount) && $shippingAmount !== '0') {
+            $data['customer']['shoppingCart']['shippingAmount'] = $shippingAmount;
+        }
 
         if ($request->get('tax_amount')) {
             $data['customer']['shoppingCart']['taxAmount'] = $request->get('tax_amount');
