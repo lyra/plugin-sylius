@@ -5,11 +5,9 @@ sylius_lyra_plugin:
     lyra_support_email: 'Contact us: '
     lyra_click_here: 'Click here'
     lyra_module_version: 'Module version: '
-    lyra_gateway_version: 'Gateway version: '
     lyra_documentation_link: 'Click to view the module configuration documentation: '
     lyra_advanced_options: ADVANCED OPTIONS
     lyra_payment_options: PAYMENT OPTIONS
-    lyra_restrictions: RESTRICTIONS
     lyra_rest_api_keys:
       label: REST API KEYS
       desc: 'REST API keys are available in your Lyra Expert Back Office (menu: Settings > Shops > REST API keys).'
@@ -23,8 +21,6 @@ sylius_lyra_plugin:
       label: Test password
     lyra_private_prod_key:
       label: Production password
-    lyra_rest_server_url:
-      label: REST API server URL
     lyra_public_test_key:
       label: Public test key
     lyra_public_prod_key:
@@ -36,9 +32,7 @@ sylius_lyra_plugin:
     lyra_rest_check_url:
       label: REST API Notification URL
       helptext: URL to copy into your Lyra Expert Back Office > Settings > Notification rules. In multistore mode, notification URL is the same for all the stores.
-    lyra_js_client_url:
-      label: JavaScript client URL
-    lyra_card_data_entry_mode:
+    lyra_payment_data_entry_mode:
       label: Payment data entry mode
       helptext: Select how the payment data will be entered. Attention, to use embedded payment fields, you must ensure that you have subscribed to this option with Lyra Collect.
     lyra_rest_popin_mode:
@@ -50,12 +44,6 @@ sylius_lyra_plugin:
     lyra_rest_compact_mode:
       label: Compact mode
       helptext: This option allows to display the embedded payment fields in a compact mode.
-    lyra_capture_delay:
-      label: Capture delay (if applicable)
-      helptext: The number of days before the bank capture (adjustable in your Lyra Expert Back Office).
-    lyra_validation_mode:
-      label: Validation mode (if applicable)
-      helptext: If manual is selected, you will have to confirm payments manually in your Lyra Expert Back Office.
     lyra_rest_attempts:
       label: Payment attempts number for cards
       helptext: Maximum number of payment by card retries after a failed payment (between 0 and 2). If blank, the gateway default value is 2.
@@ -65,25 +53,23 @@ sylius_lyra_plugin:
     transaction_id: "Transaction ID: "
     transaction_uuid: "Transaction UUID: "
     card_brand: "Card brand: "
+    operation_type: "Transaction type: "
+    trans_status: "Status: "
     account:
-      saved_cards:
+      customer_wallet:
         title: "Payment methods"
         error: "No saved methods found."
   config:
     all: ALL
     test: TEST
     production: PRODUCTION
-    smartform:
-      mode_smartform: Embedded payment fields on merchant site (REST API)
-      mode_smartform_ext_with_logos: Embedded payment fields extended on merchant site with logos (REST API)
-      mode_smartform_ext_without_logos: Embedded payment fields extended on merchant site without logos (REST API)
+    embedded:
+      mode_embedded: Embedded payment fields on merchant site (REST API)
+      mode_embedded_ext_with_logos: Embedded payment fields extended on merchant site with logos (REST API)
+      mode_embedded_ext_without_logos: Embedded payment fields extended on merchant site without logos (REST API)
     theme:
       neon: Neon
       classic: Classic
-    validation:
-      backoffice: Lyra Expert Back Office configuration
-      automatic: Automatic
-      manual: Manual
   payment:
     fatal: An error has occurred during the payment process.
     check_url_warn: The automatic validation has not worked. Have you correctly set up the notification URL in your Lyra Expert Back Office?

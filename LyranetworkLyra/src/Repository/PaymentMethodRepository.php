@@ -16,9 +16,21 @@ use Sylius\Bundle\CoreBundle\Doctrine\ORM\PaymentMethodRepository as BasePayment
 use Sylius\Component\Core\Model\ChannelInterface;
 use Sylius\Component\Core\Model\PaymentMethodInterface;
 
-class PaymentMethodRepository extends BasePaymentMethodRepository implements PaymentMethodRepositoryInterface
+/**
+ * Repository for managing Lyra Collect payment method entities.
+ * Extends the base Sylius payment method repository with custom query methods.
+ */
+final class PaymentMethodRepository extends BasePaymentMethodRepository implements PaymentMethodRepositoryInterface
 {
-    public function findByGatewayNameAndCode(string $gatewayFactoryName, string $code)
+    /**
+     * Finds a payment method by gateway factory name and payment method code.
+     *
+     * @param string $gatewayFactoryName The gateway factory name (e.g., 'lyra_sylius_payment')
+     * @param string $code The payment method code
+     *
+     * @return PaymentMethodInterface|null The payment method if found, null otherwise
+     */
+    public function findByGatewayNameAndCode(string $gatewayFactoryName, string $code): ?PaymentMethodInterface
     {
         $result = $this->createQueryBuilder('o')
             ->innerJoin('o.gatewayConfig', 'gatewayConfig')
@@ -33,7 +45,14 @@ class PaymentMethodRepository extends BasePaymentMethodRepository implements Pay
         return $result[0] ?? null;
     }
 
-    public function findAllByGatewayName(mixed $gatewayName)
+    /**
+     * Finds all payment methods for a specific gateway factory.
+     *
+     * @param mixed $gatewayName The gateway factory name to search for
+     *
+     * @return array<int, PaymentMethodInterface> Array of payment methods matching the gateway name
+     */
+    public function findAllByGatewayName(mixed $gatewayName): array
     {
         return $this->createQueryBuilder('o')
             ->innerJoin('o.gatewayConfig', 'gatewayConfig')

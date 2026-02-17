@@ -8,44 +8,48 @@
  * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
  */
 
+declare(strict_types=1);
+
 namespace Lyranetwork\Lyra\Service;
 
 use Lyranetwork\Lyra\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 use Lyranetwork\Lyra\Sdk\RefundProcessor as LyraRefundProcessor;
-use Lyranetwork\Lyra\Sdk\RestData;
+use Lyranetwork\Lyra\Sdk\RestHelper;
 use Lyranetwork\Lyra\Sdk\Tools as LyraTools;
 use Lyranetwork\Lyra\Sdk\Refund\Api as LyraRefund;
 use Lyranetwork\Lyra\Sdk\Form\Api as LyraApi;
 use Lyranetwork\Lyra\Sdk\Refund\OrderInfo as LyraOrderInfo;
 
-class RefundService
+/**
+ * Service for handling payment refunds through Lyra Collect payment gateway.
+ *
+ * This service manages the refund process by communicating with the Lyra REST API,
+ * preparing order information, and executing refund transactions.
+ */
+final class RefundService
 {
-    /**
-    * @var RestData
-    */
-    private $restData;
-
-    /**
-     * @var ConfigService
-     */
-    private $configService;
-
-    /**
-     * @var LyraRefundProcessor
-     */
-    private $refundProcessor;
-
     public function __construct(
-        RestData $restData,
-        ConfigService $configService,
-        LyraRefundProcessor $refundProcessor
+        private RestHelper $restHelper,
+        private ConfigService $configService,
+        private LyraRefundProcessor $refundProcessor
     ) {
-        $this->restData = $restData;
-        $this->configService = $configService;
-        $this->refundProcessor = $refundProcessor;
     }
 
-    public function refund($paymentMethodCode, $order, $userInfo, $amount)
+    /**
+     * Processes a payment refund for the given order.
+     *
+     * This method prepares the order information, initializes the Lyra Refund API
+     * with the appropriate credentials and configuration, and executes the transaction
+     * refund through the payment gateway.
+     *
+     * @param string $paymentMethodCode The payment method code/instance identifier
+     * @param mixed  $order             The order entity to be refunded
+     * @param string $userInfo          User information (typically admin user details initiating the refund)
+     * @param int    $amount            The refund amount in the smallest currency unit (e.g., cents)
+     *
+     * @return bool True if the refund was successful, false otherwise
+     */
+    public function refund($paymentMethodCode, $order, $userInfo, $amount): bool
     {
         $lyraOrderInfo = new LyraOrderInfo();
         $lyraOrderInfo->setOrderRemoteId($order->getNumber());
@@ -57,7 +61,7 @@ class RefundService
 
         $refundApi = new LyraRefund(
             $this->refundProcessor->getProcessor(),
-            $this->restData->getPrivateKey($paymentMethodCode),
+            $this->restHelper->getPrivateKey($paymentMethodCode),
             LyraTools::getDefault('REST_URL'),
             $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'site_id', $paymentMethodCode),
             'Sylius'
