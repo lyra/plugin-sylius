@@ -7,8 +7,8 @@
  * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
  #}
 
-{% set form = hookable_metadata.context.form.gatewayConfig.config.lyra_rest_api_mode %}
+{% set form = hookable_metadata.context.form.gatewayConfig.config.lyra_rest_api_context_mode %}
 
 <div class="col-12">
-    {{ form_row(form, sylius_test_form_attribute('config-lyra-rest-api-mode')) }}
+    {{ form_row(form, sylius_test_form_attribute('config-lyra-rest-api-context-mode')) }}
 </div>

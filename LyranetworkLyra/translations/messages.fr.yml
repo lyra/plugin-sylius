@@ -5,11 +5,9 @@ sylius_lyra_plugin:
     lyra_support_email: 'Courriel de contact: '
     lyra_click_here: 'Cliquez ici'
     lyra_module_version: 'Version du module: '
-    lyra_gateway_version: 'Version de la plateforme: '
     lyra_documentation_link: 'Cliquer pour accéder à la documentation de configuration du module: '
     lyra_advanced_options: OPTIONS AVANCÉES
     lyra_payment_options: OPTIONS DE PAIEMENT
-    lyra_restrictions: RESTRICTIONS
     lyra_rest_api_keys:
       label: CLÉS D'API REST
       desc: "Les clés de l'API REST sont disponibles dans votre Back Office Lyra Expert (menu: Paramétrage > Boutiques > Clés d'API REST)."
@@ -23,8 +21,6 @@ sylius_lyra_plugin:
       label: Mot de passe de test
     lyra_private_prod_key:
       label: Mot de passe de production
-    lyra_rest_server_url:
-      label: URL du serveur de l'API REST
     lyra_public_test_key:
       label: Clé publique de test
     lyra_public_prod_key:
@@ -36,9 +32,7 @@ sylius_lyra_plugin:
     lyra_rest_check_url:
       label: URL de notification de l'API REST
       helptext: URL à copier dans le Back Office Lyra Expert > Paramétrage > Règles de notifications. En mode multi-boutique, l'URL de notification est la même pour toutes les boutiques.
-    lyra_js_client_url:
-      label: URL du client JavaScript
-    lyra_card_data_entry_mode:
+    lyra_payment_data_entry_mode:
       label: Mode de saisie des données de paiement
       helptext: Sélectionner la manière dont seront saisies les données de paiement. Attention, pour utiliser les champs de paiement embarqués, vous devez vous assurer d'avoir souscrit à cette option auprès de Lyra Collect.
     lyra_rest_popin_mode:
@@ -50,12 +44,6 @@ sylius_lyra_plugin:
     lyra_rest_compact_mode:
       label: Mode compact
       helptext: Cette option permet d'afficher les champs de paiement embarqués en mode compact.
-    lyra_capture_delay:
-      label: Délai avant remise en banque (si applicable)
-      helptext: Le nombre de jours avant la remise en banque (paramétrable sur votre Back Office Lyra Expert).
-    lyra_validation_mode:
-      label: Mode de validation (si applicable)
-      helptext: En mode manuel, vous devrez confirmer les paiements dans le Back Office Lyra Expert.
     lyra_rest_attempts:
       label: Nombre de tentatives de paiement par carte
       helptext: Nombre maximum de tentatives de paiement par carte après un paiement en échec (entre 0 et 2). Si vide, la valeur par défaut de la plateforme est 2.
@@ -65,25 +53,23 @@ sylius_lyra_plugin:
     transaction_id: "ID de transaction: "
     transaction_uuid: "UUID de transaction: "
     card_brand: "Marque de carte: "
+    operation_type: "Type de transaction: "
+    trans_status: "Statut: "
     account:
-      saved_cards:
+      customer_wallet:
         title: "Méthodes de paiement"
         error: "Aucune méthode enregistrée trouvée."
   config:
     all: TOUTES
     test: TEST
     production: PRODUCTION
-    smartform:
-      mode_smartform: Champs de paiement embarqués sur le site marchand (API REST)
-      mode_smartform_ext_with_logos: Champs de paiement étendus embarqués sur le site marchand avec les logos (API REST)
-      mode_smartform_ext_without_logos: Champs de paiement étendus embarqués sur le site marchand sans les logos (API REST)
+    embedded:
+      mode_embedded: Champs de paiement embarqués sur le site marchand (API REST)
+      mode_embedded_ext_with_logos: Champs de paiement étendus embarqués sur le site marchand avec les logos (API REST)
+      mode_embedded_ext_without_logos: Champs de paiement étendus embarqués sur le site marchand sans les logos (API REST)
     theme:
       neon: Neon
       classic: Classic
-    validation:
-      backoffice: Configuration Back Office Lyra Expert
-      automatic: Automatique
-      manual: Manuelle
   payment:
     fatal: Une erreur est survenue durant le processus de paiement.
     check_url_warn: La validation automatique n'a pas fonctionné. Avez-vous configuré correctement l'URL de notification dans le Back Office Lyra Expert?

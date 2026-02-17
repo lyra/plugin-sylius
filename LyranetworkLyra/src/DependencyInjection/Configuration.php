@@ -15,16 +15,21 @@ namespace Lyranetwork\Lyra\DependencyInjection;
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 
+/**
+ * Configuration definition for the Lyra Collect plugin.
+ * Defines the semantic configuration tree for the bundle.
+ */
 final class Configuration implements ConfigurationInterface
 {
     /**
+     * Builds the configuration tree for the Lyra Collect plugin.
+     *
+     * @return TreeBuilder The configuration tree builder
+     *
      * @psalm-suppress UnusedVariable
      */
     public function getConfigTreeBuilder(): TreeBuilder
     {
-        $treeBuilder = new TreeBuilder('lyranetwork_lyra_plugin');
-        $rootNode = $treeBuilder->getRootNode();
-
-        return $treeBuilder;
+        return new TreeBuilder('lyranetwork_lyra_plugin');
     }
 }

@@ -9,38 +9,51 @@
  */
 
 declare(strict_types=1);
+
 namespace Lyranetwork\Lyra\Service;
 
 use Lyranetwork\Lyra\Repository\PaymentMethodRepositoryInterface;
 use Lyranetwork\Lyra\Sdk\Tools;
 
-class ConfigService
+/**
+ * Service for retrieving payment gateway configuration values.
+ */
+final class ConfigService
 {
     /**
-     * @var PaymentMethodRepositoryInterface
+     * @param PaymentMethodRepositoryInterface $paymentMethodRepository Repository for retrieving payment methods
      */
-    private $paymentMethodRepository;
-
     public function __construct(
-        PaymentMethodRepositoryInterface $paymentMethodRepository
-    )
-    {
-        $this->paymentMethodRepository = $paymentMethodRepository;
+        private PaymentMethodRepositoryInterface $paymentMethodRepository
+    ) {
     }
 
-    public function get(string $configId, string $instanceCode)
+    /**
+     * Retrieves a configuration value for a specific payment gateway instance.
+     *
+     * @param string $configId The configuration key to retrieve
+     * @param string $instanceCode The payment gateway instance code
+     *
+     * @return mixed The configuration value, or an empty string if not found
+     */
+    public function get(string $configId, string $instanceCode): mixed
     {
-        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(Tools::FACTORY_NAME, $instanceCode);
+        if (empty($configId)) {
+            return "";
+        }
 
+        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(Tools::FACTORY_NAME, $instanceCode);
         if (! $paymentMethod) {
             return "";
         }
 
-        $config = $paymentMethod->getGatewayConfig()->getConfig();
-        if (! isset($config[$configId])) {
+        $gatewayConfig = $paymentMethod->getGatewayConfig();
+        if (! $gatewayConfig) {
             return "";
         }
 
-        return $config[$configId];
+        $config = $gatewayConfig->getConfig();
+
+        return $config[$configId] ?? "";
     }
 }
