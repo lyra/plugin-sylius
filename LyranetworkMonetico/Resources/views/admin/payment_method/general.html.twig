@@ -9,7 +9,7 @@
 
 {% set moneticoGateway = constant('Lyranetwork\\Monetico\\Sdk\\Tools::FACTORY_NAME') %}
 {% if hookable_metadata.context.payment_method.gatewayConfig.factoryName is same as (moneticoGateway) %}
-    {% include '@LyranetworkMoneticoPlugin/_moneticoMessage.html.twig' %}
+    {% include '@LyranetworkMoneticoPlugin/plugin_metadata.html.twig' %}
 {% endif %}
 
 <div class="card mb-3">

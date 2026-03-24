@@ -217,9 +217,9 @@ class Api
             'COFIDIS_LOAN_CB' => 'Cofidis in 5-12 installments', 'COFIDIS_LOAN_ES' => 'Cofidis en 6-12-24 vencimientos',
             'COFIDIS_LOAN_FR' => 'Amortissable', 'COFIDIS_LOAN_IT' => 'Cofidis Pagodil',
             'COFIDIS_PAY_FR' => 'Cofidis Pay', 'CONECS' => 'Conecs', 'CVCO' => 'Chèque-Vacances Connect',
-            'EDENRED' => 'Ticket Restaurant', 'GIROPAY' => 'Giropay', 'GOOGLEPAY' => 'Google Pay', 'IDEAL' => 'iDEAL', 
-            'ILLICADO' => 'Carte Illicado', 'KADEOS_CULTURE' => 'Carte Kadéos Culture',
-            'KADEOS_GIFT' => 'Carte Kadéos Zénith', 'MULTIBANCO' => 'Multibanco',
+            'EDENRED' => 'Ticket Restaurant', 'GIROPAY' => 'Giropay', 'GOOGLEPAY' => 'Google Pay', 'IDEAL' => 'iDEAL',
+            'ILLICADO' => 'Carte Illicado', 'IP_WIRE' => 'Virement SEPA', 'IP_WIRE_INST' => 'Virement SEPA Instantané',
+            'KADEOS_CULTURE' => 'Carte Kadéos Culture', 'KADEOS_GIFT' => 'Carte Kadéos Zénith', 'MULTIBANCO' => 'Multibanco',
             'MYBANK' => 'MyBank', 'NORAUTO' => 'Carte Norauto option Financement',
             'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)', 'ONEY_10X_12X' => 'Paiement en 10 ou 12 fois Oney',
             'ONEY_3X_4X' => 'Paiement en 3 ou 4 fois Oney', 'ONEY_ENSEIGNE' => 'Cartes enseignes Oney',
@@ -383,11 +383,6 @@ class Api
         return $formatted;
     }
 
-    public static function getSupportComponentEmail()
-    {
-        return '###COMPONENT_EMAIL###';
-    }
-
     /**
      * Return the list of SEPA countries.
      *
@@ -427,5 +422,100 @@ class Api
             'fr' => 'https://secure.gateway.monetico-retail.com/doc/fr-FR/plugins/',
             'en' => 'https://secure.gateway.monetico-retail.com/doc/en-EN/plugins/'
         );
+    }
+
+    /**
+     * Check if the payment was successful (waiting confirmation or captured).
+     *
+     * @return bool
+     */
+    public static function isAcceptedPayment($status)
+    {
+        return in_array($status, self::getSuccessStatuses(), true) || self::isPendingPayment($status);
+    }
+
+    /**
+     * Check if the payment is waiting confirmation (successful but the amount has not been
+     * transfered and is not yet guaranteed).
+     *
+     * @return bool
+     */
+    public static function isPendingPayment($status)
+    {
+        return in_array($status, self::getPendingStatuses(), true);
+    }
+
+    /**
+     * Check if the payment process was interrupted by the buyer.
+     *
+     * @return bool
+     */
+    public static function isCancelledPayment($status)
+    {
+        return in_array($status, self::getCancelledStatuses(), true);
+    }
+
+    /**
+     * Check if the payment is to validate manually in the gateway Back Office.
+     *
+     * @return bool
+     */
+    public static function isToValidatePayment($status)
+    {
+        return in_array($status, self::getToValidateStatuses(), true);
+    }
+
+    /**
+     * Return a formatted string to output as a response to the notification URL call.
+     *
+     * @param string $case shortcut code for current situations. Most useful : payment_ok, payment_ko, auth_fail
+     * @param string $extra_message some extra information to output to the payment gateway
+     * @param string $original_encoding some extra information to output to the payment gateway
+     *
+     * @return string
+     */
+    public static function getOutputForGateway($case = '', $extra_message = '', $original_encoding = 'UTF-8')
+    {
+        // Predefined response messages according to case.
+        $cases = array(
+            'payment_ok' => array(true, 'Accepted payment, order has been updated.'),
+            'payment_ko' => array(true, 'Payment failure, order has been cancelled.'),
+            'payment_ko_bis' => array(true, 'Payment failure.'),
+            'payment_ok_already_done' => array(true, 'Accepted payment, already registered.'),
+            'payment_ko_already_done' => array(true, 'Payment failure, already registered.'),
+            'order_not_found' => array(false, 'Order not found.'),
+            'payment_ko_on_order_ok' => array(false, 'Order status does not match the payment result.'),
+            'auth_fail' => array(false, 'An error occurred while computing the signature.'),
+            'empty_cart' => array(false, 'Empty cart detected before order processing.'),
+            'unknown_status' => array(false, 'Unknown order status.'),
+            'amount_error' => array(false, 'Total paid is different from order amount.'),
+            'ok' => array(true, ''),
+            'ko' => array(false, '')
+        );
+
+        $success = array_key_exists($case, $cases) ? $cases[$case][0] : false;
+        $message = array_key_exists($case, $cases) ? $cases[$case][1] : '';
+
+        if (! empty($extra_message)) {
+            $message .= ' ' . $extra_message;
+        }
+
+        $message = str_replace("\n", ' ', $message);
+
+        // Set original CMS encoding to convert if necessary response to send to gateway.
+        $encoding = in_array(strtoupper($original_encoding), self::$SUPPORTED_ENCODINGS, true) ?
+            strtoupper($original_encoding) : 'UTF-8';
+        if ($encoding !== 'UTF-8') {
+            $message = iconv($encoding, 'UTF-8', $message);
+        }
+
+        $content = $success ? 'OK-' : 'KO-';
+        $content .= "$message\n";
+
+        $response = '<span style="display:none">';
+        $response .= htmlspecialchars($content, ENT_COMPAT, 'UTF-8');
+        $response .= '</span>';
+
+        return $response;
     }
 }

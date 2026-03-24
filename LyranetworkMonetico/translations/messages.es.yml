@@ -5,11 +5,9 @@ sylius_monetico_plugin:
     monetico_support_email: 'Contáctenos: '
     monetico_click_here: 'Haga clic aquí'
     monetico_module_version: 'Versión del módulo: '
-    monetico_gateway_version: 'Versión del portal: '
     monetico_documentation_link: 'Haga clic para ver la documentación de la configuración del módulo: '
     monetico_advanced_options: OPCIONES AVANZADAS
     monetico_payment_options: OPCIONES DE PAGO
-    monetico_restrictions: RESTRICCIONES
     monetico_rest_api_keys:
       label: CLAVES DE API REST
       desc: 'Las claves de API REST están disponibles en el Back Office Monetico Retail (menú: Configuración > Tiendas > Claves de API REST).'
@@ -23,8 +21,6 @@ sylius_monetico_plugin:
       label: Contraseña de test
     monetico_private_prod_key:
       label: Contraseña de producción
-    monetico_rest_server_url:
-      label: URL del servidor API REST
     monetico_public_test_key:
       label: Clave pública de test
     monetico_public_prod_key:
@@ -36,9 +32,7 @@ sylius_monetico_plugin:
     monetico_rest_check_url:
       label: URL de notificación de API REST
       helptext: URL a copiar en el Back Office Monetico Retail > Configuración > Reglas de notificación. En modo multitienda, la URL de notificación es la misma para todas las tiendas.
-    monetico_js_client_url:
-      label: URL del cliente JavaScript
-    monetico_card_data_entry_mode:
+    monetico_payment_data_entry_mode:
       label: Modo de ingreso de datos de pago
       helptext: Seleccione la forma en que se ingresarán los datos de pago. Atención, para usar los campos de pago incrustados, debe asegurarse de estar suscrito a esta opción con Monetico Retail.
     monetico_rest_popin_mode:
@@ -50,12 +44,6 @@ sylius_monetico_plugin:
     monetico_rest_compact_mode:
       label: Modo compacto
       helptext: Esta opción muestra los campos de pago incrustados en modo compacto.
-    monetico_capture_delay:
-      label: Plazo de captura (si es aplicable)
-      helptext: El número de días antes de la captura del pago (ajustable en su Back Office Monetico Retail).
-    monetico_validation_mode:
-      label: Modo de validación (si es aplicable)
-      helptext: Si se selecciona manual, deberá confirmar los pagos manualmente en su Back Office Monetico Retail.
     monetico_rest_attempts:
       label: Número de intentos de pago con tarjeta
       helptext: Número máximo de intentos de pago con tarjeta después de un pago fallido (entre 0 y 2). Si está en blanco, el valor por defecto del portal es 2.
@@ -65,25 +53,22 @@ sylius_monetico_plugin:
     transaction_id: "UUID de transacción: "
     transaction_uuid: "ID de transacción: "
     card_brand: "Marca de tarjeta: "
+    trans_status: "Status: "
     account:
-      saved_cards:
+      customer_wallet:
         title: "Métodos de pago"
         error: "No se encontraron métodos guardados."
   config:
     all: ALL
     test: TEST
     production: PRODUCTION
-    smartform:
-      mode_smartform: Campos de pago incrustados en el sitio web vendedor (API REST)
-      mode_smartform_ext_with_logos: Campos de pago extendidos incrustados en el sitio web vendedor con los logotipos (API REST)
-      mode_smartform_ext_without_logos: Campos de pago extendidos incrustados en el sitio web vendedor sin los logotipos (API REST)
+    embedded:
+      mode_embedded: Campos de pago incrustados en el sitio web vendedor (API REST)
+      mode_embedded_ext_with_logos: Campos de pago extendidos incrustados en el sitio web vendedor con los logotipos (API REST)
+      mode_embedded_ext_without_logos: Campos de pago extendidos incrustados en el sitio web vendedor sin los logotipos (API REST)
     theme:
       neon: Neon
       classic: Classic
-    validation:
-      backoffice: Configuración del Back Office Monetico Retail
-      automatic: Automático
-      manual: Manual
   payment:
     fatal: Ocurrió un error en el proceso de pago.
     check_url_warn: La validación automática no ha funcionado. ¿Configuró correctamente la URL de notificación en su Back Office Monetico Retail?

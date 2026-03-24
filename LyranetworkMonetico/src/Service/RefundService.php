@@ -8,44 +8,48 @@
  * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
  */
 
+declare(strict_types=1);
+
 namespace Lyranetwork\Monetico\Service;
 
 use Lyranetwork\Monetico\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 use Lyranetwork\Monetico\Sdk\RefundProcessor as MoneticoRefundProcessor;
-use Lyranetwork\Monetico\Sdk\RestData;
+use Lyranetwork\Monetico\Sdk\RestHelper;
 use Lyranetwork\Monetico\Sdk\Tools as MoneticoTools;
 use Lyranetwork\Monetico\Sdk\Refund\Api as MoneticoRefund;
 use Lyranetwork\Monetico\Sdk\Form\Api as MoneticoApi;
 use Lyranetwork\Monetico\Sdk\Refund\OrderInfo as MoneticoOrderInfo;
 
-class RefundService
+/**
+ * Service for handling payment refunds through Monetico Retail payment gateway.
+ *
+ * This service manages the refund process by communicating with the Monetico REST API,
+ * preparing order information, and executing refund transactions.
+ */
+final class RefundService
 {
-    /**
-    * @var RestData
-    */
-    private $restData;
-
-    /**
-     * @var ConfigService
-     */
-    private $configService;
-
-    /**
-     * @var MoneticoRefundProcessor
-     */
-    private $refundProcessor;
-
     public function __construct(
-        RestData $restData,
-        ConfigService $configService,
-        MoneticoRefundProcessor $refundProcessor
+        private RestHelper $restHelper,
+        private ConfigService $configService,
+        private MoneticoRefundProcessor $refundProcessor
     ) {
-        $this->restData = $restData;
-        $this->configService = $configService;
-        $this->refundProcessor = $refundProcessor;
     }
 
-    public function refund($paymentMethodCode, $order, $userInfo, $amount)
+    /**
+     * Processes a payment refund for the given order.
+     *
+     * This method prepares the order information, initializes the Monetico Refund API
+     * with the appropriate credentials and configuration, and executes the transaction
+     * refund through the payment gateway.
+     *
+     * @param string $paymentMethodCode The payment method code/instance identifier
+     * @param mixed  $order             The order entity to be refunded
+     * @param string $userInfo          User information (typically admin user details initiating the refund)
+     * @param int    $amount            The refund amount in the smallest currency unit (e.g., cents)
+     *
+     * @return bool True if the refund was successful, false otherwise
+     */
+    public function refund($paymentMethodCode, $order, $userInfo, $amount): bool
     {
         $moneticoOrderInfo = new MoneticoOrderInfo();
         $moneticoOrderInfo->setOrderRemoteId($order->getNumber());
@@ -57,7 +61,7 @@ class RefundService
 
         $refundApi = new MoneticoRefund(
             $this->refundProcessor->getProcessor(),
-            $this->restData->getPrivateKey($paymentMethodCode),
+            $this->restHelper->getPrivateKey($paymentMethodCode),
             MoneticoTools::getDefault('REST_URL'),
             $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'site_id', $paymentMethodCode),
             'Sylius'

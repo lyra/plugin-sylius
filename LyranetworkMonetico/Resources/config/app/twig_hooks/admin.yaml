@@ -4,8 +4,8 @@ sylius_twig_hooks:
       monetico_rest_api_site_id:
         template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_api_site_id.html.twig'
         priority: 0
-      monetico_rest_api_mode:
-        template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_api_mode.html.twig'
+      monetico_rest_api_context_mode:
+        template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_api_context_mode.html.twig'
         priority: 0
       monetico_rest_api_rest_check_url:
         template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_api_rest_check_url.html.twig'
@@ -20,7 +20,7 @@ sylius_twig_hooks:
         template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_api_public_test_key.html.twig'
         priority: 0
       monetico_rest_api_public_prod_key:
-        template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_public_prod_key.html.twig'
+        template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_api_public_prod_key.html.twig'
         priority: 0
       monetico_rest_api_hmac_test_key:
         template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_api_hmac_test_key.html.twig'
@@ -28,8 +28,8 @@ sylius_twig_hooks:
       monetico_rest_api_hmac_prod_key:
         template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_rest_api_hmac_prod_key.html.twig'
         priority: 0
-      monetico_advanced_options_card_data_entry_mode:
-        template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_advanced_options_card_data_entry_mode.html.twig'
+      monetico_advanced_options_payment_data_entry_mode:
+        template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_advanced_options_payment_data_entry_mode.html.twig'
         priority: 0
       monetico_advanced_options_rest_theme:
         template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_advanced_options_rest_theme.html.twig'
@@ -46,12 +46,6 @@ sylius_twig_hooks:
       monetico_advanced_options_oneclick_payment:
         template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_advanced_options_oneclick_payment.html.twig'
         priority: 0
-      monetico_payment_options_capture_delay:
-        template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_payment_options_capture_delay.html.twig'
-        priority: 0
-      monetico_payment_options_validation_mode:
-        template: '@LyranetworkMoneticoPlugin/admin/payment_method/form/monetico_payment_options_validation_mode.html.twig'
-        priority: 0
 
     'sylius_admin.payment_method.create.content.form.sections.gateway_configuration.monetico_sylius_payment':
       <<: *monetico_fields
@@ -62,10 +56,6 @@ sylius_twig_hooks:
     'sylius_admin.order.show.content.sections.payments.item':
       name:
         template: '@LyranetworkMoneticoPlugin/admin/order/payment_details.html.twig'
-        priority: 150
-    'sylius_admin.order.show.content.sections.payments.item.actions':
-      refund:
-        template: '@LyranetworkMoneticoPlugin/admin/order/payment_action_refund.html.twig'
         priority: 150
     'sylius_admin.payment_method.create.content.form.sections':
       general:

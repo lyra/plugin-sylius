@@ -5,11 +5,9 @@ sylius_monetico_plugin:
     monetico_support_email: 'Contact us: '
     monetico_click_here: 'Click here'
     monetico_module_version: 'Module version: '
-    monetico_gateway_version: 'Gateway version: '
     monetico_documentation_link: 'Click to view the module configuration documentation: '
     monetico_advanced_options: ADVANCED OPTIONS
     monetico_payment_options: PAYMENT OPTIONS
-    monetico_restrictions: RESTRICTIONS
     monetico_rest_api_keys:
       label: REST API KEYS
       desc: 'REST API keys are available in your Monetico Retail Back Office (menu: Settings > Shops > REST API keys).'
@@ -23,8 +21,6 @@ sylius_monetico_plugin:
       label: Test password
     monetico_private_prod_key:
       label: Production password
-    monetico_rest_server_url:
-      label: REST API server URL
     monetico_public_test_key:
       label: Public test key
     monetico_public_prod_key:
@@ -36,9 +32,7 @@ sylius_monetico_plugin:
     monetico_rest_check_url:
       label: REST API Notification URL
       helptext: URL to copy into your Monetico Retail Back Office > Settings > Notification rules. In multistore mode, notification URL is the same for all the stores.
-    monetico_js_client_url:
-      label: JavaScript client URL
-    monetico_card_data_entry_mode:
+    monetico_payment_data_entry_mode:
       label: Payment data entry mode
       helptext: Select how the payment data will be entered. Attention, to use embedded payment fields, you must ensure that you have subscribed to this option with Monetico Retail.
     monetico_rest_popin_mode:
@@ -50,12 +44,6 @@ sylius_monetico_plugin:
     monetico_rest_compact_mode:
       label: Compact mode
       helptext: This option allows to display the embedded payment fields in a compact mode.
-    monetico_capture_delay:
-      label: Capture delay (if applicable)
-      helptext: The number of days before the bank capture (adjustable in your Monetico Retail Back Office).
-    monetico_validation_mode:
-      label: Validation mode (if applicable)
-      helptext: If manual is selected, you will have to confirm payments manually in your Monetico Retail Back Office.
     monetico_rest_attempts:
       label: Payment attempts number for cards
       helptext: Maximum number of payment by card retries after a failed payment (between 0 and 2). If blank, the gateway default value is 2.
@@ -65,25 +53,23 @@ sylius_monetico_plugin:
     transaction_id: "Transaction ID: "
     transaction_uuid: "Transaction UUID: "
     card_brand: "Card brand: "
+    operation_type: "Transaction type: "
+    trans_status: "Status: "
     account:
-      saved_cards:
+      customer_wallet:
         title: "Payment methods"
         error: "No saved methods found."
   config:
     all: ALL
     test: TEST
     production: PRODUCTION
-    smartform:
-      mode_smartform: Embedded payment fields on merchant site (REST API)
-      mode_smartform_ext_with_logos: Embedded payment fields extended on merchant site with logos (REST API)
-      mode_smartform_ext_without_logos: Embedded payment fields extended on merchant site without logos (REST API)
+    embedded:
+      mode_embedded: Embedded payment fields on merchant site (REST API)
+      mode_embedded_ext_with_logos: Embedded payment fields extended on merchant site with logos (REST API)
+      mode_embedded_ext_without_logos: Embedded payment fields extended on merchant site without logos (REST API)
     theme:
       neon: Neon
       classic: Classic
-    validation:
-      backoffice: Monetico Retail Back Office configuration
-      automatic: Automatic
-      manual: Manual
   payment:
     fatal: An error has occurred during the payment process.
     check_url_warn: The automatic validation has not worked. Have you correctly set up the notification URL in your Monetico Retail Back Office?

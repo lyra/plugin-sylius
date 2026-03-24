@@ -9,22 +9,27 @@
 
 {% set payment = hookable_metadata.context.payment %}
 {% set moneticoGateway = constant('Lyranetwork\\Monetico\\Sdk\\Tools::FACTORY_NAME') %}
-
 <td class="py-2">
     <strong {{ sylius_test_html_attribute('payment-method') }}>{{ payment.method.name }}</strong>
-    {% if payment.details['monetico_factory_name'] is defined and payment.details['monetico_factory_name'] is same as (moneticoGateway) %}
+    {% if payment.details['monetico_factory_name'] is defined and payment.details['transactions'] is defined and payment.details['monetico_factory_name'] is same as (moneticoGateway) %}
         <div id="moneticoPaymentDetails">
-            <p>
-                {% if payment.details['monetico_trans_id'] is defined and payment.details['monetico_trans_id'] is not empty %}
-                    {{ 'sylius_monetico_plugin.ui.transaction_id'|trans }}{{payment.details['monetico_trans_id']}}<br>
-                {%endif%}
-                {% if payment.details['monetico_trans_uuid'] is defined and payment.details['monetico_trans_uuid'] is not empty %}
-                    {{ 'sylius_monetico_plugin.ui.transaction_uuid'|trans }}{{payment.details['monetico_trans_uuid']}}<br>
-                {%endif%}
-                {% if payment.details['monetico_card_brand'] is defined and payment.details['monetico_card_brand'] is not empty %}
-                    {{ 'sylius_monetico_plugin.ui.card_brand'|trans }}{{payment.details['monetico_card_brand']}}
-                {%endif%}
-            </p>
+            {% for transUuid, details in payment.details['transactions']%}
+                <p>
+                    {% if details['monetico_operation_type'] is defined and details['monetico_operation_type'] is not empty %}
+                        {{ 'sylius_monetico_plugin.ui.operation_type'|trans }}{{ details['monetico_operation_type'] }}<br>
+                    {%endif%}
+                    {{ 'sylius_monetico_plugin.ui.transaction_uuid'|trans }}{{ transUuid }}<br>
+                    {% if details['monetico_trans_id'] is defined and details['monetico_trans_id'] is not empty %}
+                        {{ 'sylius_monetico_plugin.ui.transaction_id'|trans }}{{ details['monetico_trans_id'] }}<br>
+                    {%endif%}
+                    {% if details['monetico_card_brand'] is defined and details['monetico_card_brand'] is not empty %}
+                        {{ 'sylius_monetico_plugin.ui.card_brand'|trans }}{{ details['monetico_card_brand'] }}<br>
+                    {%endif%}
+                    {% if details['monetico_trans_status'] is defined and details['monetico_trans_status'] is not empty %}
+                        {{ 'sylius_monetico_plugin.ui.trans_status'|trans }}{{ details['monetico_trans_status'] }}<br>
+                    {%endif%}
+                </p>
+            {% endfor %}
         </div>
     {% endif %}
 </td>

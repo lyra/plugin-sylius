@@ -21,49 +21,63 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Routing\Generator\UrlGenerator;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Validator\Constraints\Range;
+use Symfony\Component\Validator\Constraints\Regex;
 
 use Lyranetwork\Monetico\Sdk\Tools as MoneticoTools;
 use Lyranetwork\Monetico\Repository\PaymentMethodRepositoryInterface;
+use Lyranetwork\Monetico\Form\Type\PasswordType;
 
+/**
+ * Form type for configuring Monetico Retail payment gateway settings in Sylius.
+ * Provides configuration fields for REST API credentials, payment options, and advanced settings.
+ */
 final class SyliusGatewayConfigurationType extends AbstractType
 {
+    /** @var string Translation key prefix for form labels and help texts */
     private $PREFIX = 'sylius_monetico_plugin.';
+
+    /** @var string Field prefix for REST API configuration fields */
     public static $REST_FIELDS = 'monetico_rest_api_';
+
+    /** @var string Field prefix for advanced configuration options */
     public static $ADVANCED_FIELDS = 'monetico_advanced_options_';
+
+    /** @var string Field prefix for payment-specific options */
     public static $PAYMENT_OPTIONS = 'monetico_payment_options_';
 
     /**
-     * @var PaymentMethodRepositoryInterface
+     * @param PaymentMethodRepositoryInterface $paymentMethodRepository Repository for retrieving payment methods
+     * @param RouterInterface $router Router for generating notification URLs
+     * @param RequestStack $requestStack Request stack for accessing current request data
      */
-    private $paymentMethodRepository;
-
-    /**
-     * @var RouterInterface
-     */
-    private $router;
-
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-
     public function __construct(
-        PaymentMethodRepositoryInterface $paymentMethodRepository,
-        RouterInterface $router,
-        RequestStack $requestStack
+        private PaymentMethodRepositoryInterface $paymentMethodRepository,
+        private RouterInterface $router,
+        private RequestStack $requestStack
     ) {
-        $this->paymentMethodRepository = $paymentMethodRepository;
-        $this->router = $router;
-        $this->requestStack = $requestStack;
     }
 
+    /**
+     * Builds the payment gateway configuration form.
+     * Creates form fields for REST API credentials, payment mode, advanced options,
+     * and payment-specific settings. Pre-populates fields with existing configuration.
+     *
+     * @param FormBuilderInterface $builder The form builder
+     * @param array<string, mixed> $options Form options (not used)
+     *
+     * @return void
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $restCheckUrl = "";
         $config = [];
+
         $methodId = $this->requestStack->getCurrentRequest()->get('id');
         if ($methodId) {
             $paymentMethod = $this->paymentMethodRepository->find($methodId);
             if ($paymentMethod) {
+                $restCheckUrl = $this->router->generate('sylius_payment_method_notify', ["code" => $paymentMethod->getCode()], UrlGenerator::ABSOLUTE_URL);
                 $gatewayConfig = $paymentMethod->getGatewayConfig();
                 if ($gatewayConfig) {
                     $config = $gatewayConfig->getConfig();
@@ -72,109 +86,94 @@ final class SyliusGatewayConfigurationType extends AbstractType
         }
 
         $builder
-        ->add(self::$REST_FIELDS . 'site_id', TextType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_site_id.label',
-            'data' => $config[self::$REST_FIELDS . 'site_id'] ?? MoneticoTools::getDefault('SITE_ID'),
-            'help' => $this->PREFIX . 'ui.monetico_site_id.helptext',
-            'required' => false
-        ])
-        ->add(self::$REST_FIELDS . 'mode', ChoiceType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_mode.label',
-            'choices' => [
-                $this->PREFIX . 'config.test' => 'TEST',
-                $this->PREFIX . 'config.production' => 'PRODUCTION'
-            ],
-            'help' => $this->PREFIX . 'ui.monetico_mode.helptext',
-            'data' => $config[self::$REST_FIELDS . 'mode'] ?? 'TEST',
-            'required' => false
-        ])
-        ->add(self::$REST_FIELDS . 'rest_check_url', TextType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_rest_check_url.label',
-            'disabled' => true,
-            'help' => $this->PREFIX . 'ui.monetico_rest_check_url.helptext',
-            'required' => false,
-            'data' => $this->router->generate('monetico_rest_ipn', [], UrlGenerator::ABSOLUTE_URL)
-        ])
-        ->add(self::$REST_FIELDS . 'private_test_key', PasswordType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_private_test_key.label',
-            'required' => false
-        ])
-        ->add(self::$REST_FIELDS . 'private_prod_key', PasswordType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_private_prod_key.label',
-            'required' => false
-        ])
-        ->add(self::$REST_FIELDS . 'public_test_key', TextType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_public_test_key.label',
-            'required' => false
-        ])
-        ->add(self::$REST_FIELDS . 'public_prod_key', TextType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_public_prod_key.label',
-            'required' => false
-        ])
-        ->add(self::$REST_FIELDS . 'hmac_test_key', PasswordType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_hmac_test_key.label',
-            'required' => false
-        ])
-        ->add(self::$REST_FIELDS . 'hmac_prod_key', PasswordType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_hmac_prod_key.label',
-            'required' => false
-        ])
-        ->add(self::$ADVANCED_FIELDS . 'card_data_entry_mode', ChoiceType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_card_data_entry_mode.label',
-            'choices' => [
-                $this->PREFIX . 'config.smartform.mode_smartform' => 'MODE_SMARTFORM',
-                $this->PREFIX . 'config.smartform.mode_smartform_ext_with_logos' => 'MODE_SMARTFORM_EXT_WITH_LOGOS',
-                $this->PREFIX . 'config.smartform.mode_smartform_ext_without_logos' => 'MODE_SMARTFORM_EXT_WITHOUT_LOGOS'
-            ],
-            'help' => $this->PREFIX . 'ui.monetico_card_data_entry_mode.helptext',
-            'data' => $config[self::$ADVANCED_FIELDS . 'card_data_entry_mode'] ?? 'MODE_SMARTFORM_EXT_WITH_LOGOS',
-            'required' => false
-        ])
-        ->add(self::$ADVANCED_FIELDS . 'rest_popin_mode', CheckboxType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_rest_popin_mode.label',
-            'help' => $this->PREFIX . 'ui.monetico_rest_popin_mode.helptext',
-            'required' => false
-        ])
-        ->add(self::$ADVANCED_FIELDS . 'rest_theme', ChoiceType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_rest_theme.label',
-            'choices' => [
-                $this->PREFIX . 'config.theme.neon' => 'NEON',
-                $this->PREFIX . 'config.theme.classic' => 'CLASSIC'
-            ],
-            'help' => $this->PREFIX . 'ui.monetico_rest_theme.helptext',
-            'data' => $config[self::$ADVANCED_FIELDS . 'rest_theme'] ?? 'NEON',
-            'required' => false
-        ])
-        ->add(self::$ADVANCED_FIELDS . 'rest_compact_mode', CheckboxType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_rest_compact_mode.label',
-            'help' => $this->PREFIX . 'ui.monetico_rest_compact_mode.helptext',
-            'required' => false
-        ])
-        ->add(self::$ADVANCED_FIELDS . 'rest_attempts', NumberType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_rest_attempts.label',
-            'help' => $this->PREFIX . 'ui.monetico_rest_attempts.helptext',
-            'required' => false
-        ])
-        ->add(self::$ADVANCED_FIELDS . 'oneclick_payment', CheckboxType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_oneclick_payment.label',
-            'help' => $this->PREFIX . 'ui.monetico_oneclick_payment.helptext',
-            'required' => false
-        ])
-        ->add(self::$PAYMENT_OPTIONS . 'capture_delay', NumberType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_capture_delay.label',
-            'help' => $this->PREFIX . 'ui.monetico_capture_delay.helptext',
-            'required' => false
-        ])
-        ->add(self::$PAYMENT_OPTIONS . 'validation_mode', ChoiceType::class, [
-            'label' => $this->PREFIX . 'ui.monetico_validation_mode.label',
-            'choices' => [
-                $this->PREFIX . 'config.validation.backoffice' => '',
-                $this->PREFIX . 'config.validation.automatic' => '0',
-                $this->PREFIX . 'config.validation.manual' => '1'
-            ],
-            'help' => $this->PREFIX . 'ui.monetico_validation_mode.helptext',
-            'data' => $config[self::$PAYMENT_OPTIONS . 'validation_mode'] ?? '',
-            'required' => false
-        ]);
+            ->add(self::$REST_FIELDS . 'site_id', TextType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_site_id.label',
+                'data' => $config[self::$REST_FIELDS . 'site_id'] ?? MoneticoTools::getDefault('SITE_ID'),
+                'help' => $this->PREFIX . 'ui.monetico_site_id.helptext',
+                'required' => true
+            ])
+            ->add(self::$REST_FIELDS . 'context_mode', ChoiceType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_mode.label',
+                'choices' => [
+                    $this->PREFIX . 'config.test' => 'TEST',
+                    $this->PREFIX . 'config.production' => 'PRODUCTION'
+                ],
+                'help' => $this->PREFIX . 'ui.monetico_mode.helptext',
+                'data' => $config[self::$REST_FIELDS . 'context_mode'] ?? MoneticoTools::getDefault('CTX_MODE'),
+                'required' => false
+            ])
+            ->add(self::$REST_FIELDS . 'rest_check_url', TextType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_rest_check_url.label',
+                'disabled' => true,
+                'help' => $this->PREFIX . 'ui.monetico_rest_check_url.helptext',
+                'required' => false,
+                'data' => $restCheckUrl
+            ])
+            ->add(self::$REST_FIELDS . 'private_test_key', PasswordType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_private_test_key.label',
+                'required' => false
+            ])
+            ->add(self::$REST_FIELDS . 'private_prod_key', PasswordType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_private_prod_key.label',
+                'required' => false
+            ])
+            ->add(self::$REST_FIELDS . 'public_test_key', TextType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_public_test_key.label',
+                'required' => false
+            ])
+            ->add(self::$REST_FIELDS . 'public_prod_key', TextType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_public_prod_key.label',
+                'required' => false
+            ])
+            ->add(self::$REST_FIELDS . 'hmac_test_key', PasswordType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_hmac_test_key.label',
+                'required' => false
+            ])
+            ->add(self::$REST_FIELDS . 'hmac_prod_key', PasswordType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_hmac_prod_key.label',
+                'required' => false
+            ])
+            ->add(self::$ADVANCED_FIELDS . 'payment_data_entry_mode', ChoiceType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_payment_data_entry_mode.label',
+                'choices' => MoneticoTools::getPaymentDataEntryModeChoices($this->PREFIX),
+                'help' => $this->PREFIX . 'ui.monetico_payment_data_entry_mode.helptext',
+                'data' => $config[self::$ADVANCED_FIELDS . 'payment_data_entry_mode'] ?? MoneticoTools::getDefault('EMBEDDED_MODE'),
+                'required' => false
+            ])
+            ->add(self::$ADVANCED_FIELDS . 'rest_popin_mode', CheckboxType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_rest_popin_mode.label',
+                'help' => $this->PREFIX . 'ui.monetico_rest_popin_mode.helptext',
+                'required' => false
+            ])
+            ->add(self::$ADVANCED_FIELDS . 'rest_theme', ChoiceType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_rest_theme.label',
+                'choices' => MoneticoTools::getThemeChoices($this->PREFIX),
+                'help' => $this->PREFIX . 'ui.monetico_rest_theme.helptext',
+                'data' => $config[self::$ADVANCED_FIELDS . 'rest_theme'] ?? MoneticoTools::getDefault('THEME'),
+                'required' => false
+            ])
+            ->add(self::$ADVANCED_FIELDS . 'rest_compact_mode', CheckboxType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_rest_compact_mode.label',
+                'help' => $this->PREFIX . 'ui.monetico_rest_compact_mode.helptext',
+                'required' => false
+            ])
+            ->add(self::$ADVANCED_FIELDS . 'rest_attempts', NumberType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_rest_attempts.label',
+                'help' => $this->PREFIX . 'ui.monetico_rest_attempts.helptext',
+                'required' => false,
+                'constraints' => [
+                    new Range([
+                        'min' => 0,
+                        'max' => 2,
+                        'groups' => ['sylius'],
+                    ])
+                ]
+            ])
+            ->add(self::$ADVANCED_FIELDS . 'oneclick_payment', CheckboxType::class, [
+                'label' => $this->PREFIX . 'ui.monetico_oneclick_payment.label',
+                'help' => $this->PREFIX . 'ui.monetico_oneclick_payment.helptext',
+                'required' => false
+            ])
+        ;
     }
 }
