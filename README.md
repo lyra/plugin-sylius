@@ -8,7 +8,7 @@ PayZen for Sylius is an open source plugin that links e-commerce websites based 
 - Require the plugin with composer using the following command:
 
 ```
-composer require lyranetwork/sylius-lyranetwork-plugin dev-payzen-v2
+composer require lyranetwork/sylius-lyranetwork-plugin dev-payzen-v3
 ```
 - Add the following line in  __bundles.php__  file located in `[sylius-root]/config/`:
 

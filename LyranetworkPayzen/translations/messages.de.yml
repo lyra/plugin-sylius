@@ -5,11 +5,9 @@ sylius_payzen_plugin:
     payzen_support_email: 'E-Mail-Adresse: '
     payzen_click_here: 'Klicken Sie hier'
     payzen_module_version: 'Modulversion: '
-    payzen_gateway_version: 'Kompatibel mit Zahlungsschnittstelle: '
     payzen_documentation_link: 'Klicken Sie, um die Modul-Konfigurationsdokumentation zu finden: '
     payzen_advanced_options: ZAHLUNGSARTEN
     payzen_payment_options: ERWEITERTE OPTIONEN
-    payzen_restrictions: BESCHRÄNKUNGEN
     payzen_rest_api_keys:
       label: REST API SCHLÛSSEL
       desc: 'REST API keys are available in your PayZen Back Office (menu: Settings > Shops >  keys).'
@@ -23,8 +21,6 @@ sylius_payzen_plugin:
       label: Testpasswort
     payzen_private_prod_key:
       label: Passwort Produktion
-    payzen_rest_server_url:
-      label: REST API server URL
     payzen_public_test_key:
       label: Öffentlicher Schlüssel (Test)
     payzen_public_prod_key:
@@ -36,9 +32,7 @@ sylius_payzen_plugin:
     payzen_rest_check_url:
       label: API REST Benachrichtigung-URL
       helptext: URL, die Sie in Ihre PayZen Back Office kopieren sollen > Einstellung > Regeln der Benachrichtigungen. Unter Multistore Modus, die URL Bestätigung ist die gleiche für alle Geschäfte.
-    payzen_js_client_url:
-      label: JavaScript client URL
-    payzen_card_data_entry_mode:
+    payzen_payment_data_entry_mode:
       label: Eingabemodus für Zahlungsdaten
       helptext: Wählen Sie aus, wie die Zahlungsdaten eingegeben werden. Achtung, um eingebettete Zahlungsfelder zu verwenden, müssen Sie diese Option bei PayZen unterschrieben haben.
     payzen_rest_popin_mode:
@@ -50,12 +44,6 @@ sylius_payzen_plugin:
     payzen_rest_compact_mode:
       label: Kompakter Modus
       helptext: Diese Option ermöglicht es, die Zahlungsfelder in einem kompakten Modus anzuzeigen.
-    payzen_capture_delay:
-      label: Zeitspanne vor Kassenschnitt (falls zutreffend)
-      helptext: Anzahl der Tage bis zum Einzug der Zahlung (Einstellung über Ihr PayZen Back Office).
-    payzen_validation_mode:
-      label: Bestätigungsmodus (falls zutreffend)
-      helptext: Bei manueller Eingabe müssen Sie Zahlungen manuell in Ihr PayZen Back Office bestätigen.
     payzen_rest_attempts:
       label: Payment attempts number for cards
       helptext: Maximum number of payment by card retries after a failed payment (between 0 and 2). If blank, the gateway default value is 2.
@@ -65,25 +53,23 @@ sylius_payzen_plugin:
     transaction_id: "Transaktion ID: "
     transaction_uuid: "Transaktion UUID: "
     card_brand: "Kartenmarke: "
+    operation_type: "Transaktionsart: "
+    trans_status: "Status: "
     account:
-      saved_cards:
+      customer_wallet:
         title: "Payment methods"
         error: "No saved methods found."
   config:
     all: ALLE
     test: TEST
     production: PRODUKTION
-    smartform:
-      mode_smartform: Eingebettete Zahlungsfelder auf Händlerwebseite (REST-API)
-      mode_smartform_ext_with_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite mit Logos (REST-API)
-      mode_smartform_ext_without_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite ohne Logos (REST-API)
+    embedded:
+      mode_embedded: Eingebettete Zahlungsfelder auf Händlerwebseite (REST-API)
+      mode_embedded_ext_with_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite mit Logos (REST-API)
+      mode_embedded_ext_without_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite ohne Logos (REST-API)
     theme:
       neon: Neon
       classic: Classic
-    validation:
-      backoffice: PayZen Back Office Konfiguration
-      automatic: Automatisch
-      manual: Manuell
   payment:
     fatal: Ein Fehler ist während dem Zahlungsvorgang unterlaufen.
     check_url_warn: Die automatische Bestätigung hat nicht funktioniert. Haben Sie die Benachrichtigung-URL im Back Office PayZen richtig eingestellt?

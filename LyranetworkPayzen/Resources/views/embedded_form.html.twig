@@ -1,0 +1,75 @@
+{#
+* Copyright © Lyra Network.
+* This file is part of PayZen plugin for Sylius. See COPYING.md for license details.
+*
+* @author    Lyra Network (https://www.lyra.com/)
+* @copyright Lyra Network
+* @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
+#}
+
+{% set methodCode = '' %}
+{% if instanceCode is defined %}
+    {% set methodCode = instanceCode %}
+{% else %}
+    {% set methodCode = method.code %}
+{% endif %}
+
+{% set embeddedFormConfig = getEmbeddedFormConfig(methodCode) %}
+
+{% if order is defined %}
+    {% set formToken, popin, dataEntryMode, logoHeader = getEmbeddedFormToken(order, methodCode, paymentRequestHash).formToken, '', '', '' %}
+    {% if embeddedFormConfig.popinMode %}
+        {% set popin = 'kr-popin' %}
+    {% endif %}
+
+    {% if embeddedFormConfig.paymentDataEntryMode is same as('MODE_EMBEDDED_EXT_WITH_LOGOS') or embeddedFormConfig.paymentDataEntryMode is same as('MODE_EMBEDDED_EXT_WITHOUT_LOGOS') %}
+        {% set dataEntryMode = 'kr-card-form-expanded' %}
+    {% endif %}
+
+    {% if embeddedFormConfig.paymentDataEntryMode is same as('MODE_EMBEDDED_EXT_WITHOUT_LOGOS') %}
+        {% set logoHeader = 'kr-no-card-logo-header ' %}
+    {% endif %}
+{% elseif accountToken is not empty %}
+    {% set formToken, returnUrl, popin, dataEntryMode, logoHeader = accountToken, path('payzen_sylius_account_customer_wallet'), '', 'kr-card-form-expanded', '' %}
+{% endif %}
+
+<div id="payzenPaymentMethodForm">
+    <script src="{{ embeddedFormConfig.jsClient }}js/krypton-client/V4.0/stable/kr-payment-form.min.js"
+            kr-public-key="{{ embeddedFormConfig.publicKey }}"
+            kr-language="{{ embeddedFormConfig.language }}"
+            kr-post-url-success="{{ returnUrl }}"
+            kr-post-url-refused="{{ returnUrl }}"
+    ></script>
+    <link rel="stylesheet" href="{{ embeddedFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ embeddedFormConfig.theme }}-reset.css">
+    <script src="{{ embeddedFormConfig.jsClient }}js/krypton-client/V4.0/ext/{{ embeddedFormConfig.theme }}.js"></script>
+
+    <div class="kr-smart-form" {{ popin }} {{ dataEntryMode }} {{ logoHeader }} kr-form-token="{{ formToken }}" style="z-index: 3; width: 100%;"></div>
+    {% if order is defined %}
+    <script>
+        function configureEmbeddedForm() {
+            if ('{{ embeddedFormConfig.compactMode }}') {
+                KR.setFormConfig({ cardForm: { layout: "compact" }, smartForm: { layout: "compact" }});
+            }
+
+            KR.onPopinClosed(() => {
+                $('.kr-smart-form-modal-button').css('display', 'flex !important');
+            });
+
+            KR.onFormReady(() => {
+                const popin = '{{embeddedFormConfig.popinMode}}' === '1';
+                if (popin) {
+                    KR.openPopin();
+                }
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", configureEmbeddedForm, false);
+    </script>
+
+    <style>
+        .kr-smart-form-modal-button {
+            display: none !important;
+        }
+    </style>
+    {% endif %}
+</div>

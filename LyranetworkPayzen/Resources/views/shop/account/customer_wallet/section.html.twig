@@ -11,10 +11,10 @@
 {% set instanceCode = hookable_metadata.context.instanceCode%}
 
 <h1 class="ui header">
-    {{ 'sylius_payzen_plugin.ui.account.saved_cards.title'|trans }}
+    {{ 'sylius_payzen_plugin.ui.account.customer_wallet.title'|trans }}
 </h1>
 {% if hookable_metadata.context.accountToken %}
-    {{ include ('@LyranetworkPayzenPlugin/_payzenSmartform.html.twig', {'accountToken': hookable_metadata.context.accountToken}) }}
+    {{ include ('@LyranetworkPayzenPlugin/embedded_form.html.twig', {'accountToken': hookable_metadata.context.accountToken}) }}
 {% else %}
-    {{ 'sylius_payzen_plugin.ui.account.saved_cards.error'|trans }}
+    {{ 'sylius_payzen_plugin.ui.account.customer_wallet.error'|trans }}
 {% endif %}

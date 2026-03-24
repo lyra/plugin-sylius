@@ -12,14 +12,22 @@
 
 <container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
     <services>
+        <service id="monolog.handler.payzen_stream" class="Monolog\Handler\StreamHandler" public="false">
+            <argument>%kernel.logs_dir%/payzen.log</argument>
+            <argument>INFO</argument>
+            <argument>false</argument>
+        </service>
+
+        <service id="monolog.logger.payzen" class="Monolog\Logger" public="false">
+            <argument>payzen</argument>
+            <argument type="collection">
+                <argument type="service" id="monolog.handler.payzen_stream" />
+            </argument>
+        </service>
+
         <service id="Lyranetwork\Payzen\Repository\PaymentMethodRepositoryInterface"
                  class="Lyranetwork\Payzen\Repository\PaymentMethodRepository"
                  parent="sylius.repository.payment_method">
-        </service>
-
-        <service id="Lyranetwork\Payzen\Repository\OrderRepositoryInterface"
-                 class="Lyranetwork\Payzen\Repository\OrderRepository"
-                 parent="sylius.repository.order">
         </service>
 
         <service id="Lyranetwork\Payzen\Form\Type\SyliusGatewayConfigurationType">
@@ -38,46 +46,37 @@
             <argument type="service" id="Lyranetwork\Payzen\Repository\PaymentMethodRepositoryInterface" />
         </service>
 
-        <service id="Lyranetwork\Payzen\Service\OrderService">
-            <argument type="service" id="Lyranetwork\Payzen\Repository\OrderRepositoryInterface" />
-            <argument type="service" id="Sylius\Bundle\CoreBundle\Mailer\OrderEmailManagerInterface" />
-            <argument type="service" id="logger" />
-        </service>
-
         <service id="Lyranetwork\Payzen\Service\RefundService">
-            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestData" />
+            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestHelper" />
             <argument type="service" id="Lyranetwork\Payzen\Service\ConfigService" />
             <argument type="service" id="Lyranetwork\Payzen\Sdk\RefundProcessor" />
         </service>
 
-        <service id="Lyranetwork\Payzen\Sdk\RestData">
+        <service id="Lyranetwork\Payzen\Sdk\RestHelper">
             <argument type="service" id="Lyranetwork\Payzen\Service\ConfigService" />
-            <argument type="service" id="logger" />
+            <argument type="service" id="monolog.logger.payzen" />
             <argument type="service" id="router" />
             <argument type="service" id="sylius.repository.customer" />
-            <argument type="service" id="request_stack" />
         </service>
 
         <service id="Lyranetwork\Payzen\Sdk\RefundProcessor" public="true">
-            <argument type="service" id="logger" />
+            <argument type="service" id="monolog.logger.payzen" />
             <argument type="service" id="translator" />
             <argument type="service" id="request_stack" />
-            <argument type="service" id="Lyranetwork\Payzen\Repository\OrderRepositoryInterface" />
-            <argument type="service" id="sylius.manager.payment" />
+            <argument type="service" id="sylius.repository.payment_request" />
+            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestHelper" />
             <argument type="service" id="sylius_abstraction.state_machine" />
         </service>
 
-        <service id="sylius_payzen_plugin.twig.extension.smartform_provider" class="Lyranetwork\Payzen\Twig\Extensions\SmartformProvider">
-            <argument type="service" id="logger" />
+        <service id="sylius_payzen_plugin.twig.extension.embedded_form_provider" class="Lyranetwork\Payzen\Twig\Extensions\EmbeddedFormProvider">
+            <argument type="service" id="monolog.logger.payzen" />
             <argument type="service" id="Lyranetwork\Payzen\Service\ConfigService" />
-            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestData" />
-            <argument type="service" id="Lyranetwork\Payzen\Service\OrderService" />
-            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestHelper" />
             <argument type="service" id="sylius.context.locale" />
             <tag name="twig.extension" />
         </service>
 
-        <service id="sylius_payzen_plugin.twig.extension.configuration_provider" class="Lyranetwork\Payzen\Twig\Extensions\ConfigurationProvider">
+        <service id="sylius_payzen_plugin.twig.extension.plugin_metadata_provider" class="Lyranetwork\Payzen\Twig\Extensions\PluginMetadataProvider">
             <argument type="service" id="translator" />
             <argument type="service" id="request_stack" />
             <tag name="twig.extension" />
@@ -90,18 +89,12 @@
             <tag name="kernel.event_listener" event="sylius.menu.shop.account" method="addAccountMenuItems" />
         </service>
 
-        <service id="sylius_payzen_plugin.event_listener.order_workflow" class="Lyranetwork\Payzen\EventListener\OrderWorkflowListener">
-            <argument type="service" id="Lyranetwork\Payzen\Service\OrderService" />
-
-            <tag name="kernel.event_listener" event="workflow.sylius_payment.completed.complete" priority="-100" />
-        </service>
-
-        <service id="Lyranetwork\Payzen\Controller\CardController" public="true">
+        <service id="Lyranetwork\Payzen\Controller\CustomerWalletController" public="true">
             <argument type="service" id="Lyranetwork\Payzen\Repository\PaymentMethodRepositoryInterface" />
             <argument type="service" id="sylius.repository.customer" />
             <argument type="service" id="sylius.context.customer" />
             <argument type="service" id="sylius.context.currency" />
-            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestData" />
+            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestHelper" />
             <argument type="service" id="router" />
             <argument type="service" id="twig" />
             <argument type="service" id="Lyranetwork\Payzen\Service\ConfigService" />
@@ -109,26 +102,113 @@
             <tag name="controller.service_arguments" />
         </service>
 
-        <service id="Lyranetwork\Payzen\Controller\RefundController" public="true">
-            <argument type="service" id="sylius.repository.payment" />
-            <argument type="service" id="logger" />
-            <argument type="service" id="Lyranetwork\Payzen\Service\OrderService" />
-            <argument type="service" id="Lyranetwork\Payzen\Service\RefundService" />
-            <argument type="service" id="sylius.manager.payment" />
-            <argument type="service" id="request_stack" />
-            <argument type="service" id="sylius_abstraction.state_machine" />
+        <service id="lyranetwork.lyra.command_provider.payzen_sylius_payment" class="Sylius\Bundle\PaymentBundle\CommandProvider\ActionsCommandProvider">
+            <argument type="tagged_locator" tag="lyranetwork.lyra.command_provider.payzen_sylius_payment" index-by="action" />
+            <tag name="sylius.payment_request.command_provider" gateway-factory="payzen_sylius_payment" />
         </service>
 
-        <service id="Lyranetwork\Payzen\Controller\OrderController" public="true" parent="sylius.controller.order">
-            <argument type="service" id="logger" />
-            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestData" />
-            <argument type="service" id="Lyranetwork\Payzen\Service\ConfigService" />
-            <argument type="service" id="Lyranetwork\Payzen\Service\OrderService" />
-            <argument type="service" id="Lyranetwork\Payzen\Repository\PaymentMethodRepositoryInterface" />
-            <argument type="service" id="translator" />
-            <argument type="service" id="sylius.context.locale" />
-            <argument type="service" id="router" />
+        <service id="lyranetwork.lyra.command_provider.sylius_payment_capture" class="Lyranetwork\Payzen\CommandProvider\CapturePaymentRequestCommandProvider">
+            <tag name="lyranetwork.lyra.command_provider.payzen_sylius_payment" action="capture"/>
+        </service>
+
+        <service id="lyranetwork.lyra.command.sylius_payment_capture" class="Lyranetwork\Payzen\Command\CapturePaymentRequest">
+        </service>
+
+        <service id="lyranetwork.lyra.command_handler.sylius_payment_capture" class="Lyranetwork\Payzen\CommandHandler\CapturePaymentRequestHandler">
+            <argument type="service" id="sylius.provider.payment_request" />
             <argument type="service" id="sylius_abstraction.state_machine" />
+            <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" />
+        </service>
+
+        <service id="lyranetwork.lyra.command_provider.sylius_payment_status" class="Lyranetwork\Payzen\CommandProvider\StatusPaymentRequestCommandProvider">
+            <tag name="lyranetwork.lyra.command_provider.payzen_sylius_payment" action="status" />
+        </service>
+
+        <service id="lyranetwork.lyra.command.sylius_payment_status" class="Lyranetwork\Payzen\Command\StatusPaymentRequest">
+        </service>
+
+        <service id="lyranetwork.lyra.command_handler.sylius_payment_status" class="Lyranetwork\Payzen\CommandHandler\StatusPaymentRequestHandler">
+            <argument type="service" id="sylius.provider.payment_request" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="monolog.logger.payzen" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="Lyranetwork\Payzen\Service\ConfigService" />
+            <argument type="service" id="translator" />
+            <argument type="service" id="Lyranetwork\Payzen\Processor\PaymentResultProcessor" />
+            <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" />
+        </service>
+
+        <service id="lyranetwork.lyra.command_provider.sylius_payment_notify" class="Lyranetwork\Payzen\CommandProvider\NotifyPaymentRequestCommandProvider">
+            <tag name="lyranetwork.lyra.command_provider.payzen_sylius_payment" action="notify" />
+        </service>
+
+        <service id="lyranetwork.lyra.command.sylius_payment_notify" class="Lyranetwork\Payzen\Command\NotifyPaymentRequest">
+        </service>
+
+        <service id="lyranetwork.lyra.command_handler.sylius_payment_notify" class="Lyranetwork\Payzen\CommandHandler\NotifyPaymentRequestHandler">
+            <argument type="service" id="sylius.provider.payment_request" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="Lyranetwork\Payzen\Processor\PaymentResultProcessor" />
+            <argument type="service" id="monolog.logger.payzen" />
+            <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" handles="Lyranetwork\Payzen\Command\NotifyPaymentRequest" />
+        </service>
+
+        <service id="lyranetwork.payzen.provider.order_pay.http_response.sylius_payment" class="Sylius\Bundle\PaymentBundle\Provider\ActionsHttpResponseProvider">
+            <argument type="tagged_locator" tag="lyranetwork.payzen.provider.http_response.sylius_payment" index-by="action" />
+            <tag name="sylius.payment_request.provider.http_response" gateway-factory="payzen_sylius_payment" />
+        </service>
+
+        <service id="lyranetwork.payzen.provider.order_pay.http_response.sylius_payment.capture" class="Lyranetwork\Payzen\OrderPay\Provider\CaptureHttpResponseProvider">
+            <argument type="service" id="twig" />
+            <argument type="service" id="sylius_shop.provider.order_pay.after_pay_url" />
+            <tag name="lyranetwork.payzen.provider.http_response.sylius_payment" action="capture" />
+        </service>
+
+        <service id="Lyranetwork\Payzen\Provider\PayzenNotifyPaymentProvider">
+            <argument type="service" id="sylius.repository.payment_request" />
+            <argument type="service" id="monolog.logger.payzen" />
+            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestHelper" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <tag name="sylius.payment_request.payment_notify_provider" />
+        </service>
+
+        <service id="Lyranetwork\Payzen\Provider\PayzenNotifyResponseProvider"
+                 class="Lyranetwork\Payzen\Provider\PayzenNotifyResponseProvider"
+                 decorates="sylius.provider.payment_request.notify_response">
+            <argument type="service" id="Lyranetwork\Payzen\Provider\PayzenNotifyResponseProvider.inner" />
+            <argument type="service" id="monolog.logger.payzen" />
+        </service>
+
+        <!-- Refund action -->
+        <service id="lyranetwork.lyra.command_provider.sylius_payment_refund" class="Lyranetwork\Payzen\CommandProvider\RefundPaymentRequestCommandProvider">
+            <tag name="lyranetwork.lyra.command_provider.payzen_sylius_payment" action="refund" />
+        </service>
+
+        <service id="lyranetwork.lyra.command.sylius_payment_refund" class="Lyranetwork\Payzen\Command\RefundPaymentRequest">
+        </service>
+
+        <service id="lyranetwork.lyra.command_handler.sylius_payment_refund" class="Lyranetwork\Payzen\CommandHandler\RefundPaymentRequestHandler">
+            <argument type="service" id="sylius.provider.payment_request" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="Lyranetwork\Payzen\Service\RefundService" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="monolog.logger.payzen" />
+            <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" />
+        </service>
+
+        <service id="lyranetwork.payzen.event_listener.workflow.payment_complete_state.refund" class="Lyranetwork\Payzen\EventListener\PaymentRefundCompletedListener">
+            <argument type="service" id="sylius.announcer.payment_request" />
+            <argument type="service" id="sylius.repository.payment_request" />
+            <argument type="service" id="sylius.checker.finalized_payment_request" />
+            <argument type="service" id="sylius.factory.payment_request" />
+            <argument type="service" id="monolog.logger.payzen" />
+            <tag name="kernel.event_listener" event="workflow.sylius_payment.completed.refund" />
+        </service>
+
+        <service id="Lyranetwork\Payzen\Processor\PaymentResultProcessor" public="true">
+            <argument type="service" id="Lyranetwork\Payzen\Sdk\RestHelper" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="monolog.logger.payzen" />
         </service>
     </services>
 </container>
