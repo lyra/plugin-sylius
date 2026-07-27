@@ -1,0 +1,35 @@
+{#
+* Copyright © Lyra Network.
+* This file is part of Sogecommerce plugin for Sylius. See COPYING.md for license details.
+*
+* @author    Lyra Network (https://www.lyra.com/)
+* @copyright Lyra Network
+* @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
+#}
+
+{% set payment = hookable_metadata.context.payment %}
+{% set sogecommerceGateway = constant('Lyranetwork\\Sogecommerce\\Sdk\\Tools::FACTORY_NAME') %}
+<td class="py-2">
+    <strong {{ sylius_test_html_attribute('payment-method') }}>{{ payment.method.name }}</strong>
+    {% if payment.details['sogecommerce_factory_name'] is defined and payment.details['transactions'] is defined and payment.details['sogecommerce_factory_name'] is same as (sogecommerceGateway) %}
+        <div id="sogecommercePaymentDetails">
+            {% for transUuid, details in payment.details['transactions']%}
+                <p>
+                    {% if details['sogecommerce_operation_type'] is defined and details['sogecommerce_operation_type'] is not empty %}
+                        {{ 'sylius_sogecommerce_plugin.ui.operation_type'|trans }}{{ details['sogecommerce_operation_type'] }}<br>
+                    {%endif%}
+                    {{ 'sylius_sogecommerce_plugin.ui.transaction_uuid'|trans }}{{ transUuid }}<br>
+                    {% if details['sogecommerce_trans_id'] is defined and details['sogecommerce_trans_id'] is not empty %}
+                        {{ 'sylius_sogecommerce_plugin.ui.transaction_id'|trans }}{{ details['sogecommerce_trans_id'] }}<br>
+                    {%endif%}
+                    {% if details['sogecommerce_card_brand'] is defined and details['sogecommerce_card_brand'] is not empty %}
+                        {{ 'sylius_sogecommerce_plugin.ui.card_brand'|trans }}{{ details['sogecommerce_card_brand'] }}<br>
+                    {%endif%}
+                    {% if details['sogecommerce_trans_status'] is defined and details['sogecommerce_trans_status'] is not empty %}
+                        {{ 'sylius_sogecommerce_plugin.ui.trans_status'|trans }}{{ details['sogecommerce_trans_status'] }}<br>
+                    {%endif%}
+                </p>
+            {% endfor %}
+        </div>
+    {% endif %}
+</td>

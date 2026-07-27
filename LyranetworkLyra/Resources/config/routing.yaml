@@ -1,6 +1,0 @@
-
-lyra_sylius_account_customer_wallet:
-  path: /{_locale}/lyra/account/customer-wallet
-  methods: [POST, GET]
-  defaults:
-    _controller: 'Lyranetwork\Lyra\Controller\CustomerWalletController::savedCardsAction'

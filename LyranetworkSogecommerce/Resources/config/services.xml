@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+/**
+ * Copyright © Lyra Network.
+ * This file is part of Sogecommerce plugin for Sylius. See COPYING.md for license details.
+ *
+ * @author    Lyra Network (https://www.lyra.com/)
+ * @copyright Lyra Network
+ * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
+ */
+-->
+
+<container xmlns="http://symfony.com/schema/dic/services" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://symfony.com/schema/dic/services http://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <service id="monolog.handler.sogecommerce_stream" class="Monolog\Handler\StreamHandler" public="false">
+            <argument>%kernel.logs_dir%/sogecommerce.log</argument>
+            <argument>INFO</argument>
+            <argument>false</argument>
+        </service>
+
+        <service id="monolog.logger.sogecommerce" class="Monolog\Logger" public="false">
+            <argument>sogecommerce</argument>
+            <argument type="collection">
+                <argument type="service" id="monolog.handler.sogecommerce_stream" />
+            </argument>
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Repository\PaymentMethodRepositoryInterface"
+                 class="Lyranetwork\Sogecommerce\Repository\PaymentMethodRepository"
+                 parent="sylius.repository.payment_method">
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Form\Type\SyliusGatewayConfigurationType">
+            <argument type="service" id="Lyranetwork\Sogecommerce\Repository\PaymentMethodRepositoryInterface" />
+            <argument type="service" id="router" />
+            <argument type="service" id="request_stack" />
+            <tag name="sylius.gateway_configuration_type" type="sogecommerce_sylius_payment" label="sylius_sogecommerce_plugin.ui.sogecommerce_payment_method_title" />
+            <tag name="form.type" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\ContextProvider\ConfigurationContextProvider" class="Lyranetwork\Sogecommerce\ContextProvider\ConfigurationContextProvider">
+            <tag name="sylius.ui.template_event.context_provider" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Service\ConfigService">
+            <argument type="service" id="Lyranetwork\Sogecommerce\Repository\PaymentMethodRepositoryInterface" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Service\RefundService">
+            <argument type="service" id="Lyranetwork\Sogecommerce\Sdk\RestHelper" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Service\ConfigService" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Sdk\RefundProcessor" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Sdk\RestHelper">
+            <argument type="service" id="Lyranetwork\Sogecommerce\Service\ConfigService" />
+            <argument type="service" id="monolog.logger.sogecommerce" />
+            <argument type="service" id="router" />
+            <argument type="service" id="sylius.repository.customer" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Sdk\RefundProcessor" public="true">
+            <argument type="service" id="monolog.logger.sogecommerce" />
+            <argument type="service" id="translator" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="sylius.repository.payment_request" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Sdk\RestHelper" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+        </service>
+
+        <service id="sylius_sogecommerce_plugin.twig.extension.embedded_form_provider" class="Lyranetwork\Sogecommerce\Twig\Extensions\EmbeddedFormProvider">
+            <argument type="service" id="monolog.logger.sogecommerce" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Service\ConfigService" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Sdk\RestHelper" />
+            <argument type="service" id="sylius.context.locale" />
+            <tag name="twig.extension" />
+        </service>
+
+        <service id="sylius_sogecommerce_plugin.twig.extension.plugin_metadata_provider" class="Lyranetwork\Sogecommerce\Twig\Extensions\PluginMetadataProvider">
+            <argument type="service" id="translator" />
+            <argument type="service" id="request_stack" />
+            <tag name="twig.extension" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\EventListener\AccountMenuListener">
+            <argument type="service" id="Lyranetwork\Sogecommerce\Repository\PaymentMethodRepositoryInterface" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Service\ConfigService" />
+            <argument type="service" id="sylius.context.channel" />
+            <tag name="kernel.event_listener" event="sylius.menu.shop.account" method="addAccountMenuItems" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Controller\CustomerWalletController" public="true">
+            <argument type="service" id="Lyranetwork\Sogecommerce\Repository\PaymentMethodRepositoryInterface" />
+            <argument type="service" id="sylius.repository.customer" />
+            <argument type="service" id="sylius.context.customer" />
+            <argument type="service" id="sylius.context.currency" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Sdk\RestHelper" />
+            <argument type="service" id="router" />
+            <argument type="service" id="twig" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Service\ConfigService" />
+            <argument type="service" id="sylius.context.channel" />
+            <tag name="controller.service_arguments" />
+        </service>
+
+        <service id="lyranetwork.lyra.command_provider.sogecommerce_sylius_payment" class="Sylius\Bundle\PaymentBundle\CommandProvider\ActionsCommandProvider">
+            <argument type="tagged_locator" tag="lyranetwork.lyra.command_provider.sogecommerce_sylius_payment" index-by="action" />
+            <tag name="sylius.payment_request.command_provider" gateway-factory="sogecommerce_sylius_payment" />
+        </service>
+
+        <service id="lyranetwork.lyra.command_provider.sylius_payment_capture" class="Lyranetwork\Sogecommerce\CommandProvider\CapturePaymentRequestCommandProvider">
+            <tag name="lyranetwork.lyra.command_provider.sogecommerce_sylius_payment" action="capture"/>
+        </service>
+
+        <service id="lyranetwork.lyra.command.sylius_payment_capture" class="Lyranetwork\Sogecommerce\Command\CapturePaymentRequest">
+        </service>
+
+        <service id="lyranetwork.lyra.command_handler.sylius_payment_capture" class="Lyranetwork\Sogecommerce\CommandHandler\CapturePaymentRequestHandler">
+            <argument type="service" id="sylius.provider.payment_request" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" />
+        </service>
+
+        <service id="lyranetwork.lyra.command_provider.sylius_payment_status" class="Lyranetwork\Sogecommerce\CommandProvider\StatusPaymentRequestCommandProvider">
+            <tag name="lyranetwork.lyra.command_provider.sogecommerce_sylius_payment" action="status" />
+        </service>
+
+        <service id="lyranetwork.lyra.command.sylius_payment_status" class="Lyranetwork\Sogecommerce\Command\StatusPaymentRequest">
+        </service>
+
+        <service id="lyranetwork.lyra.command_handler.sylius_payment_status" class="Lyranetwork\Sogecommerce\CommandHandler\StatusPaymentRequestHandler">
+            <argument type="service" id="sylius.provider.payment_request" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="monolog.logger.sogecommerce" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Service\ConfigService" />
+            <argument type="service" id="translator" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Processor\PaymentResultProcessor" />
+            <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" />
+        </service>
+
+        <service id="lyranetwork.lyra.command_provider.sylius_payment_notify" class="Lyranetwork\Sogecommerce\CommandProvider\NotifyPaymentRequestCommandProvider">
+            <tag name="lyranetwork.lyra.command_provider.sogecommerce_sylius_payment" action="notify" />
+        </service>
+
+        <service id="lyranetwork.lyra.command.sylius_payment_notify" class="Lyranetwork\Sogecommerce\Command\NotifyPaymentRequest">
+        </service>
+
+        <service id="lyranetwork.lyra.command_handler.sylius_payment_notify" class="Lyranetwork\Sogecommerce\CommandHandler\NotifyPaymentRequestHandler">
+            <argument type="service" id="sylius.provider.payment_request" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Processor\PaymentResultProcessor" />
+            <argument type="service" id="monolog.logger.sogecommerce" />
+            <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" handles="Lyranetwork\Sogecommerce\Command\NotifyPaymentRequest" />
+        </service>
+
+        <service id="lyranetwork.sogecommerce.provider.order_pay.http_response.sylius_payment" class="Sylius\Bundle\PaymentBundle\Provider\ActionsHttpResponseProvider">
+            <argument type="tagged_locator" tag="lyranetwork.sogecommerce.provider.http_response.sylius_payment" index-by="action" />
+            <tag name="sylius.payment_request.provider.http_response" gateway-factory="sogecommerce_sylius_payment" />
+        </service>
+
+        <service id="lyranetwork.sogecommerce.provider.order_pay.http_response.sylius_payment.capture" class="Lyranetwork\Sogecommerce\OrderPay\Provider\CaptureHttpResponseProvider">
+            <argument type="service" id="twig" />
+            <argument type="service" id="sylius_shop.provider.order_pay.after_pay_url" />
+            <tag name="lyranetwork.sogecommerce.provider.http_response.sylius_payment" action="capture" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Provider\SogecommerceNotifyPaymentProvider">
+            <argument type="service" id="sylius.repository.payment_request" />
+            <argument type="service" id="monolog.logger.sogecommerce" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Sdk\RestHelper" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <tag name="sylius.payment_request.payment_notify_provider" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Provider\SogecommerceNotifyResponseProvider"
+                 class="Lyranetwork\Sogecommerce\Provider\SogecommerceNotifyResponseProvider"
+                 decorates="sylius.provider.payment_request.notify_response">
+            <argument type="service" id="Lyranetwork\Sogecommerce\Provider\SogecommerceNotifyResponseProvider.inner" />
+            <argument type="service" id="monolog.logger.sogecommerce" />
+        </service>
+
+        <!-- Refund action -->
+        <service id="lyranetwork.lyra.command_provider.sylius_payment_refund" class="Lyranetwork\Sogecommerce\CommandProvider\RefundPaymentRequestCommandProvider">
+            <tag name="lyranetwork.lyra.command_provider.sogecommerce_sylius_payment" action="refund" />
+        </service>
+
+        <service id="lyranetwork.lyra.command.sylius_payment_refund" class="Lyranetwork\Sogecommerce\Command\RefundPaymentRequest">
+        </service>
+
+        <service id="lyranetwork.lyra.command_handler.sylius_payment_refund" class="Lyranetwork\Sogecommerce\CommandHandler\RefundPaymentRequestHandler">
+            <argument type="service" id="sylius.provider.payment_request" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="Lyranetwork\Sogecommerce\Service\RefundService" />
+            <argument type="service" id="request_stack" />
+            <argument type="service" id="monolog.logger.sogecommerce" />
+            <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" />
+        </service>
+
+        <service id="lyranetwork.sogecommerce.event_listener.workflow.payment_complete_state.refund" class="Lyranetwork\Sogecommerce\EventListener\PaymentRefundCompletedListener">
+            <argument type="service" id="sylius.announcer.payment_request" />
+            <argument type="service" id="sylius.repository.payment_request" />
+            <argument type="service" id="sylius.checker.finalized_payment_request" />
+            <argument type="service" id="sylius.factory.payment_request" />
+            <argument type="service" id="monolog.logger.sogecommerce" />
+            <tag name="kernel.event_listener" event="workflow.sylius_payment.completed.refund" />
+        </service>
+
+        <service id="Lyranetwork\Sogecommerce\Processor\PaymentResultProcessor" public="true">
+            <argument type="service" id="Lyranetwork\Sogecommerce\Sdk\RestHelper" />
+            <argument type="service" id="sylius_abstraction.state_machine" />
+            <argument type="service" id="monolog.logger.sogecommerce" />
+        </service>
+    </services>
+</container>

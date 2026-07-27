@@ -1,0 +1,6 @@
+sylius_twig_hooks:
+  hooks:
+    'sylius_shop.account.sogecommerce.customer_wallet.index.content.main':
+      section:
+        template: '@LyranetworkSogecommercePlugin/shop/account/customer_wallet/section.html.twig'
+        priority: 150
