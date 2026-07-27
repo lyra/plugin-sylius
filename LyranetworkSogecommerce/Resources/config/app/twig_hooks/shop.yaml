@@ -1,0 +1,14 @@
+sylius_twig_hooks:
+  hooks:
+    'sylius_shop.checkout.select_payment.content.form.select_payment.payment.choice.sogecommerce_sylius_payment':
+      details:
+        template: '@LyranetworkSogecommercePlugin/shop/checkout/select-payment/sogecommerce_choice.html.twig'
+        priority: 150
+    'sylius_shop.order.show.content.form.select_payment.payment.choice.sogecommerce_sylius_payment':
+      details:
+        template: '@LyranetworkSogecommercePlugin/shop/checkout/select-payment/sogecommerce_choice.html.twig'
+        priority: 150
+    'sylius_shop.account.sogecommerce.saved_cards.index.content.main':
+      section:
+        template: '@LyranetworkSogecommercePlugin/shop/account/saved_cards/section.html.twig'
+        priority: 150
