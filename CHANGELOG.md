@@ -1,3 +1,10 @@
+# 1.4.2, 2026-09-08:
+- Bug fix: Fix PHP warning undefined array index on some refund cases.
+- Bug fix: Fix PHP possible error on undefined or null variable.
+- Update list of supported payment means.
+- Update list of supported currencies.
+- Add new payment status CAPTURE_PENDING.
+
 # 1.4.1, 2025-11-04:
 - Bug fix: Fix embedded payment form display error triggered when shipping fee is zero.
 

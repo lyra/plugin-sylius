@@ -286,7 +286,7 @@ final class OrderController extends BaseOrderController
             'sogecommerce_payment_initial_amount' => $amount
         );
 
-        $initialAmount = $lastPayment->getDetails() && $lastPayment->getDetails()['sogecommerce_payment_initial_amount'] ? $lastPayment->getDetails()['sogecommerce_payment_initial_amount'] : $amount;
+        $initialAmount = ($lastPayment->getDetails() && ! empty($lastPayment->getDetails()['sogecommerce_payment_initial_amount'])) ? $lastPayment->getDetails()['sogecommerce_payment_initial_amount'] : $amount;
 
         if ($sogecommerceResponse->get('vads_amount') != $amount) {
             if ($sogecommerceResponse->get('operation_type') === 'DEBIT') {

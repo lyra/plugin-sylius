@@ -41,6 +41,10 @@ final class ConfigurationContextProvider implements ContextProviderInterface
     {
         $docsUrls = [];
         foreach (SogecommerceApi::getOnlineDocUri() as $lang => $docUri) {
+            if (! isset(SogecommerceTools::$doc_languages[$lang])) {
+                continue;
+            }
+
             $docsUrls[SogecommerceTools::$doc_languages[$lang]] = $docUri . 'sylius/sitemap.html';
         }
 
