@@ -1,50 +1,11 @@
 sylius_twig_hooks:
   hooks:
     base_lyra_fields: &lyra_fields
-      lyra_rest_api_site_id:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_site_id.html.twig'
-        priority: 0
-      lyra_rest_api_context_mode:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_context_mode.html.twig'
-        priority: 0
-      lyra_rest_api_rest_check_url:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_rest_check_url.html.twig'
-        priority: 0
-      lyra_rest_api_private_test_key:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_private_test_key.html.twig'
-        priority: 0
-      lyra_rest_api_private_prod_key:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_private_prod_key.html.twig'
-        priority: 0
-      lyra_rest_api_public_test_key:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_public_test_key.html.twig'
-        priority: 0
-      lyra_rest_api_public_prod_key:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_public_prod_key.html.twig'
-        priority: 0
-      lyra_rest_api_hmac_test_key:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_hmac_test_key.html.twig'
-        priority: 0
-      lyra_rest_api_hmac_prod_key:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_hmac_prod_key.html.twig'
-        priority: 0
-      lyra_advanced_options_payment_data_entry_mode:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_advanced_options_payment_data_entry_mode.html.twig'
-        priority: 0
-      lyra_advanced_options_rest_theme:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_advanced_options_rest_theme.html.twig'
-        priority: 0
-      lyra_advanced_options_rest_attempts:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_advanced_options_rest_attempts.html.twig'
-        priority: 0
-      lyra_advanced_options_rest_popin_mode:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_advanced_options_rest_popin_mode.html.twig'
-        priority: 0
-      lyra_advanced_options_rest_compact_mode:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_advanced_options_rest_compact_mode.html.twig'
-        priority: 0
-      lyra_advanced_options_oneclick_payment:
-        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_advanced_options_oneclick_payment.html.twig'
+      lyra_rest_api_widget:
+          template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_widget.html.twig'
+          priority: 0
+      lyra_rest_api_check_url:
+        template: '@LyranetworkLyraPlugin/admin/payment_method/form/lyra_rest_api_check_url.html.twig'
         priority: 0
 
     'sylius_admin.payment_method.create.content.form.sections.gateway_configuration.lyra_sylius_payment':

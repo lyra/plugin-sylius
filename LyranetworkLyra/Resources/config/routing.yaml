@@ -1,6 +1,17 @@
-
 lyra_sylius_account_customer_wallet:
   path: /{_locale}/lyra/account/customer-wallet
   methods: [POST, GET]
   defaults:
     _controller: 'Lyranetwork\Lyra\Controller\CustomerWalletController::savedCardsAction'
+
+lyra_rest_configuration_widget_token:
+  path: /lyra/rest/configuration/widget-token
+  methods: [POST]
+  defaults:
+    _controller: 'Lyranetwork\Lyra\Controller\RestConfigurationController::getWidgetToken'
+
+lyra_rest_configuration_default_form_configuration:
+  path: /lyra/rest/configuration/default-config
+  methods: [GET]
+  defaults:
+    _controller: 'Lyranetwork\Lyra\Controller\RestConfigurationController::getDefaultConfiguration'

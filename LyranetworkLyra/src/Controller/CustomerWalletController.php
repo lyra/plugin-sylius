@@ -12,10 +12,8 @@ declare(strict_types=1);
 
 namespace Lyranetwork\Lyra\Controller;
 
-use Lyranetwork\Lyra\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 use Lyranetwork\Lyra\Repository\PaymentMethodRepositoryInterface;
 use Lyranetwork\Lyra\Sdk\RestHelper;
-use Lyranetwork\Lyra\Service\ConfigService;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -45,7 +43,6 @@ final class CustomerWalletController
      * @param RestHelper $restHelper Helper service for managing REST API operations and account tokens
      * @param RouterInterface $router Router for generating URLs
      * @param Environment $twig Twig template engine for rendering views
-     * @param ConfigService $configService Service for accessing gateway configuration
      * @param ChannelContextInterface $channelContext Context for accessing the current channel
      */
     public function __construct(
@@ -56,7 +53,6 @@ final class CustomerWalletController
         private RestHelper $restHelper,
         private RouterInterface $router,
         private Environment $twig,
-        private ConfigService $configService,
         private ChannelContextInterface $channelContext
     ) {
     }
@@ -128,10 +124,7 @@ final class CustomerWalletController
                 continue;
             }
 
-            $oneClickEnabled = $this->configService->get(
-                GatewayConfiguration::$ADVANCED_FIELDS . 'oneclick_payment',
-                $paymentMethod->getCode()
-            );
+            $oneClickEnabled = $this->restHelper->isOneClickEnabled($paymentMethod->getCode());
 
             if ($oneClickEnabled) {
                 return $paymentMethod->getCode();

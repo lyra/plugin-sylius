@@ -1,0 +1,32 @@
+{#
+ * Copyright © Lyra Network.
+ * This file is part of Lyra Collect plugin for Sylius. See COPYING.md for license details.
+ *
+ * @author    Lyra Network (https://www.lyra.com/)
+ * @copyright Lyra Network
+ * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
+ #}
+
+{% set form = hookable_metadata.context.form.gatewayConfig.config.lyra_rest_api_widget %}
+{% set widgetPreview = getWidgetPreview() %}
+
+<div class="col-12">
+    <div class="row align-items-center">
+        <div class="col-6">
+            <p>
+                {{ 'sylius_lyra_plugin.ui.lyra_widget_desc' | trans }}
+            </p>
+            <button id="lyra_widget" onclick="event.preventDefault(); window.epsilon.open();" class="btn btn-primary">
+                {{ ux_icon('mingcute:brush-3-fill') }}
+                {{ 'sylius_lyra_plugin.ui.lyra_open_widget' | trans }}
+            </button>
+        </div>
+        <div class="col-5">
+            <img src="{{ widgetPreview }}">
+        </div>
+    </div>
+
+    <div class="mt-3">
+        {{ form_row(form, sylius_test_form_attribute('config-lyra-rest-api-widget')) }}
+    </div>
+</div>

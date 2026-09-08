@@ -34,9 +34,6 @@ final class Tools
     /** @var string The merchant Back Office name */
     private static string $BACKOFFICE_NAME = 'Lyra Expert';
 
-    /** @var string The default site identifier */
-    private static string $SITE_ID = '12345678';
-
     /** @var string The default context mode (TEST or PRODUCTION) */
     private static string $CTX_MODE = 'TEST';
 
@@ -47,7 +44,7 @@ final class Tools
     private static string $SUPPORT_EMAIL = 'https://support.lyra.com/hc/fr/requests/new';
 
     /** @var string The current plugin version */
-    private static string $PLUGIN_VERSION = '3.0.0';
+    private static string $PLUGIN_VERSION = '3.1.0';
 
     /** @var string The REST API base URL */
     private static string $REST_URL = 'https://api.lyra.com/api-payment/';
@@ -55,11 +52,14 @@ final class Tools
     /** @var string The static resources base URL */
     private static string $STATIC_URL = 'https://static.lyra.com/static/';
 
-    /** @var string The embedded form default display mode */
-    private static string $EMBEDDED_MODE = 'MODE_EMBEDDED_EXT_WITH_LOGOS';
+    /** @var string The epsilon resources path */
+    private static string $EPSILON_PATH = 'js/epsilon/stable/';
 
     /** @var string The embedded form default theme */
-    private static string $THEME = 'NEON';
+    private static string $THEME = 'neon';
+
+    /** @var string The default language */
+    private static string $LANGUAGE = 'en';
 
     /**
      * Available plugin features and their enabled status.
@@ -67,43 +67,8 @@ final class Tools
      * @var array<string, bool>
      */
     public static array $pluginFeatures = [
-        'prodfaq' => false
-    ];
-
-    /**
-     * Available embedded form display modes.
-     *
-     * @var array<int, string>
-     */
-    public static array $embeddedModes = [
-        'MODE_EMBEDDED',
-        'MODE_EMBEDDED_EXT_WITH_LOGOS',
-        'MODE_EMBEDDED_EXT_WITHOUT_LOGOS'
-    ];
-
-    /**
-     * Available embedded form themes.
-     *
-     * @var array<int, string>
-     */
-    public static array $themes = [
-        'NEON',
-        'CLASSIC'
-    ];
-
-    /**
-     * Supported documentation languages with their display names.
-     *
-     * @var array<string, string> Language code => Language name
-     */
-    public static array $docLanguages = [
-        'fr' => 'Français',
-        'en' => 'English',
-        'es' => 'Español',
-        'de' => 'Deutsch',
-        'br' => 'Português',
-        'pt' => 'Português'
-        // Complete when other languages are managed.
+        'prodfaq' => false,
+        'whitelabelall' => false
     ];
 
     /**
@@ -133,43 +98,8 @@ final class Tools
         return self::getDefault('CMS_IDENTIFIER') . '_' . self::getDefault('PLUGIN_VERSION') . '/' . constant('Sylius\Bundle\CoreBundle\SyliusCoreBundle::VERSION') . '/' . LyraApi::shortPhpVersion();
     }
 
-    /**
-     * Returns the payment data entry mode choices formatted for Symfony form field.
-     * Transforms embedded modes into an array with translation keys as labels and mode values.
-     *
-     * @param string $translationPrefix The translation key prefix (e.g., 'sylius_lyra_plugin.')
-     *
-     * @return array<string, string> Array of translation keys => mode values
-     */
-    public static function getPaymentDataEntryModeChoices(string $translationPrefix = 'sylius_lyra_plugin.'): array
+    public static function getEpsilonUrl(): string
     {
-        $choices = [];
-
-        foreach (self::$embeddedModes as $mode) {
-            $translationKey = $translationPrefix . 'config.embedded.' . strtolower($mode);
-            $choices[$translationKey] = $mode;
-        }
-
-        return $choices;
-    }
-
-    /**
-     * Returns the theme choices formatted for Symfony form field.
-     * Transforms themes into an array with translation keys as labels and theme values.
-     *
-     * @param string $translationPrefix The translation key prefix (e.g., 'sylius_lyra_plugin.')
-     *
-     * @return array<string, string> Array of translation keys => theme values
-     */
-    public static function getThemeChoices(string $translationPrefix = 'sylius_lyra_plugin.'): array
-    {
-        $choices = [];
-
-        foreach (self::$themes as $theme) {
-            $translationKey = $translationPrefix . 'config.theme.' . strtolower($theme);
-            $choices[$translationKey] = $theme;
-        }
-
-        return $choices;
+        return self::getDefault('STATIC_URL') . self::getDefault('EPSILON_PATH');
     }
 }

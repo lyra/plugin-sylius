@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Lyra\Processor;
 
 use Lyranetwork\Lyra\Sdk\RestHelper;
-use Lyranetwork\Lyra\Sdk\Tools;
+use Lyranetwork\Lyra\Sdk\Tools as LyraTools;
 use Lyranetwork\Lyra\Sdk\Form\Api as LyraApi;
 
 use Sylius\Abstraction\StateMachine\StateMachineInterface;
@@ -98,10 +98,9 @@ final class PaymentResultProcessor {
      */
     private function updateTransactionDetails(array &$details, array $answer): void
     {
-        $details['lyra_factory_name'] = Tools::FACTORY_NAME;
-        $details['transactions'] = isset($details['transactions']) && is_array($details['transactions']) 
-            ? $details['transactions']
-            : [];
+        $details['lyra_factory_name'] = LyraTools::FACTORY_NAME;
+        $details['transactions'] = isset($details['transactions']) && is_array($details['transactions'])
+            ? $details['transactions'] : [];
 
         $transactions = $this->restHelper->getProperty($answer, 'transactions');
 
@@ -125,7 +124,6 @@ final class PaymentResultProcessor {
     private function getTransaction(array $answer): array
     {
         $transactions = $this->restHelper->getProperty($answer, 'transactions');
-    
         if (is_array($transactions) && ! empty($transactions)) {
             return $transactions[0];
         }

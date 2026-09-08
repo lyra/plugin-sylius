@@ -9,7 +9,7 @@
 
 {% set lyraGateway = constant('Lyranetwork\\Lyra\\Sdk\\Tools::FACTORY_NAME') %}
 {% if hookable_metadata.context.payment_method.gatewayConfig.factoryName is same as (lyraGateway) %}
-    {% include '@LyranetworkLyraPlugin/plugin_metadata.html.twig' %}
+    {% include '@LyranetworkLyraPlugin/plugin_widget.html.twig' %}
 {% endif %}
 
 <div class="card mb-3">
