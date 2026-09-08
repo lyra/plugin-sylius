@@ -79,9 +79,17 @@ class RefundProcessor implements Processor
             $db_order_id = $operationResponse['metadata']['db_order_id'];
             $order = $this->orderRepository->find($db_order_id);
 
-            $transactionUuid = $operationResponse['detailedStatus'] === 'CANCELLED' ? $operationResponse['uuid'] : $operationResponse['transactionDetails']['parentTransactionUuid'];
+            $transactionUuid = ($operationResponse['detailedStatus'] ?? null) === 'CANCELLED'
+                ? ($operationResponse['uuid'] ?? null)
+                : ($operationResponse['transactionDetails']['parentTransactionUuid'] ?? null);
+
+            if ($order === null || $transactionUuid === null) {
+                return;
+            }
+
             foreach ($order->getPayments() as $payment) {
-                if ($transactionUuid === $payment->getDetails()["payzen_trans_uuid"]) {
+                $paymentDetails = $payment->getDetails();
+                if ($transactionUuid === ($paymentDetails['payzen_trans_uuid'] ?? null)) {
                     $paymentToRefund = $payment;
                     break;
                 }
@@ -95,7 +103,8 @@ class RefundProcessor implements Processor
                 $this->paymentEntityManager->flush();
                 $this->requestStack->getSession()->getFlashBag()->add('success', 'sylius.payment.refunded');
 
-                $this->logger->info("Refunded order #{$operationResponse['orderDetails']['orderId']} has been saved.");
+                $orderId = $operationResponse['orderDetails']['orderId'] ?? 'unknown';
+                $this->logger->info("Refunded order #{$orderId} has been saved.");
             }
         }
     }
@@ -124,7 +133,10 @@ class RefundProcessor implements Processor
      */
     public function translate($message)
     {
-        return $this->translator->trans($message, locale: $this->requestStack->getCurrentRequest()->get('admin_locale'));
+        $currentRequest = $this->requestStack->getCurrentRequest();
+        $locale = $currentRequest ? $currentRequest->get('admin_locale') : null;
+
+        return $this->translator->trans($message, locale: $locale);
     }
 
     public function getProcessor()

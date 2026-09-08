@@ -294,7 +294,7 @@ final class OrderController extends BaseOrderController
             'payzen_payment_initial_amount' => $amount
         );
 
-        $initialAmount = $lastPayment->getDetails() && $lastPayment->getDetails()['payzen_payment_initial_amount'] ? $lastPayment->getDetails()['payzen_payment_initial_amount'] : $amount;
+        $initialAmount = ($lastPayment->getDetails() && ! empty($lastPayment->getDetails()['payzen_payment_initial_amount'])) ? $lastPayment->getDetails()['payzen_payment_initial_amount'] : $amount;
 
         if ($payzenResponse->get('vads_amount') != $amount) {
             if ($payzenResponse->get('operation_type') === 'DEBIT') {

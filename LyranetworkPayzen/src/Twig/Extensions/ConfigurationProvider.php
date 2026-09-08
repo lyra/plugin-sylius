@@ -46,12 +46,19 @@ class ConfigurationProvider extends AbstractExtension
     {
         $docsUrls = [];
         foreach (PayzenApi::getOnlineDocUri() as $lang => $docUri) {
+            if (! isset(PayzenTools::$doc_languages[$lang])) {
+                continue;
+            }
+
             $docsUrls[PayzenTools::$doc_languages[$lang]] = $docUri . 'sylius2/sitemap.html';
         }
 
+        $currentRequest = $this->requestStack->getCurrentRequest();
+        $locale = $currentRequest ? $currentRequest->get('admin_locale') : null;
+
         return [
             'payzenDocUrls' => $docsUrls,
-            'payzenSupport' => PayzenApi::formatSupportEmails(PayzenTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_payzen_plugin.ui.payzen_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale'))),
+            'payzenSupport' => PayzenApi::formatSupportEmails(PayzenTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_payzen_plugin.ui.payzen_click_here', locale: $locale)),
             'payzenPluginVersion' => PayzenTools::getDefault('PLUGIN_VERSION'),
             'payzenGatewayVersion' => PayzenTools::getDefault('GATEWAY_VERSION')
         ];
