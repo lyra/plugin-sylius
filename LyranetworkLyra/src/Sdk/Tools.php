@@ -28,14 +28,14 @@ class Tools
 
     private static $CMS_IDENTIFIER = 'Sylius_1.12.x';
     private static $SUPPORT_EMAIL = 'https://support.lyra.com/hc/fr/requests/new';
-    private static $PLUGIN_VERSION = '1.4.1';
+    private static $PLUGIN_VERSION = '1.4.2';
     private static $GATEWAY_VERSION = 'V2';
     private static $REST_URL = 'https://api.lyra.com/api-payment/';
     private static $STATIC_URL = 'https://static.lyra.com/static/';
 
     public static $pluginFeatures = [
         'qualif' => false,
-        'prodfaq' => false,
+        'prodfaq' => true,
         'shatwo' => true,
         'smartform' => true
     ];
