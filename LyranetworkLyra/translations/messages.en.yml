@@ -1,55 +1,18 @@
 sylius_lyra_plugin:
   ui:
-    lyra_payment_method_title: Payment by Lyra Collect
-    lyra_developed_by: Developed by
-    lyra_support_email: 'Contact us: '
-    lyra_click_here: 'Click here'
-    lyra_module_version: 'Module version: '
-    lyra_documentation_link: 'Click to view the module configuration documentation: '
-    lyra_advanced_options: ADVANCED OPTIONS
-    lyra_payment_options: PAYMENT OPTIONS
-    lyra_rest_api_keys:
-      label: REST API KEYS
-      desc: 'REST API keys are available in your Lyra Expert Back Office (menu: Settings > Shops > REST API keys).'
-    lyra_site_id:
-      label: Shop ID
-      helptext: The identifier provided by Lyra Collect.
-    lyra_mode:
-      label: Mode
-      helptext: The context mode of this module.
-    lyra_private_test_key:
-      label: Test password
-    lyra_private_prod_key:
-      label: Production password
-    lyra_public_test_key:
-      label: Public test key
-    lyra_public_prod_key:
-      label: Public production key
-    lyra_hmac_test_key:
-      label: HMAC-SHA-256 test key
-    lyra_hmac_prod_key:
-      label: HMAC-SHA-256 production key
+    lyra_widget_desc: "Customize the appearance of your payment forms in real time with our intuitive tool. Adjust colors, fonts and fields via a visual interface, and immediately preview the result on all devices. Simple and efficient, it speeds up validation and deployment while guaranteeing an optimal user experience."
+    lyra_open_widget: "Configure the payment form"
+    lyra_payment_method_title: "Payment by Lyra Collect"
+    lyra_plugin_credits: "Plugin credits"
+    lyra_developed_by: "Developed by"
+    lyra_contact: "Contact "
+    lyra_support_client: "support client"
+    lyra_here: "here"
+    lyra_module_version: "Module version: "
+    lyra_documentation_link: "Access to the module configuration documentation: "
     lyra_rest_check_url:
-      label: REST API Notification URL
-      helptext: URL to copy into your Lyra Expert Back Office > Settings > Notification rules. In multistore mode, notification URL is the same for all the stores.
-    lyra_payment_data_entry_mode:
-      label: Payment data entry mode
-      helptext: Select how the payment data will be entered. Attention, to use embedded payment fields, you must ensure that you have subscribed to this option with Lyra Collect.
-    lyra_rest_popin_mode:
-      label: Display in a pop-in
-      helptext: This option allows to display the embedded payment fields in a pop-in.
-    lyra_rest_theme:
-      label: Theme
-      helptext: Select a theme to use to display the embedded payment fields.
-    lyra_rest_compact_mode:
-      label: Compact mode
-      helptext: This option allows to display the embedded payment fields in a compact mode.
-    lyra_rest_attempts:
-      label: Payment attempts number for cards
-      helptext: Maximum number of payment by card retries after a failed payment (between 0 and 2). If blank, the gateway default value is 2.
-    lyra_oneclick_payment:
-      label: Payment by token
-      helptext: This option allows to pay orders without re-entering bank data at each payment. The « payment by token » option should be enabled on your Lyra Expert Back Office store to use this feature.
+      label: "REST API Notification URL"
+      helptext: "URL to copy into your Lyra Expert Back Office > Settings > Notification rules. In multistore mode, notification URL is the same for all the stores."
     transaction_id: "Transaction ID: "
     transaction_uuid: "Transaction UUID: "
     card_brand: "Card brand: "
@@ -59,20 +22,9 @@ sylius_lyra_plugin:
       customer_wallet:
         title: "Payment methods"
         error: "No saved methods found."
-  config:
-    all: ALL
-    test: TEST
-    production: PRODUCTION
-    embedded:
-      mode_embedded: Embedded payment fields on merchant site (REST API)
-      mode_embedded_ext_with_logos: Embedded payment fields extended on merchant site with logos (REST API)
-      mode_embedded_ext_without_logos: Embedded payment fields extended on merchant site without logos (REST API)
-    theme:
-      neon: Neon
-      classic: Classic
   payment:
-    fatal: An error has occurred during the payment process.
-    check_url_warn: The automatic validation has not worked. Have you correctly set up the notification URL in your Lyra Expert Back Office?
+    fatal: "An error has occurred during the payment process."
+    check_url_warn: "The automatic validation has not worked. Have you correctly set up the notification URL in your Lyra Expert Back Office?"
     prodfaq: "GOING INTO PRODUCTION: You want to know how to put your shop into production mode, please read chapters « Proceeding to test phase » and « Shifting the shop to production mode » in the documentation of the module."
   refund:
     error:
