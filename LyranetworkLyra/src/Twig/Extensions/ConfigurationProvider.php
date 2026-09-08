@@ -46,12 +46,19 @@ class ConfigurationProvider extends AbstractExtension
     {
         $docsUrls = [];
         foreach (LyraApi::getOnlineDocUri() as $lang => $docUri) {
+            if (! isset(LyraTools::$doc_languages[$lang])) {
+                continue;
+            }
+
             $docsUrls[LyraTools::$doc_languages[$lang]] = $docUri . 'sylius2/sitemap.html';
         }
 
+        $currentRequest = $this->requestStack->getCurrentRequest();
+        $locale = $currentRequest ? $currentRequest->get('admin_locale') : null;
+
         return [
             'lyraDocUrls' => $docsUrls,
-            'lyraSupport' => LyraApi::formatSupportEmails(LyraTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_lyra_plugin.ui.lyra_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale'))),
+            'lyraSupport' => LyraApi::formatSupportEmails(LyraTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_lyra_plugin.ui.lyra_click_here', locale: $locale)),
             'lyraPluginVersion' => LyraTools::getDefault('PLUGIN_VERSION'),
             'lyraGatewayVersion' => LyraTools::getDefault('GATEWAY_VERSION')
         ];

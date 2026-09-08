@@ -294,7 +294,7 @@ final class OrderController extends BaseOrderController
             'lyra_payment_initial_amount' => $amount
         );
 
-        $initialAmount = $lastPayment->getDetails() && $lastPayment->getDetails()['lyra_payment_initial_amount'] ? $lastPayment->getDetails()['lyra_payment_initial_amount'] : $amount;
+        $initialAmount = ($lastPayment->getDetails() && ! empty($lastPayment->getDetails()['lyra_payment_initial_amount'])) ? $lastPayment->getDetails()['lyra_payment_initial_amount'] : $amount;
 
         if ($lyraResponse->get('vads_amount') != $amount) {
             if ($lyraResponse->get('operation_type') === 'DEBIT') {
