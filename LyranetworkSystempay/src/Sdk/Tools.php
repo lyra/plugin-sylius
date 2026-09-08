@@ -30,10 +30,10 @@ class Tools
 
     private static $CMS_IDENTIFIER = 'Sylius_2.x';
     private static $SUPPORT_EMAIL = 'https://support.paiement.systempay.fr/hc/fr/requests/new';
-    private static $PLUGIN_VERSION = '2.1.1';
+    private static $PLUGIN_VERSION = '2.1.2';
     private static $GATEWAY_VERSION = 'V2';
     private static $REST_URL = 'https://api.systempay.fr/api-payment/';
-    private static $STATIC_URL = 'https://api.systempay.fr/static/';
+    private static $STATIC_URL = 'https://static.systempay.fr/static/';
 
     public static $pluginFeatures = [
         'qualif' => false,

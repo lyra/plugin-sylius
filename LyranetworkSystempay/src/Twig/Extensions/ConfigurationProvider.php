@@ -46,12 +46,19 @@ class ConfigurationProvider extends AbstractExtension
     {
         $docsUrls = [];
         foreach (SystempayApi::getOnlineDocUri() as $lang => $docUri) {
+            if (! isset(SystempayTools::$doc_languages[$lang])) {
+                continue;
+            }
+
             $docsUrls[SystempayTools::$doc_languages[$lang]] = $docUri . 'sylius2/sitemap.html';
         }
 
+        $currentRequest = $this->requestStack->getCurrentRequest();
+        $locale = $currentRequest ? $currentRequest->get('admin_locale') : null;
+
         return [
             'systempayDocUrls' => $docsUrls,
-            'systempaySupport' => SystempayApi::formatSupportEmails(SystempayTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_systempay_plugin.ui.systempay_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale'))),
+            'systempaySupport' => SystempayApi::formatSupportEmails(SystempayTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_systempay_plugin.ui.systempay_click_here', locale: $locale)),
             'systempayPluginVersion' => SystempayTools::getDefault('PLUGIN_VERSION'),
             'systempayGatewayVersion' => SystempayTools::getDefault('GATEWAY_VERSION')
         ];

@@ -66,7 +66,9 @@ class OrderService
             Assert::isInstanceOf($payment, Payment::class);
 
             $gatewayName = constant('Lyranetwork\Systempay\Sdk\Tools::FACTORY_NAME');
-            $factoryName = $payment->getMethod()->getGatewayConfig()->getFactoryName();
+            $paymentMethod = $payment->getMethod();
+            $gatewayConfig = $paymentMethod ? $paymentMethod->getGatewayConfig() : null;
+            $factoryName = $gatewayConfig ? $gatewayConfig->getFactoryName() : null;
             if ($gatewayName === $factoryName) {
                 $order = $payment->getOrder();
 

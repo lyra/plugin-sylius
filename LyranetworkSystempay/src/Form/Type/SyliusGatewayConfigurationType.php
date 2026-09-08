@@ -60,7 +60,8 @@ final class SyliusGatewayConfigurationType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $config = [];
-        $methodId = $this->requestStack->getCurrentRequest()->get('id');
+        $currentRequest = $this->requestStack->getCurrentRequest();
+        $methodId = $currentRequest ? $currentRequest->get('id') : null;
         if ($methodId) {
             $paymentMethod = $this->paymentMethodRepository->find($methodId);
             if ($paymentMethod) {

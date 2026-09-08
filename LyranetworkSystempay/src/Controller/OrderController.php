@@ -294,7 +294,7 @@ final class OrderController extends BaseOrderController
             'systempay_payment_initial_amount' => $amount
         );
 
-        $initialAmount = $lastPayment->getDetails() && $lastPayment->getDetails()['systempay_payment_initial_amount'] ? $lastPayment->getDetails()['systempay_payment_initial_amount'] : $amount;
+        $initialAmount = ($lastPayment->getDetails() && ! empty($lastPayment->getDetails()['systempay_payment_initial_amount'])) ? $lastPayment->getDetails()['systempay_payment_initial_amount'] : $amount;
 
         if ($systempayResponse->get('vads_amount') != $amount) {
             if ($systempayResponse->get('operation_type') === 'DEBIT') {

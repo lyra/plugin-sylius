@@ -36,7 +36,12 @@ class ConfigService
             return "";
         }
 
-        $config = $paymentMethod->getGatewayConfig()->getConfig();
+        $gatewayConfig = $paymentMethod->getGatewayConfig();
+        if (! $gatewayConfig) {
+            return "";
+        }
+
+        $config = $gatewayConfig->getConfig();
         if (! isset($config[$configId])) {
             return "";
         }
