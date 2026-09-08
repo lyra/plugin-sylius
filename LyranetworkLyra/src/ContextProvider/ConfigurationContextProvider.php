@@ -41,6 +41,10 @@ final class ConfigurationContextProvider implements ContextProviderInterface
     {
         $docsUrls = [];
         foreach (LyraApi::getOnlineDocUri() as $lang => $docUri) {
+            if (! isset(LyraTools::$doc_languages[$lang])) {
+                continue;
+            }
+
             $docsUrls[LyraTools::$doc_languages[$lang]] = $docUri . 'sylius/sitemap.html';
         }
 
