@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Monetico\Service;
 
 use Lyranetwork\Monetico\Repository\PaymentMethodRepositoryInterface;
-use Lyranetwork\Monetico\Sdk\Tools;
+use Lyranetwork\Monetico\Sdk\Tools as MoneticoTools;
 
 /**
  * Service for retrieving payment gateway configuration values.
@@ -42,7 +42,7 @@ final class ConfigService
             return "";
         }
 
-        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(Tools::FACTORY_NAME, $instanceCode);
+        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(MoneticoTools::FACTORY_NAME, $instanceCode);
         if (! $paymentMethod) {
             return "";
         }

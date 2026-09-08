@@ -98,21 +98,26 @@ class Api
     /**
      * Return the list of currencies recognized by the payment gateway.
      *
+     * @param string $whiteLabel
      * @return array[int][Lyranetwork\Monetico\Sdk\Form\Currency]
      */
-    public static function getSupportedCurrencies()
+    public static function getSupportedCurrencies($whiteLabel = '')
     {
-        $currencies = array(
+        $currencies = array();
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Monetico\Sdk\Form\WhiteLabel')) {
+            $currencies = \Lyranetwork\Monetico\Sdk\Form\WhiteLabel::getSupportedCurrencies($whiteLabel);
+        } else {
+            $currencies = array(
             array('ARS', '032', 2), array('AUD', '036', 2), array('CAD', '124', 2), array('CNY', '156', 2),
             array('HRK', '191', 2), array('CZK', '203', 2), array('DKK', '208', 2), array('EKK', '233', 2),
             array('GNF', '324', 0), array('HKD', '344', 2), array('HUF', '348', 2), array('INR', '356', 2),
             array('IDR', '360', 0), array('CHF', '756', 2), array('AED', '784', 2), array('GBP', '826', 2),
             array('BGN', '975', 2), array('EUR', '978', 2), array('BRL', '986', 2), array('JPY', '392', 0),
             array('NOK', '578', 2), array('SEK', '752', 2), array('PLN', '985', 2), array('USD', '840', 2)
-        );
+            );
+        }
 
         $supported_currencies = array();
-
         foreach ($currencies as $currency) {
             $supported_currencies[] = new Currency($currency[0], $currency[1], $currency[2]);
         }
@@ -124,11 +129,12 @@ class Api
      * Return a currency from its 3-letters ISO code.
      *
      * @param string $alpha3
+     * @param string $whiteLabel
      * @return \Lyranetwork\Monetico\Sdk\Form\Currency|null
      */
-    public static function findCurrencyByAlphaCode($alpha3)
+    public static function findCurrencyByAlphaCode($alpha3, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Monetico\Sdk\Form\Currency $currency
@@ -145,11 +151,12 @@ class Api
      * Returns a currency form its numeric ISO code.
      *
      * @param int $numeric
+     * @param string $whiteLabel
      * @return \Lyranetwork\Monetico\Sdk\Form\Currency|null
      */
-    public static function findCurrencyByNumCode($numeric)
+    public static function findCurrencyByNumCode($numeric, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Monetico\Sdk\Form\Currency $currency
@@ -166,11 +173,12 @@ class Api
      * Return a currency from its 3-letters or numeric ISO code.
      *
      * @param string $code
+     * @param string $whiteLabel
      * @return \Lyranetwork\Monetico\Sdk\Form\Currency|null
      */
-    public static function findCurrency($code)
+    public static function findCurrency($code, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Monetico\Sdk\Form\Currency $currency
@@ -187,21 +195,27 @@ class Api
      * Returns currency numeric ISO code from its 3-letters code.
      *
      * @param string $alpha3
+     * @param string $whiteLabel
      * @return string|null
      */
-    public static function getCurrencyNumCode($alpha3)
+    public static function getCurrencyNumCode($alpha3, $whiteLabel = '')
     {
-        $currency = self::findCurrencyByAlphaCode($alpha3);
+        $currency = self::findCurrencyByAlphaCode($alpha3, $whiteLabel);
         return ($currency instanceof Currency) ? $currency->getNum() : null;
     }
 
     /**
      * Returns an array of card types accepted by the payment gateway.
      *
+     * @param string $whiteLabel
      * @return array[string][string]
      */
-    public static function getSupportedCardTypes()
+    public static function getSupportedCardTypes($whiteLabel = '')
     {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Monetico\Sdk\Form\WhiteLabel')) {
+            return \Lyranetwork\Monetico\Sdk\Form\WhiteLabel::getSupportedCardTypes($whiteLabel);
+        }
+
         return array(
             'CB' => 'CB', 'E-CARTEBLEUE' => 'e-Carte Bleue', 'MAESTRO' => 'Maestro', 'MASTERCARD' => 'Mastercard',
             'VISA' => 'Visa', 'VISA_ELECTRON' => 'Visa Electron', 'VPAY' => 'V PAY', 'AMEX' => 'American Express',
@@ -216,9 +230,9 @@ class Api
             'COFIDIS_DFPAY_FR' => 'Cofidis Pay Later', 'COFIDIS_LOAN_BE' => 'Cofidis en 6-12-18 fois',
             'COFIDIS_LOAN_CB' => 'Cofidis in 5-12 installments', 'COFIDIS_LOAN_ES' => 'Cofidis en 6-12-24 vencimientos',
             'COFIDIS_LOAN_FR' => 'Amortissable', 'COFIDIS_LOAN_IT' => 'Cofidis Pagodil',
-            'COFIDIS_PAY_FR' => 'Cofidis Pay', 'CONECS' => 'Conecs', 'CVCO' => 'Chèque-Vacances Connect',
-            'EDENRED' => 'Ticket Restaurant', 'GIROPAY' => 'Giropay', 'GOOGLEPAY' => 'Google Pay', 'IDEAL' => 'iDEAL',
-            'ILLICADO' => 'Carte Illicado', 'IP_WIRE' => 'Virement SEPA', 'IP_WIRE_INST' => 'Virement SEPA Instantané',
+            'COFIDIS_PAY_FR' => 'Cofidis Pay', 'CONECS' => 'Conecs', 'CVCO' => 'Chèque-Vacances Connect', 'DINERS' => 'Diners',
+            'DISCOVER' => 'Discover', 'EDENRED' => 'Ticket Restaurant', 'GIROPAY' => 'Giropay', 'GOOGLEPAY' => 'Google Pay',
+            'IDEAL' => 'iDEAL', 'ILLICADO' => 'Carte Illicado', 'IP_WIRE' => 'Virement SEPA', 'IP_WIRE_INST' => 'Virement SEPA Instantané',
             'KADEOS_CULTURE' => 'Carte Kadéos Culture', 'KADEOS_GIFT' => 'Carte Kadéos Zénith', 'MULTIBANCO' => 'Multibanco',
             'MYBANK' => 'MyBank', 'NORAUTO' => 'Carte Norauto option Financement',
             'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)', 'ONEY_10X_12X' => 'Paiement en 10 ou 12 fois Oney',
@@ -255,6 +269,7 @@ class Api
     {
         return array(
             'INITIAL',
+            'CAPTURE_PENDING',
             'WAITING_AUTHORISATION',
             'WAITING_AUTHORISATION_TO_VALIDATE',
             'UNDER_VERIFICATION',
@@ -414,10 +429,15 @@ class Api
     /**
      * Returns an array of the online documentation URI of the payment module.
      *
+     * @param string $whiteLabel
      * @return array[string][string]
      */
-    public static function getOnlineDocUri()
+    public static function getOnlineDocUri($whiteLabel = '')
     {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Monetico\Sdk\Form\WhiteLabel')) {
+            return \Lyranetwork\Monetico\Sdk\Form\WhiteLabel::getOnlineDocUri($whiteLabel);
+        }
+
         return array(
             'fr' => 'https://secure.gateway.monetico-retail.com/doc/fr-FR/plugins/',
             'en' => 'https://secure.gateway.monetico-retail.com/doc/en-EN/plugins/'
@@ -489,6 +509,7 @@ class Api
             'empty_cart' => array(false, 'Empty cart detected before order processing.'),
             'unknown_status' => array(false, 'Unknown order status.'),
             'amount_error' => array(false, 'Total paid is different from order amount.'),
+            'abandoned_ignored' => array(false, 'Payment abandoned or Expired but order cycle is not closed.'),
             'ok' => array(true, ''),
             'ko' => array(false, '')
         );
@@ -517,5 +538,71 @@ class Api
         $response .= '</span>';
 
         return $response;
+    }
+
+    /**
+     * Get a white label-specific property value from the WhiteLabel class.
+     *
+     * Dynamically calls the getter method corresponding to the given property name
+     * on the WhiteLabel class and returns the value associated with the given white label key.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @param string $property the property name to retrieve (e.g. 'features', 'gatewayUrl')
+     * @return mixed|null the property value for the given white label, or null if not found
+     */
+    public static function getWhiteLabelProperty($whiteLabel, $property)
+    {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Monetico\Sdk\Form\WhiteLabel')) {
+            $method = 'get' . ucfirst($property);
+            if (method_exists('\Lyranetwork\Monetico\Sdk\Form\WhiteLabel', $method)) {
+                $values = \Lyranetwork\Monetico\Sdk\Form\WhiteLabel::$method();
+                if (is_array($values) && array_key_exists($whiteLabel, $values)) {
+                    return $values[$whiteLabel];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get a white label-specific URL, falling back to the default URL if not found.
+     *
+     * Looks up the URL for the given type from the WhiteLabel class first; if not found,
+     * falls back to the predefined default URLs for supported types.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @param string $type the URL type ('gatewayUrl', 'restUrl', 'staticUrl', 'logoUrl')
+     * @return string|null the URL for the given type, or null if the type is not recognized
+     */
+    public static function getWhiteLabelUrl($whiteLabel, $type)
+    {
+        $urls = array(
+            'gatewayUrl' => 'https://secure.gateway.monetico-retail.com/vads-payment/',
+            'restUrl' => 'https://api.gateway.monetico-retail.com/api-payment/',
+            'staticUrl' => 'https://static.gateway.monetico-retail.com/static/',
+            'logoUrl' => 'https://static.gateway.monetico-retail.com/static/latest/images/type-carte/'
+        );
+
+        $url = self::getWhiteLabelProperty($whiteLabel, $type);
+        if ($url !== null) {
+            return $url;
+        }
+
+        return $urls[$type] ?? null;
+    }
+
+    /**
+     * Get the features array for a given white label.
+     *
+     * Returns the features associated with the white label from the WhiteLabel class,
+     * or an empty array if the white label is not found or has no features defined.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @return array the features array for the given white label, or an empty array
+     */
+    public static function getWhiteLabelFeatures($whiteLabel)
+    {
+        return self::getWhiteLabelProperty($whiteLabel, 'features') ?? [];
     }
 }

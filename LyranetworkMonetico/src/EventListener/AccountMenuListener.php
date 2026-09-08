@@ -13,8 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Monetico\EventListener;
 
 use Lyranetwork\Monetico\Repository\PaymentMethodRepositoryInterface;
-use Lyranetwork\Monetico\Service\ConfigService;
-use Lyranetwork\Monetico\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
+use Lyranetwork\Monetico\Sdk\RestHelper;
 
 use Sylius\Bundle\UiBundle\Menu\Event\MenuBuilderEvent;
 use Sylius\Component\Channel\Context\ChannelContextInterface;
@@ -27,13 +26,13 @@ final class AccountMenuListener
 {
     /**
      * @param PaymentMethodRepositoryInterface $paymentMethodRepository Repository for retrieving Monetico Retail payment methods
-     * @param ConfigService $configService Service for accessing gateway configuration
      * @param ChannelContextInterface $channelContext Context for accessing the current channel
+     * @param RestHelper $restHelper Helper service for REST API data handling
      */
     public function __construct(
         private PaymentMethodRepositoryInterface $paymentMethodRepository,
-        private ConfigService $configService,
-        private ChannelContextInterface $channelContext
+        private ChannelContextInterface $channelContext,
+        private RestHelper $restHelper
     ) {
     }
 
@@ -54,7 +53,7 @@ final class AccountMenuListener
         if (is_array($paymentMethods) && ! empty($paymentMethods)) {
             foreach ($paymentMethods as $paymentMethod) {
                 if ($paymentMethod->isEnabled()
-                    && $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'oneclick_payment', $paymentMethod->getCode())
+                    && $this->restHelper->isOneclickEnabled($paymentMethod->getCode())
                     && $paymentMethod->hasChannel($this->channelContext->getChannel())
                 ) {
                     $menu = $event->getMenu();

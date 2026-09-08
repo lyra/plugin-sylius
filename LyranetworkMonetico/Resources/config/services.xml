@@ -48,7 +48,6 @@
 
         <service id="Lyranetwork\Monetico\Service\RefundService">
             <argument type="service" id="Lyranetwork\Monetico\Sdk\RestHelper" />
-            <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
             <argument type="service" id="Lyranetwork\Monetico\Sdk\RefundProcessor" />
         </service>
 
@@ -70,7 +69,6 @@
 
         <service id="sylius_monetico_plugin.twig.extension.embedded_form_provider" class="Lyranetwork\Monetico\Twig\Extensions\EmbeddedFormProvider">
             <argument type="service" id="monolog.logger.monetico" />
-            <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
             <argument type="service" id="Lyranetwork\Monetico\Sdk\RestHelper" />
             <argument type="service" id="sylius.context.locale" />
             <tag name="twig.extension" />
@@ -79,13 +77,18 @@
         <service id="sylius_monetico_plugin.twig.extension.plugin_metadata_provider" class="Lyranetwork\Monetico\Twig\Extensions\PluginMetadataProvider">
             <argument type="service" id="translator" />
             <argument type="service" id="request_stack" />
+            <argument type="service" id="router" />
+            <tag name="twig.extension" />
+        </service>
+
+        <service id="sylius_monetico_plugin.twig.extension.plugin_widget_preview" class="Lyranetwork\Monetico\Twig\Extensions\PluginWidgetPreview">
             <tag name="twig.extension" />
         </service>
 
         <service id="Lyranetwork\Monetico\EventListener\AccountMenuListener">
             <argument type="service" id="Lyranetwork\Monetico\Repository\PaymentMethodRepositoryInterface" />
-            <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
             <argument type="service" id="sylius.context.channel" />
+            <argument type="service" id="Lyranetwork\Monetico\Sdk\RestHelper" />
             <tag name="kernel.event_listener" event="sylius.menu.shop.account" method="addAccountMenuItems" />
         </service>
 
@@ -97,8 +100,13 @@
             <argument type="service" id="Lyranetwork\Monetico\Sdk\RestHelper" />
             <argument type="service" id="router" />
             <argument type="service" id="twig" />
-            <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
             <argument type="service" id="sylius.context.channel" />
+            <tag name="controller.service_arguments" />
+        </service>
+
+        <service id="Lyranetwork\Monetico\Controller\RestConfigurationController" public="true">
+            <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
+            <argument type="service" id="monolog.logger.monetico" />
             <tag name="controller.service_arguments" />
         </service>
 
@@ -132,7 +140,7 @@
             <argument type="service" id="sylius_abstraction.state_machine" />
             <argument type="service" id="monolog.logger.monetico" />
             <argument type="service" id="request_stack" />
-            <argument type="service" id="Lyranetwork\Monetico\Service\ConfigService" />
+            <argument type="service" id="Lyranetwork\Monetico\Sdk\RestHelper" />
             <argument type="service" id="translator" />
             <argument type="service" id="Lyranetwork\Monetico\Processor\PaymentResultProcessor" />
             <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" />
@@ -192,6 +200,7 @@
             <argument type="service" id="sylius_abstraction.state_machine" />
             <argument type="service" id="Lyranetwork\Monetico\Service\RefundService" />
             <argument type="service" id="request_stack" />
+            <argument type="service" id="Lyranetwork\Monetico\Sdk\RestHelper" />
             <argument type="service" id="monolog.logger.monetico" />
             <tag name="messenger.message_handler" bus="sylius.payment_request.command_bus" />
         </service>

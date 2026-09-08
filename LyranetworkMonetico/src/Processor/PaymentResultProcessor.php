@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Monetico\Processor;
 
 use Lyranetwork\Monetico\Sdk\RestHelper;
-use Lyranetwork\Monetico\Sdk\Tools;
+use Lyranetwork\Monetico\Sdk\Tools as MoneticoTools;
 use Lyranetwork\Monetico\Sdk\Form\Api as MoneticoApi;
 
 use Sylius\Abstraction\StateMachine\StateMachineInterface;
@@ -98,10 +98,9 @@ final class PaymentResultProcessor {
      */
     private function updateTransactionDetails(array &$details, array $answer): void
     {
-        $details['monetico_factory_name'] = Tools::FACTORY_NAME;
-        $details['transactions'] = isset($details['transactions']) && is_array($details['transactions']) 
-            ? $details['transactions']
-            : [];
+        $details['monetico_factory_name'] = MoneticoTools::FACTORY_NAME;
+        $details['transactions'] = isset($details['transactions']) && is_array($details['transactions'])
+            ? $details['transactions'] : [];
 
         $transactions = $this->restHelper->getProperty($answer, 'transactions');
 
@@ -125,7 +124,6 @@ final class PaymentResultProcessor {
     private function getTransaction(array $answer): array
     {
         $transactions = $this->restHelper->getProperty($answer, 'transactions');
-    
         if (is_array($transactions) && ! empty($transactions)) {
             return $transactions[0];
         }

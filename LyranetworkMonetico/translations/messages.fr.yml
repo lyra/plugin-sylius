@@ -1,55 +1,18 @@
 sylius_monetico_plugin:
   ui:
-    monetico_payment_method_title: Paiement par Monetico Retail
-    monetico_developed_by: Développé par
-    monetico_support_email: 'Courriel de contact: '
-    monetico_click_here: 'Cliquez ici'
-    monetico_module_version: 'Version du module: '
-    monetico_documentation_link: 'Cliquer pour accéder à la documentation de configuration du module: '
-    monetico_advanced_options: OPTIONS AVANCÉES
-    monetico_payment_options: OPTIONS DE PAIEMENT
-    monetico_rest_api_keys:
-      label: CLÉS D'API REST
-      desc: "Les clés de l'API REST sont disponibles dans votre Back Office Monetico Retail (menu: Paramétrage > Boutiques > Clés d'API REST)."
-    monetico_site_id:
-      label: Identifiant boutique
-      helptext: Identifiant fourni par Monetico Retail.
-    monetico_mode:
-      label: Mode
-      helptext: Mode de fonctionnement du module.
-    monetico_private_test_key:
-      label: Mot de passe de test
-    monetico_private_prod_key:
-      label: Mot de passe de production
-    monetico_public_test_key:
-      label: Clé publique de test
-    monetico_public_prod_key:
-      label: Clé publique de production
-    monetico_hmac_test_key:
-      label: Clé HMAC-SHA-256 de test
-    monetico_hmac_prod_key:
-      label: Clé HMAC-SHA-256 de production
+    monetico_widget_desc: "Personnaliser en temps réel l'apparence de vos formulaires de paiement avec notre outil intuitif. Ajustez couleurs, polices et champs via une interface visuelle, et visualisez immédiatement le rendu sur tous les appareils. Simple et efficace, il accélère la validation e tle déploiement tout en garantissant une expérience utilisateur optimale."
+    monetico_open_widget: "Configurer le formulaire de paiement"
+    monetico_payment_method_title: "Paiement par Monetico Retail"
+    monetico_plugin_credits: "Crédits plugin"
+    monetico_developed_by: "Développé par"
+    monetico_contact: "Contacter "
+    monetico_support_client: "le support client"
+    monetico_here: "ici"
+    monetico_module_version: "Version du module: "
+    monetico_documentation_link: "Accès à la documentation de configuration du module: "
     monetico_rest_check_url:
-      label: URL de notification de l'API REST
-      helptext: URL à copier dans le Back Office Monetico Retail > Paramétrage > Règles de notifications. En mode multi-boutique, l'URL de notification est la même pour toutes les boutiques.
-    monetico_payment_data_entry_mode:
-      label: Mode de saisie des données de paiement
-      helptext: Sélectionner la manière dont seront saisies les données de paiement. Attention, pour utiliser les champs de paiement embarqués, vous devez vous assurer d'avoir souscrit à cette option auprès de Monetico Retail.
-    monetico_rest_popin_mode:
-      label: Afficher dans une pop-in
-      helptext: Cette option permet d'afficher les champs de paiement embarqués dans une pop-in.
-    monetico_rest_theme:
-      label: Thème
-      helptext: Sélectionnez le thème à utiliser pour les champs de paiement embarqués.
-    monetico_rest_compact_mode:
-      label: Mode compact
-      helptext: Cette option permet d'afficher les champs de paiement embarqués en mode compact.
-    monetico_rest_attempts:
-      label: Nombre de tentatives de paiement par carte
-      helptext: Nombre maximum de tentatives de paiement par carte après un paiement en échec (entre 0 et 2). Si vide, la valeur par défaut de la plateforme est 2.
-    monetico_oneclick_payment:
-      label: Paiement par alias
-      helptext: Cette option permet à l'acheteur de sauvegarder ses données bancaires pour les utiliser lors des paiements ultérieurs. L'option « Paiement par alias » doit être activée sur votre boutique Back Office Monetico Retail pour utiliser cette fonctionnalité.
+      label: "URL de notification de l'API REST"
+      helptext: "URL à copier dans le Back Office Monetico Retail > Paramétrage > Règles de notifications. En mode multi-boutique, l'URL de notification est la même pour toutes les boutiques."
     transaction_id: "ID de transaction: "
     transaction_uuid: "UUID de transaction: "
     card_brand: "Marque de carte: "
@@ -59,20 +22,9 @@ sylius_monetico_plugin:
       customer_wallet:
         title: "Méthodes de paiement"
         error: "Aucune méthode enregistrée trouvée."
-  config:
-    all: TOUTES
-    test: TEST
-    production: PRODUCTION
-    embedded:
-      mode_embedded: Champs de paiement embarqués sur le site marchand (API REST)
-      mode_embedded_ext_with_logos: Champs de paiement étendus embarqués sur le site marchand avec les logos (API REST)
-      mode_embedded_ext_without_logos: Champs de paiement étendus embarqués sur le site marchand sans les logos (API REST)
-    theme:
-      neon: Neon
-      classic: Classic
   payment:
-    fatal: Une erreur est survenue durant le processus de paiement.
-    check_url_warn: La validation automatique n'a pas fonctionné. Avez-vous configuré correctement l'URL de notification dans le Back Office Monetico Retail?
+    fatal: "Une erreur est survenue durant le processus de paiement."
+    check_url_warn: "La validation automatique n'a pas fonctionné. Avez-vous configuré correctement l'URL de notification dans le Back Office Monetico Retail?"
     prodfaq: "PASSAGE EN PRODUCTION: Vous souhaitez savoir comment passer votre boutique en production, merci de consulter les chapitres « Procéder à la phase des tests » et « Passage d'une boutique en mode production » de la documentation du module."
   refund:
     error:

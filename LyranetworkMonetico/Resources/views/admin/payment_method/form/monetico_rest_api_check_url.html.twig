@@ -7,8 +7,12 @@
  * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
  #}
 
-{% set form = hookable_metadata.context.form.gatewayConfig.config.monetico_advanced_options_oneclick_payment %}
+{% set form = hookable_metadata.context.form.gatewayConfig.config.monetico_rest_api_check_url %}
 
 <div class="col-12">
-    {{ form_row(form, sylius_test_form_attribute('config-monetico-advanced-options-oneclick-payment')) }}
+    {{ form_row(form, sylius_test_form_attribute('config-monetico-rest-api-check-url')) }}
+</div>
+
+<div>
+    {% include '@LyranetworkMoneticoPlugin/plugin_metadata.html.twig' %}
 </div>
