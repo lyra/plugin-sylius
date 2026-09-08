@@ -61,7 +61,7 @@ final class RefundProcessor implements Processor
      * Processes refund errors by translating error messages, adding them to flash messages,
      * and throwing an exception to halt the refund workflow.
      *
-     * @param string $errorCode The error code identifying the type of error
+     * @param mixed $errorCode The error code identifying the type of error
      * @param string $message The error message to display
      * @throws \Exception Always throws exception with the error message
      */
@@ -157,11 +157,11 @@ final class RefundProcessor implements Processor
     /**
      * Formats error message based on error code.
      *
-     * @param int $errorCode The error code
+     * @param mixed $errorCode The error code
      * @param string $message The base error message
      * @return string The formatted error message
      */
-    private function formatErrorMessage(int $errorCode, string $message): string
+    private function formatErrorMessage(mixed $errorCode, string $message): string
     {
         if ($errorCode === 'privateKey') {
             return $this->translate("sylius_lyra_plugin.refund.error.private_key");

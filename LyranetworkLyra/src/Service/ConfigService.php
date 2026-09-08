@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Lyra\Service;
 
 use Lyranetwork\Lyra\Repository\PaymentMethodRepositoryInterface;
-use Lyranetwork\Lyra\Sdk\Tools;
+use Lyranetwork\Lyra\Sdk\Tools as LyraTools;
 
 /**
  * Service for retrieving payment gateway configuration values.
@@ -42,7 +42,7 @@ final class ConfigService
             return "";
         }
 
-        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(Tools::FACTORY_NAME, $instanceCode);
+        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(LyraTools::FACTORY_NAME, $instanceCode);
         if (! $paymentMethod) {
             return "";
         }

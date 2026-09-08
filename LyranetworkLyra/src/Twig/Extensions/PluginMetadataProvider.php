@@ -20,6 +20,8 @@ use Twig\TwigFunction;
 
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\Routing\Generator\UrlGenerator;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Provides Twig functions for accessing Lyra Collect plugin information.
@@ -31,7 +33,8 @@ final class PluginMetadataProvider extends AbstractExtension
 {
     public function __construct(
         private TranslatorInterface $translator,
-        private RequestStack $requestStack
+        private RequestStack $requestStack,
+        private RouterInterface $router
     ) {
     }
 
@@ -44,6 +47,7 @@ final class PluginMetadataProvider extends AbstractExtension
     {
         return [
             new TwigFunction('getPluginMetadata', [$this, 'getPluginMetadata'], ['is_safe' => ['html']]),
+            new TwigFunction('getWidgetVars', [$this, 'getWidgetVars'], ['is_safe' => ['html']]),
         ];
     }
 
@@ -64,15 +68,31 @@ final class PluginMetadataProvider extends AbstractExtension
      */
     public function getPluginMetadata(): array
     {
-        $docsUrls = [];
-        foreach (LyraApi::getOnlineDocUri() as $lang => $docUri) {
-            $docsUrls[LyraTools::$docLanguages[$lang]] = $docUri . 'sylius3/sitemap.html';
-        }
+        $adminLocale = $this->requestStack->getCurrentRequest()->getLocale();
+        $locale = substr($adminLocale, 0, 2);
+        $allUris = LyraApi::getOnlineDocUri();
+
+        $targetLang = isset($allUris[$locale]) ? $locale : LyraTools::getDefault('LANGUAGE');
+        $docUrl = isset($allUris[$targetLang]) ? ($allUris[$targetLang] . 'sylius3/sitemap.html') : '';
 
         return [
-            'docUrls' => $docsUrls,
-            'contactSupport' => LyraApi::formatSupportEmails(LyraTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_lyra_plugin.ui.lyra_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale'))),
+            'docUrl' => $docUrl,
+            'contactSupport' => LyraApi::formatSupportEmails(LyraTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_lyra_plugin.ui.lyra_support_client', locale: $adminLocale)),
             'pluginVersion' => LyraTools::getDefault('PLUGIN_VERSION')
+        ];
+    }
+
+    /**
+     * Retrieves all the vars needed to initialize the configuration widget.
+     * @return array
+     */
+    public function getWidgetVars(): array
+    {
+        return [
+            'epsilonUrl' => LyraTools::getEpsilonUrl(),
+            'whitelabelAll' => LyraTools::$pluginFeatures['whitelabelall'],
+            'widgetTokenUrl' => $this->router->generate('lyra_rest_configuration_widget_token', [], UrlGenerator::ABSOLUTE_URL),
+            'defaultFormConfig' => $this->router->generate('lyra_rest_configuration_default_form_configuration', [], UrlGenerator::ABSOLUTE_URL)
         ];
     }
 }
