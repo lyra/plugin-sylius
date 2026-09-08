@@ -28,7 +28,7 @@ class Tools
 
     private static $CMS_IDENTIFIER = 'Sylius_1.12.x';
     private static $SUPPORT_EMAIL = 'https://secure.gateway.monetico-retail.com/doc/fr-FR/support/index.html';
-    private static $PLUGIN_VERSION = '1.4.1';
+    private static $PLUGIN_VERSION = '1.4.2';
     private static $GATEWAY_VERSION = 'V2';
     private static $REST_URL = 'https://api.gateway.monetico-retail.com/api-payment/';
     private static $STATIC_URL = 'https://static.gateway.monetico-retail.com/static/';

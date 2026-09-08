@@ -99,8 +99,8 @@ final class RefundController
 
         $paymentMethod = $payment->getMethod();
 
-        $gatewayConfig = $paymentMethod->getGatewayConfig();
-        $factoryName = $gatewayConfig->getFactoryName() ?? null;
+        $gatewayConfig = $paymentMethod ? $paymentMethod->getGatewayConfig() : null;
+        $factoryName = $gatewayConfig ? $gatewayConfig->getFactoryName() : null;
 
         if ($factoryName !== constant('Lyranetwork\Monetico\Payum\SyliusPaymentGatewayFactory::FACTORY_NAME')) {
             $this->applyStateMachineTransition($payment);

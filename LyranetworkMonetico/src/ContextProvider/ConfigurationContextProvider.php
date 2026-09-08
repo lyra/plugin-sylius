@@ -41,6 +41,10 @@ final class ConfigurationContextProvider implements ContextProviderInterface
     {
         $docsUrls = [];
         foreach (MoneticoApi::getOnlineDocUri() as $lang => $docUri) {
+            if (! isset(MoneticoTools::$doc_languages[$lang])) {
+                continue;
+            }
+
             $docsUrls[MoneticoTools::$doc_languages[$lang]] = $docUri . 'sylius/sitemap.html';
         }
 

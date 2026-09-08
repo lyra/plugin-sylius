@@ -82,7 +82,7 @@ class RefundProcessor implements Processor
 
             $transactionUuid = $operationResponse['detailedStatus'] === 'CANCELLED' ? $operationResponse['uuid'] : $operationResponse['transactionDetails']['parentTransactionUuid'];
             foreach ($order->getPayments() as $payment) {
-                if ($transactionUuid === $payment->getDetails()["monetico_trans_uuid"]) {
+                if ($transactionUuid === ($payment->getDetails()["monetico_trans_uuid"] ?? null)) {
                     $paymentToRefund = $payment;
                     break;
                 }
