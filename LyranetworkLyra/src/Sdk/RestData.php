@@ -420,20 +420,23 @@ class RestData
                 'country' => $request->get('ship_to_country'),
                 'deliveryCompanyName' => $request->get('ship_to_delivery_company_name')
             ];
+
+            $state = $order->getShippingAddress()->getProvinceCode();
+            if (! empty($state)) {
+                $data['customer']['shippingDetails']['state'] = $state;
+            }
         }
 
-        $state = $order->getBillingAddress()->getProvinceCode();
-        if (! empty($state)) {
-            $data['customer']['billingDetails']['state'] = $state;
-        }
-
-        $state = $order->getShippingAddress()->getProvinceCode();
-        if (! empty($state)) {
-            $data['customer']['shippingDetails']['state'] = $state;
+        $billingAddress = $order->getBillingAddress();
+        if ($billingAddress) {
+            $state = $billingAddress->getProvinceCode();
+            if (! empty($state)) {
+                $data['customer']['billingDetails']['state'] = $state;
+            }
         }
 
         $customer = $this->customerRepository->findOneBy(['id' => $request->get('cust_id')]);
-        if ($this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'oneclick_payment', $instanceCode) && $customer->getUser() !== null){
+        if ($customer && $customer->getUser() !== null && $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'oneclick_payment', $instanceCode)) {
             $data['formAction'] = 'CUSTOMER_WALLET';
         }
 
@@ -533,7 +536,7 @@ class RestData
     {
         $code = $this->getProperty($transaction, 'errorCode');
         if ($code) {
-            return ucfirst($this->getProperty($transaction, 'errorMessage')) . ' (' . $code . ').';
+            return ucfirst((string) $this->getProperty($transaction, 'errorMessage')) . ' (' . $code . ').';
         }
 
         return null;

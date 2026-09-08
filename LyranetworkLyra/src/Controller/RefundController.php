@@ -99,8 +99,8 @@ final class RefundController
 
         $paymentMethod = $payment->getMethod();
 
-        $gatewayConfig = $paymentMethod->getGatewayConfig();
-        $factoryName = $gatewayConfig->getFactoryName() ?? null;
+        $gatewayConfig = $paymentMethod ? $paymentMethod->getGatewayConfig() : null;
+        $factoryName = $gatewayConfig ? $gatewayConfig->getFactoryName() : null;
 
         if ($factoryName !== constant('Lyranetwork\Lyra\Sdk\Tools::FACTORY_NAME')) {
             $this->applyStateMachineTransition($payment);
@@ -117,6 +117,12 @@ final class RefundController
         $paymentMethodCode = $paymentMethod->getCode();
 
         $currency = LyraApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
+        if (! $currency) {
+            $this->logger->error("Unsupported currency for payment #{$request->get('id')}.");
+
+            throw new BadRequestHttpException();
+        }
+
         $amount = $currency->convertAmountToFloat($payment->getAmount());
 
         $this->refundService->refund($paymentMethodCode, $order, $this->getUserInfo(), $amount);
@@ -143,8 +149,9 @@ final class RefundController
 
     private function getUserInfo()
     {
-        $user = $this->requestStack->getCurrentRequest()->server->get('USERNAME') ?? '';
-        $remoteAddr = $this->requestStack->getCurrentRequest()->server->get('REMOTE_ADDR') ?? '';
+        $currentRequest = $this->requestStack->getCurrentRequest();
+        $user = $currentRequest ? ($currentRequest->server->get('USERNAME') ?? '') : '';
+        $remoteAddr = $currentRequest ? ($currentRequest->server->get('REMOTE_ADDR') ?? '') : '';
         $commentText = 'Sylius user: ' . $user;
         $commentText .= ' ; IP address: ' . $remoteAddr;
 
