@@ -7,8 +7,12 @@
  * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
  #}
 
-{% set form = hookable_metadata.context.form.gatewayConfig.config.payzen_rest_api_private_prod_key %}
+{% set form = hookable_metadata.context.form.gatewayConfig.config.payzen_rest_api_check_url %}
 
 <div class="col-12">
-    {{ form_row(form, sylius_test_form_attribute('config-payzen-rest-api-private-prod-key')) }}
+    {{ form_row(form, sylius_test_form_attribute('config-payzen-rest-api-check-url')) }}
+</div>
+
+<div>
+    {% include '@LyranetworkPayzenPlugin/plugin_metadata.html.twig' %}
 </div>

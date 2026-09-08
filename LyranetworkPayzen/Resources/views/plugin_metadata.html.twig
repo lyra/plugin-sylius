@@ -9,28 +9,45 @@
 
 {% set pluginMetadata = getPluginMetadata() %}
 
-<div class="card mb-3">
-    <h2 class="card-header">
-        PayZen
-    </h2>
-    <div class="row">
-        <div class="m-2 col-3">
-            {{ 'sylius_payzen_plugin.ui.payzen_developed_by'|trans }}
-            <b><a href="https://www.lyra.com/" target="_blank" class="text-primary">Lyra Network</a></b>
+<div class="m-2 col-12 alert alert-info">
+    <div class="d-flex">
+        <div>
+            {{ ux_icon('tabler:info-circle', {'class': 'icon alert-icon'}) }}
         </div>
-        <div class="m-2 col-8">
-            {{ 'sylius_payzen_plugin.ui.payzen_support_email'|trans }}
-            <b>{{ pluginMetadata.contactSupport | raw }}</b>
+        <div>
+            {{ 'sylius_payzen_plugin.ui.payzen_rest_check_url.helptext' | trans }}
         </div>
+    </div>
+</div>
 
-        <div class="m-2 col-3">
-            {{ 'sylius_payzen_plugin.ui.payzen_module_version'|trans }} <b>{{ pluginMetadata.pluginVersion }}</b>
-        </div>
-        <div class="m-2 col-12">
-            {{ 'sylius_payzen_plugin.ui.payzen_documentation_link'|trans }}
-            {% for lang, url in pluginMetadata.docUrls %}
-                <a style="margin-left: 10px; font-weight: bold; text-transform: uppercase;" href="{{ url }}" target="_blank" class="text-primary">{{ lang }}</a>
-            {% endfor %}
+<h2 class="card-header">
+    {{ 'sylius_payzen_plugin.ui.payzen_plugin_credits' | trans }}
+</h2>
+<div class="row">
+    <div class="m-2 col-12">
+        {{ 'sylius_payzen_plugin.ui.payzen_developed_by'|trans }}
+        <b><a href="https://www.lyra.com/" target="_blank" class="text-primary">Lyra Network</a></b>
+    </div>
+    <div class="m-2 col-12">
+        {{ 'sylius_payzen_plugin.ui.payzen_contact'|trans }}
+        <b>{{ pluginMetadata.contactSupport | raw }}</b>
+    </div>
+
+    <div class="m-2 col-12">
+        {{ 'sylius_payzen_plugin.ui.payzen_module_version'|trans }} <b>{{ pluginMetadata.pluginVersion }}</b>
+    </div>
+
+    <div class="m-2 col-12 alert alert-info">
+        <div class="d-flex">
+            <div>
+                {{ ux_icon('tabler:info-circle', {'class': 'icon alert-icon'}) }}
+            </div>
+            <div>
+                {{ 'sylius_payzen_plugin.ui.payzen_documentation_link'|trans }}
+            </div>
+            <div>
+                <a style="margin-left: 10px; font-weight: bold; color: var(--tblr-info)" href="{{ pluginMetadata.docUrl }}" target="_blank">{{ 'sylius_payzen_plugin.ui.payzen_here' | trans }}</a>
+            </div>
         </div>
     </div>
 </div>

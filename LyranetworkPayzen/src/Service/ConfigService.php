@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Payzen\Service;
 
 use Lyranetwork\Payzen\Repository\PaymentMethodRepositoryInterface;
-use Lyranetwork\Payzen\Sdk\Tools;
+use Lyranetwork\Payzen\Sdk\Tools as PayzenTools;
 
 /**
  * Service for retrieving payment gateway configuration values.
@@ -42,7 +42,7 @@ final class ConfigService
             return "";
         }
 
-        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(Tools::FACTORY_NAME, $instanceCode);
+        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(PayzenTools::FACTORY_NAME, $instanceCode);
         if (! $paymentMethod) {
             return "";
         }

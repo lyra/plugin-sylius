@@ -1,0 +1,70 @@
+{#
+* Copyright © Lyra Network.
+* This file is part of PayZen plugin for Sylius. See COPYING.md for license details.
+*
+* @author    Lyra Network (https://www.lyra.com/)
+* @copyright Lyra Network
+* @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
+#}
+
+{% set methodCode = hookable_metadata.context.payment_method.code %}
+{% set widgetVars = getWidgetVars() %}
+
+<script type="module" src="{{ widgetVars.epsilonUrl }}epsilon.js"></script>
+<link rel="stylesheet" href="{{ widgetVars.epsilonUrl }}epsilon.css">
+
+<script type="module">
+    async function createFormToken(shopConfig) {
+        return await fetch('{{ widgetVars.widgetTokenUrl }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(shopConfig)
+        })
+        .then(data => {
+            return data.json();
+        })
+        .catch(err => {
+            console.log("An error occurred when generating form token. Error : " + err);
+        })
+    }
+
+    const locale = '{{ app.request.locale }}';
+    window.epsilon.setLocale(locale.replace('_', '-'));
+
+    const data = document.querySelector('#sylius_admin_payment_method_gatewayConfig_config_payzen_rest_api_widget').value;
+    if (data) {
+        window.epsilon.setModels(JSON.parse(data));
+    } else {
+        await fetch('{{ widgetVars.defaultFormConfig }}?instanceCode={{ methodCode }}', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(async data => {
+            const result = await data.json()
+            if (result !== "") {
+                window.epsilon.setModels(result);
+            } else {
+                console.log("No default configuration was found in database.");
+            }
+        })
+        .catch(err => {
+            console.log("An error occurred when retrieving default configuration from database. Error : " + err);
+        })
+    }
+
+    window.epsilon.onModelsUpdate(async (modelsConfig) => {
+        document.querySelector('#sylius_admin_payment_method_gatewayConfig_config_payzen_rest_api_widget').value = JSON.stringify(modelsConfig);
+    })
+
+    window.epsilon.onFormTokenRequest(async (config) => {
+        return await createFormToken(config);
+    });
+
+    if ({{ widgetVars.whitelabelAll ? 'true' : 'false' }}) {
+        window.epsilon.showPanelElement('payzenWhiteLabel');
+    }
+</script>

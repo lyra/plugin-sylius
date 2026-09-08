@@ -98,25 +98,30 @@ class Api
     /**
      * Return the list of currencies recognized by the payment gateway.
      *
+     * @param string $whiteLabel
      * @return array[int][Lyranetwork\Payzen\Sdk\Form\Currency]
      */
-    public static function getSupportedCurrencies()
+    public static function getSupportedCurrencies($whiteLabel = '')
     {
-        $currencies = array(
+        $currencies = array();
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Payzen\Sdk\Form\WhiteLabel')) {
+            $currencies = \Lyranetwork\Payzen\Sdk\Form\WhiteLabel::getSupportedCurrencies($whiteLabel);
+        } else {
+            $currencies = array(
             array('ARS', '032', 2), array('AUD', '036', 2), array('BRL', '986', 2), array('CAD', '124', 2),
             array('CHF', '756', 2), array('CNY', '156', 2), array('COP', '170', 2), array('CZK', '203', 2),
             array('DKK', '208', 2), array('EUR', '978', 2), array('GBP', '826', 2), array('HKD', '344', 2),
             array('HUF', '348', 2), array('IDR', '360', 0), array('INR', '356', 2), array('JPY', '392', 0),
-            array('KHR', '116', 0), array('KRW', '410', 0), array('KWD', '414', 3), array('MAD', '504', 2),
+            array('KHR', '116', 2), array('KRW', '410', 0), array('KWD', '414', 3), array('MAD', '504', 2),
             array('MXN', '484', 2), array('MYR', '458', 2), array('NOK', '578', 2), array('NZD', '554', 2),
             array('PEN', '604', 2), array('PHP', '608', 2), array('PLN', '985', 2), array('RUB', '643', 2),
             array('SEK', '752', 2), array('SGD', '702', 2), array('THB', '764', 2), array('TND', '788', 3),
             array('TRY', '949', 2), array('TWD', '901', 2), array('USD', '840', 2), array('XOF', '952', 0),
             array('XPF', '953', 0), array('ZAR', '710', 2)
-        );
+            );
+        }
 
         $supported_currencies = array();
-
         foreach ($currencies as $currency) {
             $supported_currencies[] = new Currency($currency[0], $currency[1], $currency[2]);
         }
@@ -128,11 +133,12 @@ class Api
      * Return a currency from its 3-letters ISO code.
      *
      * @param string $alpha3
+     * @param string $whiteLabel
      * @return \Lyranetwork\Payzen\Sdk\Form\Currency|null
      */
-    public static function findCurrencyByAlphaCode($alpha3)
+    public static function findCurrencyByAlphaCode($alpha3, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Payzen\Sdk\Form\Currency $currency
@@ -149,11 +155,12 @@ class Api
      * Returns a currency form its numeric ISO code.
      *
      * @param int $numeric
+     * @param string $whiteLabel
      * @return \Lyranetwork\Payzen\Sdk\Form\Currency|null
      */
-    public static function findCurrencyByNumCode($numeric)
+    public static function findCurrencyByNumCode($numeric, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Payzen\Sdk\Form\Currency $currency
@@ -170,11 +177,12 @@ class Api
      * Return a currency from its 3-letters or numeric ISO code.
      *
      * @param string $code
+     * @param string $whiteLabel
      * @return \Lyranetwork\Payzen\Sdk\Form\Currency|null
      */
-    public static function findCurrency($code)
+    public static function findCurrency($code, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Payzen\Sdk\Form\Currency $currency
@@ -191,21 +199,27 @@ class Api
      * Returns currency numeric ISO code from its 3-letters code.
      *
      * @param string $alpha3
+     * @param string $whiteLabel
      * @return string|null
      */
-    public static function getCurrencyNumCode($alpha3)
+    public static function getCurrencyNumCode($alpha3, $whiteLabel = '')
     {
-        $currency = self::findCurrencyByAlphaCode($alpha3);
+        $currency = self::findCurrencyByAlphaCode($alpha3, $whiteLabel);
         return ($currency instanceof Currency) ? $currency->getNum() : null;
     }
 
     /**
      * Returns an array of card types accepted by the payment gateway.
      *
+     * @param string $whiteLabel
      * @return array[string][string]
      */
-    public static function getSupportedCardTypes()
+    public static function getSupportedCardTypes($whiteLabel = '')
     {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Payzen\Sdk\Form\WhiteLabel')) {
+            return \Lyranetwork\Payzen\Sdk\Form\WhiteLabel::getSupportedCardTypes($whiteLabel);
+        }
+
         return array(
             'CB' => 'CB', 'E-CARTEBLEUE' => 'e-Carte Bleue', 'MAESTRO' => 'Maestro', 'MASTERCARD' => 'Mastercard',
             'VISA' => 'Visa', 'VISA_ELECTRON' => 'Visa Electron', 'VPAY' => 'V PAY', 'AMEX' => 'American Express',
@@ -219,19 +233,18 @@ class Api
             'BANCONTACT' => 'Bancontact Mistercash', 'BIZUM' => 'Bizum', 'BIZZBEE_CDX' => 'Carte Cadeau Bizzbee',
             'BIZZBEE_CDX_SB' => 'Carte Cadeau Bizzbee (sandbox)', 'BOULANGER' => 'Carte b+',
             'BOULANGER_SB' => 'Carte b+ (sandbox)', 'BRICE_CDX' => 'Carte Cadeau Brice', 'BRICE_CDX_SB' => 'Carte Cadeau Brice (sandbox)',
-            'BUT' => 'But', 'CABAL' => 'Cabal', 'CARNET' => 'Carnet', 'CASINO' => 'Banque Casino', 'CA_DO_CARTE' => 'CA DO Carte',
-            'CDGP' => 'Carte Privilège', 'CDISCOUNT' => 'CDiscount', 'CHQ_DEJ' => 'Chèque Déjeuner', 'COF3XCB' => 'Cofinoga 3 fois CB',
-            'COF3XCB_SB' => 'Cofinoga 3 fois CB Sandbox', 'COFIDIS_3X_BE' => 'Cofidis en 3 fois', 'COFIDIS_3X_FR' => 'Cofidis en 3 fois',
+            'BUT' => 'But', 'CABAL' => 'Cabal', 'CARNET' => 'Carnet', 'CA_DO_CARTE' => 'CA DO Carte', 'CHQ_DEJ' => 'Chèque Déjeuner',
+            'COFIDIS_3X_BE' => 'Cofidis en 3 fois', 'COFIDIS_3X_FR' => 'Cofidis en 3 fois',
             'COFIDIS_4X_ES' => 'Cofidis en 4 vencimientos', 'COFIDIS_4X_FR' => 'Cofidis en 4 fois', 'COFIDIS_DFPAY_FR' => 'Cofidis Pay Later',
             'COFIDIS_LOAN_BE' => 'Cofidis en 6-12-18 fois', 'COFIDIS_LOAN_CB' => 'Cofidis en 5-12 fois',
             'COFIDIS_LOAN_ES' => 'Cofidis en 6-12-24 vencimientos', 'COFIDIS_LOAN_FR' => 'Amortissable', 'COFIDIS_LOAN_IT' => 'Cofidis Pagodil',
-            'COFIDIS_PAY_FR' => 'Cofidis Pay', 'COFINOGA' => 'Cofinoga', 'COM_BARRY_CDX' => 'Carte Cadeau Comtesse du Barry',
+            'COFIDIS_PAY_FR' => 'Cofidis Pay', 'COM_BARRY_CDX' => 'Carte Cadeau Comtesse du Barry',
             'COM_BARRY_CDX_SB' => 'Carte Cadeau Comtesse du Barry (sandbox)', 'CONECS' => 'Conecs', 'CONFORAMA' => 'Conforama',
             'CORA' => 'Cora', 'CORA_BLANCHE' => 'Cora blanche', 'CORA_PREM' => 'Cora Visa Premier', 'CORA_VISA' => 'Cora Visa',
-            'CVCO' => 'Chèque-Vacances Connect', 'DINERS' => 'Diners', 'DISCOVER' => 'Discover', 'ECCARD' => 'EC Card',
+            'CVCO' => 'Chèque-Vacances Connect', 'DINERS' => 'Diners', 'DISCOVER' => 'Discover',
             'EDENRED' => 'Ticket Restaurant', 'EDENRED_CC' => 'Ticket Cheque Consommation', 'EDENRED_EC' => 'Ticket EcoCheque',
             'EDENRED_SC' => 'Ticket Sport & Culture', 'EDENRED_TC' => 'Ticket Compliments', 'EDENRED_TR' => 'Ticket Restaurant', 'ELO' => 'Elo',
-            'ELV' => 'ELV', 'FLOA_10X' => 'Floa en 10 fois', 'FLOA_3X' => 'Floa en 3 fois', 'FLOA_4X' => 'Floa en 4 fois', 'FLOA_PAYLATER' => 'Floa Pay Later',
+            'FLOA_10X' => 'Floa en 10 fois', 'FLOA_3X' => 'Floa en 3 fois', 'FLOA_4X' => 'Floa en 4 fois', 'FLOA_PAYLATER' => 'Floa Pay Later',
             'FRANFINANCE_3X' => 'Paiement en 3 fois', 'FRANFINANCE_4X' => 'Paiement en 4 fois', 'FULLCB3X' => 'Paiement en 3 fois CB',
             'FULLCB4X' => 'Paiement en 4 fois CB', 'GEMO_CDX' => 'Carte Cadeau Gémo', 'GEMO_CDX_SB' => 'Carte Cadeau Gémo (sandbox)',
             'GIROPAY' => 'Giropay', 'GOOGLEPAY' => 'Google Pay', 'HIPER' => 'Hiper', 'HIPERCARD' => 'Hipercard', 'IDEAL' => 'iDEAL',
@@ -241,19 +254,17 @@ class Api
             'JULES_CDX_SB' => 'Carte Cadeau Jules (sandbox)', 'KADEOS_CULTURE' => 'Carte Kadéos Culture',
             'KADEOS_GIFT' => 'Carte Kadéos Zénith', 'KLARNA' => 'Klarna', 'LECLERC' => 'Carte Reglo',
             'LEROY-MERLIN' => 'Carte Maison Financement', 'LEROY-MERLIN_SB' => 'Carte Maison Financement (sandbox)',
-            'MASTERPASS' => 'MasterPass', 'MC_CORDOBESA' => 'Mastercard Cordobesa', 'MULTIBANCO' => 'Multibanco', 'MYBANK' => 'MyBank',
+            'MC_CORDOBESA' => 'Mastercard Cordobesa', 'MULTIBANCO' => 'Multibanco', 'MYBANK' => 'MyBank',
             'NARANJA' => 'Naranja', 'NORAUTO' => 'Carte Norauto option Financement', 'NORAUTO_SB' => 'Carte Norauto option Financement (sandbox)',
-            'ONEY' => 'Paiement en 3 ou 4 fois par CB', 'ONEY_10X_12X' => 'Paiement en 10 ou 12 fois Oney',
+            'OG_PB' => 'Carte Passion Beauté', 'OG_TEST' => 'Ogloba Test', 'ONEY_10X_12X' => 'Paiement en 10 ou 12 fois Oney',
             'ONEY_3X_4X' => 'Paiement en 3 ou 4 fois Oney', 'ONEY_ENSEIGNE' => 'Cartes enseignes Oney', 'ONEY_PAYLATER' => 'Pay Later Oney',
-            'ONEY_SANDBOX' => 'Paiement en 3 ou 4 fois par CB (sandbox)', 'PASS_BEAU_CDX' => 'Carte Cadeau Passion Beauté',
-            'PASS_BEAU_CDX_SB' => 'Carte Cadeau Passion Beauté (sandbox)', 'PAYBOX' => 'Paybox', 'PAYDIREKT' => 'Paydirekt', 'PAYPAL' => 'PayPal',
-            'PAYPAL_BNPL' => 'PayPal Pay Later', 'PAYPAL_BNPL_SB' => 'PayPal Pay Later Sandbox',
+            'PASS_BEAU_CDX' => 'Carte Cadeau Passion Beauté', 'PASS_BEAU_CDX_SB' => 'Carte Cadeau Passion Beauté (sandbox)', 'PAYDIREKT' => 'Paydirekt',
+            'PAYPAL' => 'PayPal', 'PAYPAL_BNPL' => 'PayPal Pay Later', 'PAYPAL_BNPL_SB' => 'PayPal Pay Later Sandbox',
             'PAYPAL_SB' => 'PayPal Sandbox', 'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
             'POSTFINANCE' => 'PostFinance Card', 'POSTFINANCE_EFIN' => 'PostFinance E-Finance',
             'PRZELEWY24' => 'Przelewy24', 'S-MONEY' => 'S-money', 'SAMSUNG_PAY' => 'Samsung Pay', 'SCT' => 'Virement SEPA', 'SDD' => 'Prélèvement SEPA',
-            'SODEXO' => 'Pass Restaurant', 'SOFICARTE' => 'Soficarte', 'SOFORT_BANKING' => 'Sofort', 'SOROCRED' => 'Sorocred',
-            'SYGMA' => 'Sygma', 'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut', 'VILLAVERDE' => 'Carte Cadeau VillaVerde',
-            'VILLAVERDE_SB' => 'Carte Cadeau VillaVerde (sandbox)', 'WECHAT' => 'WeChat Pay', 'WERO' => 'Wero'
+            'SODEXO' => 'Pass Restaurant', 'SOFORT_BANKING' => 'Sofort', 'SOROCRED' => 'Sorocred',
+            'VILLAVERDE' => 'Carte Cadeau VillaVerde','VILLAVERDE_SB' => 'Carte Cadeau VillaVerde (sandbox)', 'WECHAT' => 'WeChat Pay', 'WERO' => 'Wero'
         );
     }
 
@@ -280,6 +291,7 @@ class Api
     {
         return array(
             'INITIAL',
+            'CAPTURE_PENDING',
             'WAITING_AUTHORISATION',
             'WAITING_AUTHORISATION_TO_VALIDATE',
             'UNDER_VERIFICATION',
@@ -439,10 +451,15 @@ class Api
     /**
      * Returns an array of the online documentation URI of the payment module.
      *
+     * @param string $whiteLabel
      * @return array[string][string]
      */
-    public static function getOnlineDocUri()
+    public static function getOnlineDocUri($whiteLabel = '')
     {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Payzen\Sdk\Form\WhiteLabel')) {
+            return \Lyranetwork\Payzen\Sdk\Form\WhiteLabel::getOnlineDocUri($whiteLabel);
+        }
+
         return array(
             'fr' => 'https://payzen.io/fr-FR/plugins/',
             'en' => 'https://payzen.io/en-EN/plugins/',
@@ -515,6 +532,7 @@ class Api
             'empty_cart' => array(false, 'Empty cart detected before order processing.'),
             'unknown_status' => array(false, 'Unknown order status.'),
             'amount_error' => array(false, 'Total paid is different from order amount.'),
+            'abandoned_ignored' => array(false, 'Payment abandoned or Expired but order cycle is not closed.'),
             'ok' => array(true, ''),
             'ko' => array(false, '')
         );
@@ -543,5 +561,71 @@ class Api
         $response .= '</span>';
 
         return $response;
+    }
+
+    /**
+     * Get a white label-specific property value from the WhiteLabel class.
+     *
+     * Dynamically calls the getter method corresponding to the given property name
+     * on the WhiteLabel class and returns the value associated with the given white label key.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @param string $property the property name to retrieve (e.g. 'features', 'gatewayUrl')
+     * @return mixed|null the property value for the given white label, or null if not found
+     */
+    public static function getWhiteLabelProperty($whiteLabel, $property)
+    {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Payzen\Sdk\Form\WhiteLabel')) {
+            $method = 'get' . ucfirst($property);
+            if (method_exists('\Lyranetwork\Payzen\Sdk\Form\WhiteLabel', $method)) {
+                $values = \Lyranetwork\Payzen\Sdk\Form\WhiteLabel::$method();
+                if (is_array($values) && array_key_exists($whiteLabel, $values)) {
+                    return $values[$whiteLabel];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get a white label-specific URL, falling back to the default URL if not found.
+     *
+     * Looks up the URL for the given type from the WhiteLabel class first; if not found,
+     * falls back to the predefined default URLs for supported types.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @param string $type the URL type ('gatewayUrl', 'restUrl', 'staticUrl', 'logoUrl')
+     * @return string|null the URL for the given type, or null if the type is not recognized
+     */
+    public static function getWhiteLabelUrl($whiteLabel, $type)
+    {
+        $urls = array(
+            'gatewayUrl' => 'https://secure.payzen.eu/vads-payment/',
+            'restUrl' => 'https://api.payzen.eu/api-payment/',
+            'staticUrl' => 'https://static.payzen.eu/static/',
+            'logoUrl' => 'https://secure.payzen.eu/static/latest/images/type-carte/'
+        );
+
+        $url = self::getWhiteLabelProperty($whiteLabel, $type);
+        if ($url !== null) {
+            return $url;
+        }
+
+        return $urls[$type] ?? null;
+    }
+
+    /**
+     * Get the features array for a given white label.
+     *
+     * Returns the features associated with the white label from the WhiteLabel class,
+     * or an empty array if the white label is not found or has no features defined.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @return array the features array for the given white label, or an empty array
+     */
+    public static function getWhiteLabelFeatures($whiteLabel)
+    {
+        return self::getWhiteLabelProperty($whiteLabel, 'features') ?? [];
     }
 }

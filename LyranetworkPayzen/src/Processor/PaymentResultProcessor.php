@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Payzen\Processor;
 
 use Lyranetwork\Payzen\Sdk\RestHelper;
-use Lyranetwork\Payzen\Sdk\Tools;
+use Lyranetwork\Payzen\Sdk\Tools as PayzenTools;
 use Lyranetwork\Payzen\Sdk\Form\Api as PayzenApi;
 
 use Sylius\Abstraction\StateMachine\StateMachineInterface;
@@ -98,10 +98,9 @@ final class PaymentResultProcessor {
      */
     private function updateTransactionDetails(array &$details, array $answer): void
     {
-        $details['payzen_factory_name'] = Tools::FACTORY_NAME;
-        $details['transactions'] = isset($details['transactions']) && is_array($details['transactions']) 
-            ? $details['transactions']
-            : [];
+        $details['payzen_factory_name'] = PayzenTools::FACTORY_NAME;
+        $details['transactions'] = isset($details['transactions']) && is_array($details['transactions'])
+            ? $details['transactions'] : [];
 
         $transactions = $this->restHelper->getProperty($answer, 'transactions');
 
@@ -125,7 +124,6 @@ final class PaymentResultProcessor {
     private function getTransaction(array $answer): array
     {
         $transactions = $this->restHelper->getProperty($answer, 'transactions');
-    
         if (is_array($transactions) && ! empty($transactions)) {
             return $transactions[0];
         }

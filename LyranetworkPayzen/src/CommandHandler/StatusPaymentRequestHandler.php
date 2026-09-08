@@ -21,9 +21,8 @@ use Symfony\Component\Messenger\Attribute\AsMessageHandler;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
-use Lyranetwork\Payzen\Sdk\Tools;
-use Lyranetwork\Payzen\Service\ConfigService;
-use Lyranetwork\Payzen\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
+use Lyranetwork\Payzen\Sdk\Tools as PayzenTools;
+use Lyranetwork\Payzen\Sdk\RestHelper;
 use Lyranetwork\Payzen\Command\StatusPaymentRequest;
 use Lyranetwork\Payzen\Processor\PaymentResultProcessor;
 
@@ -41,7 +40,7 @@ final class StatusPaymentRequestHandler
      * @param StateMachineInterface $stateMachine State machine for managing payment request transitions
      * @param LoggerInterface $logger Logger for tracking status check operations
      * @param RequestStack $requestStack Request stack for accessing session and request data
-     * @param ConfigService $configService Service for accessing gateway configuration
+     * @param RestHelper $restHelper Helper service for managing REST API operations and account tokens
      * @param TranslatorInterface $translator Translator for user-facing messages
      * @param PaymentResultProcessor $paymentResultProcessor Processor for handling payment results
      */
@@ -50,7 +49,7 @@ final class StatusPaymentRequestHandler
         private StateMachineInterface $stateMachine,
         private LoggerInterface $logger,
         private RequestStack $requestStack,
-        private ConfigService $configService,
+        private RestHelper $restHelper,
         private TranslatorInterface $translator,
         private PaymentResultProcessor $paymentResultProcessor
     ) {
@@ -89,7 +88,8 @@ final class StatusPaymentRequestHandler
         $session = $this->requestStack->getSession();
         $locale = $this->requestStack->getCurrentRequest()->getLocale();
         $instanceCode = $paymentRequest->getMethod()->getCode();
-        $testMode = $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'context_mode', $instanceCode) === 'TEST';
+
+        $testMode = $this->restHelper->getContextMode($instanceCode) !== 'production';
 
         $details = $payment->getDetails();
         if (! isset($details['answer']) || ! isset($details['new_status'])
@@ -101,7 +101,7 @@ final class StatusPaymentRequestHandler
             }
         }
 
-        if ($testMode && Tools::$pluginFeatures['prodfaq']) {
+        if ($testMode && PayzenTools::$pluginFeatures['prodfaq']) {
             $session->getFlashBag()->add('info', $this->translator->trans('sylius_payzen_plugin.payment.prodfaq', locale: $locale));
         }
 

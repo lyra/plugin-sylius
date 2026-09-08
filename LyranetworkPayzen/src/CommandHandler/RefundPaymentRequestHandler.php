@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace Lyranetwork\Payzen\CommandHandler;
 
-use Lyranetwork\Payzen\Sdk\Tools;
+use Lyranetwork\Payzen\Sdk\Tools as PayzenTools;
 use Lyranetwork\Payzen\Sdk\Form\Api as PayzenApi;
+use Lyranetwork\Payzen\Sdk\RestHelper;
 use Lyranetwork\Payzen\Command\RefundPaymentRequest;
 use Lyranetwork\Payzen\Service\RefundService;
 
@@ -39,6 +40,7 @@ final class RefundPaymentRequestHandler
      * @param StateMachineInterface $stateMachine State machine for managing payment request transitions
      * @param RefundService $refundService Service for executing refund operations with the gateway
      * @param RequestStack $requestStack Request stack for accessing session and flash messages
+     * @param RestHelper $restHelper Payzen REST operations helper
      * @param LoggerInterface $logger Logger for tracking refund operations
      */
     public function __construct(
@@ -46,6 +48,7 @@ final class RefundPaymentRequestHandler
         private StateMachineInterface $stateMachine,
         private RefundService $refundService,
         private RequestStack $requestStack,
+        private RestHelper $restHelper,
         private LoggerInterface $logger
     ) {}
 
@@ -81,11 +84,12 @@ final class RefundPaymentRequestHandler
             PaymentRequestTransitions::TRANSITION_PROCESS
         );
 
-        $currency = PayzenApi::findCurrencyByAlphaCode($payment->getCurrencyCode());
+        $paymentMethodCode = $paymentRequest->getMethod()->getCode();
+        $whiteLabel = $this->restHelper->getWhiteLabel($paymentMethodCode);
+        $currency = PayzenApi::findCurrencyByAlphaCode($payment->getCurrencyCode(), $whiteLabel);
         $amount = $currency->convertAmountToFloat($payment->getAmount());
 
         try {
-            $paymentMethodCode = $paymentRequest->getMethod()->getCode();
             $this->refundService->refund($paymentMethodCode, $order, $this->getUserInfo(), $amount);
 
             $this->logger->info("Refund processed successfully for order #$orderId.");
@@ -135,7 +139,7 @@ final class RefundPaymentRequestHandler
         }
 
         $factoryName = $gatewayConfig->getFactoryName();
-        if ($factoryName !== Tools::FACTORY_NAME) {
+        if ($factoryName !== PayzenTools::FACTORY_NAME) {
             return false;
         }
 

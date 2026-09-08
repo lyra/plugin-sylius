@@ -9,7 +9,7 @@
 
 {% set payzenGateway = constant('Lyranetwork\\Payzen\\Sdk\\Tools::FACTORY_NAME') %}
 {% if hookable_metadata.context.payment_method.gatewayConfig.factoryName is same as (payzenGateway) %}
-    {% include '@LyranetworkPayzenPlugin/plugin_metadata.html.twig' %}
+    {% include '@LyranetworkPayzenPlugin/plugin_widget.html.twig' %}
 {% endif %}
 
 <div class="card mb-3">

@@ -12,10 +12,8 @@ declare(strict_types=1);
 
 namespace Lyranetwork\Payzen\Twig\Extensions;
 
-use Lyranetwork\Payzen\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 use Lyranetwork\Payzen\Sdk\RestHelper;
 use Lyranetwork\Payzen\Sdk\Tools as PayzenTools;
-use Lyranetwork\Payzen\Service\ConfigService;
 use Lyranetwork\Payzen\Sdk\Form\Api as PayzenApi;
 
 use Twig\Extension\AbstractExtension;
@@ -35,7 +33,6 @@ final class EmbeddedFormProvider extends AbstractExtension
 {
     public function __construct(
         private LoggerInterface $logger,
-        private ConfigService $configService,
         private RestHelper $restHelper,
         private LocaleContextInterface $localeContext
     ) {
@@ -62,11 +59,11 @@ final class EmbeddedFormProvider extends AbstractExtension
      *
      * @param mixed  $order              The order entity for which to generate the token
      * @param string $instanceCode       The payment method instance code
-     * @param string $paymentRequestHash The payment request hash identifier
+     * @param object $paymentRequestHash The payment request hash identifier
      *
      * @return array{formToken: string} Array containing the form token
      */
-    public function getEmbeddedFormToken($order, $instanceCode, $paymentRequestHash): array
+    public function getEmbeddedFormToken(mixed $order, string $instanceCode, object $paymentRequestHash): array
     {
         $this->logger->info("Start retrieving form token for payment page.");
 
@@ -86,30 +83,24 @@ final class EmbeddedFormProvider extends AbstractExtension
      * @param string $instanceCode The payment method instance code
      *
      * @return array{
-     *     paymentDataEntryMode: string,
-     *     popinMode: bool,
+     *     formConfig: string,
      *     theme: string,
-     *     compactMode: bool,
      *     jsClient: string,
      *     publicKey: string,
      *     language: string
      * } Array containing embedded form configuration parameters
      */
-    public function getEmbeddedFormConfig($instanceCode): array
+    public function getEmbeddedFormConfig(string $instanceCode): array
     {
-        $paymentDataEntryMode = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'payment_data_entry_mode', $instanceCode);
-        $popinMode = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_popin_mode', $instanceCode);
-        $theme = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_theme', $instanceCode);
-        $compactMode = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_compact_mode', $instanceCode);
-        $jsClient = PayzenTools::getDefault('STATIC_URL');
+        $activeModel = $this->restHelper->getActiveModel($instanceCode);
+        $theme = $activeModel != null ? $activeModel['inteConfig']['theme']['name'] : PayzenTools::getDefault('THEME');
+        $jsClient = $this->restHelper->getStaticUrl($instanceCode);
         $publicKey = $this->restHelper->getPublicKey($instanceCode);
         $language = substr($this->localeContext->getLocaleCode(), 0, 2);
 
         return [
-            'paymentDataEntryMode' => $paymentDataEntryMode,
-            'popinMode' => $popinMode,
+            'formConfig' => json_encode($activeModel['formConfig']),
             'theme' => strtolower($theme),
-            'compactMode' => $compactMode,
             'jsClient' => $jsClient,
             'publicKey' => $publicKey,
             'language' => $language,

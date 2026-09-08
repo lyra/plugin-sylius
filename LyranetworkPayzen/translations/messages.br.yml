@@ -1,55 +1,18 @@
 sylius_payzen_plugin:
   ui:
-    payzen_payment_method_title: Pagamento com PayZen
-    payzen_developed_by: Desenvolvido por
-    payzen_support_email: 'Email de contato: '
-    payzen_click_here: 'Clique aqui'
-    payzen_module_version: 'Versão do módulo: '
-    payzen_documentation_link: 'Clique para consultar a documentação da configuração do módulo: '
-    payzen_advanced_options: OPÇÕES AVANÇADAS
-    payzen_payment_options: OPÇÕES DE PAGAMENTO
-    payzen_rest_api_keys:
-      label: CHAVES DE API REST
-      desc: 'As chaves do API REST estão disponíveis no seu Back Office PayZen (menu: Configurações > Lojas > Chaves de API REST).'
-    payzen_site_id:
-      label: Código da loja
-      helptext: Código dado pelo PayZen.
-    payzen_mode:
-      label: Modo
-      helptext: Modo de funcionamento do módulo.
-    payzen_private_test_key:
-      label: Senha de teste
-    payzen_private_prod_key:
-      label: Senha de produção
-    payzen_public_test_key:
-      label: Chave pública de teste
-    payzen_public_prod_key:
-      label: Chave pública de produção
-    payzen_hmac_test_key:
-      label: Chave HMAC-SHA-256 de teste
-    payzen_hmac_prod_key:
-      label: Chave HMAC-SHA-256 de produção
+    payzen_widget_desc: "Personalize em tempo real a aparência dos seus formulários de pagamento com nossa ferramenta intuitiva. Ajuste cores, fontes e campos por meio de uma interface visual e visualize imediatamente o resultado em todos os dispositivos. Simples e eficiente, ela acelera a validação e a implantação, garantindo uma experiência do usuário otimizada."
+    payzen_open_widget: "Configurar o formulário de pagamento"
+    payzen_payment_method_title: "Pagamento com PayZen"
+    payzen_plugin_credits: "Créditos do plugin"
+    payzen_developed_by: "Desenvolvido por"
+    payzen_contact: "Contactar "
+    payzen_support_client: "o suporte ao cliente"
+    payzen_here: "aqui"
+    payzen_module_version: "Versão do módulo: "
+    payzen_documentation_link: "Clique para consultar a documentação da configuração do módulo: "
     payzen_rest_check_url:
-      label: URL de notificação do API REST
-      helptext: URL para copiar no Back Office PayZen > Configurações > Regras de notificações. Em modo multi-loja, a URL de notificação é a mesma para todas as lojas.
-    payzen_payment_data_entry_mode:
-      label: Modo de digitar os dados de pagamento
-      helptext: Selecione a maneira como serão digitados os dados de pagamento. Atenção, para usar os campos de pagamento incorporados, verifique que contratou esta opção no PayZen.
-    payzen_rest_popin_mode:
-      label: Mostrar en una ventana pop-in
-      helptext: Esta opção permite exibir os campos de pagamento incorporados en una ventana pop-in.
-    payzen_rest_theme:
-      label: Temas
-      helptext: Selecione um tema para exibir os campos de pagamento incorporados.
-    payzen_rest_compact_mode:
-      label: Modo compacto
-      helptext: Esta opção permite exibir os campos de pagamento incorporados em modo compacto.
-    payzen_rest_attempts:
-      label: Quantidade de tentativas de pagamento com cartão
-      helptext: Número máximo de tentativas de pagamento com cartão após um pagamento não sucedido (entre 0 e 2). Se este valor não for informado, o valor default será de 2.
-    payzen_oneclick_payment:
-      label: Pagamento por token
-      helptext: Esta opção permite pagar um pedido sem digitar de novo os dados bancários a cada pagamento. A opção « Pagamento por token » deve ser ativada na sua loja Back Office PayZen para usar esta funcionalidade.
+      label: "URL de notificação do API REST"
+      helptext: "URL para copiar no Back Office PayZen > Configurações > Regras de notificações. Em modo multi-loja, a URL de notificação é a mesma para todas as lojas."
     transaction_id: "Transação ID: "
     transaction_uuid: "Transação UUID: "
     card_brand: "Bandeira de cartão: "
@@ -59,20 +22,9 @@ sylius_payzen_plugin:
       customer_wallet:
         title: "Métodos de pagamento"
         error: "Nenhum método salvo encontrado."
-  config:
-    all: TODAS
-    test: TEST
-    production: PRODUCTION
-    embedded:
-      mode_embedded: Campos de pagamento incorporados no site EC (API REST)
-      mode_embedded_ext_with_logos: Campos de pagamento estendidos incorporados no site do vendedor com logotipos (API REST)
-      mode_embedded_ext_without_logos: Campos de pagamento estendidos incorporados no site do vendedor sem logotipos (API REST)
-    theme:
-      neon: Neon
-      classic: Classic
   payment:
-    fatal: Ocorreu um erro no processo de pagamento.
-    check_url_warn: A validação automática não foi realizada com sucesso. Configurou corretamente a URL de notificação no Back Office PayZen?
+    fatal: "Ocorreu um erro no processo de pagamento."
+    check_url_warn: "A validação automática não foi realizada com sucesso. Configurou corretamente a URL de notificação no Back Office PayZen?"
     prodfaq: "PASSAR EM PRODUÇÃO: Para saber como passar sua loja em produção, favor consultar os capítulos « Realizar a fase de teste » e « Passar uma loja em modo produção » da documentação do módulo."
   refund:
     error:
