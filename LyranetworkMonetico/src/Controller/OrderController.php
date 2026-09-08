@@ -294,7 +294,7 @@ final class OrderController extends BaseOrderController
             'monetico_payment_initial_amount' => $amount
         );
 
-        $initialAmount = $lastPayment->getDetails() && $lastPayment->getDetails()['monetico_payment_initial_amount'] ? $lastPayment->getDetails()['monetico_payment_initial_amount'] : $amount;
+        $initialAmount = ($lastPayment->getDetails() && ! empty($lastPayment->getDetails()['monetico_payment_initial_amount'])) ? $lastPayment->getDetails()['monetico_payment_initial_amount'] : $amount;
 
         if ($moneticoResponse->get('vads_amount') != $amount) {
             if ($moneticoResponse->get('operation_type') === 'DEBIT') {

@@ -46,12 +46,19 @@ class ConfigurationProvider extends AbstractExtension
     {
         $docsUrls = [];
         foreach (MoneticoApi::getOnlineDocUri() as $lang => $docUri) {
+            if (! isset(MoneticoTools::$doc_languages[$lang])) {
+                continue;
+            }
+
             $docsUrls[MoneticoTools::$doc_languages[$lang]] = $docUri . 'sylius2/sitemap.html';
         }
 
+        $currentRequest = $this->requestStack->getCurrentRequest();
+        $locale = $currentRequest ? $currentRequest->get('admin_locale') : null;
+
         return [
             'moneticoDocUrls' => $docsUrls,
-            'moneticoSupport' => MoneticoApi::formatSupportEmails(MoneticoTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_monetico_plugin.ui.monetico_click_here', locale: $this->requestStack->getCurrentRequest()->get('admin_locale'))),
+            'moneticoSupport' => MoneticoApi::formatSupportEmails(MoneticoTools::getDefault('SUPPORT_EMAIL'), $this->translator->trans('sylius_monetico_plugin.ui.monetico_click_here', locale: $locale)),
             'moneticoPluginVersion' => MoneticoTools::getDefault('PLUGIN_VERSION'),
             'moneticoGatewayVersion' => MoneticoTools::getDefault('GATEWAY_VERSION')
         ];
