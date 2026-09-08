@@ -41,6 +41,10 @@ final class ConfigurationContextProvider implements ContextProviderInterface
     {
         $docsUrls = [];
         foreach (PayzenApi::getOnlineDocUri() as $lang => $docUri) {
+            if (! isset(PayzenTools::$doc_languages[$lang])) {
+                continue;
+            }
+
             $docsUrls[PayzenTools::$doc_languages[$lang]] = $docUri . 'sylius/sitemap.html';
         }
 
