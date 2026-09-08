@@ -106,7 +106,7 @@ class Api
             array('AUD', '036', 2), array('BRL', '986', 2), array('CAD', '124', 2), array('CHF', '756', 2),
             array('CNY', '156', 2), array('CZK', '203', 2), array('DKK', '208', 2), array('EUR', '978', 2),
             array('GBP', '826', 2), array('HKD', '344', 2), array('HUF', '348', 2), array('IDR', '360', 0),
-            array('INR', '356', 2), array('JPY', '392', 0), array('KHR', '116', 0), array('KRW', '410', 0),
+            array('INR', '356', 2), array('JPY', '392', 0), array('KHR', '116', 2), array('KRW', '410', 0),
             array('KWD', '414', 3), array('MAD', '504', 2), array('MXN', '484', 2), array('MYR', '458', 2),
             array('NOK', '578', 2), array('NZD', '554', 2), array('PHP', '608', 2), array('PLN', '985', 2),
             array('RON', '946', 2), array('RUB', '643', 2), array('SEK', '752', 2), array('SGD', '702', 2),
@@ -228,8 +228,9 @@ class Api
             'CORA' => 'Cora', 'CORA_BLANCHE' => 'Cora blanche', 'CORA_PREM' => 'Cora Visa Premier', 'CORA_VISA' => 'Cora Visa',
             'CVCO' => 'Chèque-Vacances Connect', 'DINERS' => 'Diners', 'DISCOVER' => 'Discover', 'ECCARD' => 'EC Card',
             'EDENRED' => 'Ticket Restaurant', 'EDENRED_EC' => 'Ticket EcoCheque', 'EDENRED_TR' => 'Ticket Restaurant',
+            'FLOA_10X' => 'Floa en 10 fois', 'FLOA_3X' => 'Floa en 3 fois', 'FLOA_4X' => 'Floa en 4 fois', 'FLOA_PAYLATER' => 'Floa Pay Later',
             'FRANFINANCE_3X' => 'Paiement en 3 fois', 'FRANFINANCE_4X' => 'Paiement en 4 fois', 'FULLCB3X' => 'Paiement en 3 fois CB',
-            'FULLCB4X' => 'Paiement en 4 fois CB', 'GIROPAY' => 'Giropay', 'IDEAL' => 'iDEAL',
+            'FULLCB4X' => 'Paiement en 4 fois CB', 'GIROPAY' => 'Giropay', 'GOOGLEPAY' => 'Google Pay', 'IDEAL' => 'iDEAL',
             'ILLICADO' => 'Carte Illicado', 'ILLICADO_SB' => 'Carte Illicado (sandbox)', 'JCB' => 'JCB',
             'JOUECLUB_CDX' => 'Carte Cadeau Joué Club', 'JOUECLUB_CDX_SB' => 'Carte Cadeau Joué Club (sandbox)',
             'JULES_CDX' => 'Carte Cadeau Jules', 'JULES_CDX_SB' => 'Carte Cadeau Jules (sandbox)',
@@ -243,8 +244,8 @@ class Api
             'PASS_BEAU_CDX_SB' => 'Carte Cadeau Passion Beauté (sandbox)', 'PAYBOX' => 'Paybox',
             'PAYPAL' => 'PayPal', 'PAYPAL_BNPL' => 'PayPal Pay Later', 'PAYPAL_BNPL_SB' => 'PayPal Pay Later Sandbox',
             'PAYPAL_SB' => 'PayPal Sandbox', 'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
-            'S-MONEY' => 'S-money', 'SCT' => 'Virement SEPA', 'SDD' => 'Prélèvement SEPA', 'SODEXO' => 'Pass Restaurant',
-            'SOFICARTE' => 'Soficarte', 'SOFORT_BANKING' => 'Sofort', 'SYGMA' => 'Sygma', 'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut',
+            'S-MONEY' => 'S-money', 'SAMSUNG_PAY' => 'Samsung Pay', 'SCT' => 'Virement SEPA', 'SDD' => 'Prélèvement SEPA', 'SODEXO' => 'Pass Restaurant',
+            'SOFICARTE' => 'Soficarte', 'SYGMA' => 'Sygma', 'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut',
             'VILLAVERDE' => 'Carte Cadeau VillaVerde', 'VILLAVERDE_SB' => 'Carte Cadeau VillaVerde (sandbox)', 'WERO' => 'Wero'
         );
     }
@@ -272,6 +273,7 @@ class Api
     {
         return array(
             'INITIAL',
+            'CAPTURE_PENDING',
             'WAITING_AUTHORISATION',
             'WAITING_AUTHORISATION_TO_VALIDATE',
             'UNDER_VERIFICATION',
@@ -400,11 +402,6 @@ class Api
         return $formatted;
     }
 
-    public static function getSupportComponentEmail()
-    {
-        return '###COMPONENT_EMAIL###';
-    }
-
     /**
      * Return the list of SEPA countries.
      *
@@ -444,5 +441,100 @@ class Api
             'fr' => 'https://sogecommerce.societegenerale.eu/doc/fr-FR/plugins/',
             'en' => 'https://sogecommerce.societegenerale.eu/doc/en-EN/plugins/'
         );
+    }
+
+    /**
+     * Check if the payment was successful (waiting confirmation or captured).
+     *
+     * @return bool
+     */
+    public static function isAcceptedPayment($status)
+    {
+        return in_array($status, self::getSuccessStatuses(), true) || self::isPendingPayment($status);
+    }
+
+    /**
+     * Check if the payment is waiting confirmation (successful but the amount has not been
+     * transfered and is not yet guaranteed).
+     *
+     * @return bool
+     */
+    public static function isPendingPayment($status)
+    {
+        return in_array($status, self::getPendingStatuses(), true);
+    }
+
+    /**
+     * Check if the payment process was interrupted by the buyer.
+     *
+     * @return bool
+     */
+    public static function isCancelledPayment($status)
+    {
+        return in_array($status, self::getCancelledStatuses(), true);
+    }
+
+    /**
+     * Check if the payment is to validate manually in the gateway Back Office.
+     *
+     * @return bool
+     */
+    public static function isToValidatePayment($status)
+    {
+        return in_array($status, self::getToValidateStatuses(), true);
+    }
+
+    /**
+     * Return a formatted string to output as a response to the notification URL call.
+     *
+     * @param string $case shortcut code for current situations. Most useful : payment_ok, payment_ko, auth_fail
+     * @param string $extra_message some extra information to output to the payment gateway
+     * @param string $original_encoding some extra information to output to the payment gateway
+     *
+     * @return string
+     */
+    public static function getOutputForGateway($case = '', $extra_message = '', $original_encoding = 'UTF-8')
+    {
+        // Predefined response messages according to case.
+        $cases = array(
+            'payment_ok' => array(true, 'Accepted payment, order has been updated.'),
+            'payment_ko' => array(true, 'Payment failure, order has been cancelled.'),
+            'payment_ko_bis' => array(true, 'Payment failure.'),
+            'payment_ok_already_done' => array(true, 'Accepted payment, already registered.'),
+            'payment_ko_already_done' => array(true, 'Payment failure, already registered.'),
+            'order_not_found' => array(false, 'Order not found.'),
+            'payment_ko_on_order_ok' => array(false, 'Order status does not match the payment result.'),
+            'auth_fail' => array(false, 'An error occurred while computing the signature.'),
+            'empty_cart' => array(false, 'Empty cart detected before order processing.'),
+            'unknown_status' => array(false, 'Unknown order status.'),
+            'amount_error' => array(false, 'Total paid is different from order amount.'),
+            'ok' => array(true, ''),
+            'ko' => array(false, '')
+        );
+
+        $success = array_key_exists($case, $cases) ? $cases[$case][0] : false;
+        $message = array_key_exists($case, $cases) ? $cases[$case][1] : '';
+
+        if (! empty($extra_message)) {
+            $message .= ' ' . $extra_message;
+        }
+
+        $message = str_replace("\n", ' ', $message);
+
+        // Set original CMS encoding to convert if necessary response to send to gateway.
+        $encoding = in_array(strtoupper($original_encoding), self::$SUPPORTED_ENCODINGS, true) ?
+            strtoupper($original_encoding) : 'UTF-8';
+        if ($encoding !== 'UTF-8') {
+            $message = iconv($encoding, 'UTF-8', $message);
+        }
+
+        $content = $success ? 'OK-' : 'KO-';
+        $content .= "$message\n";
+
+        $response = '<span style="display:none">';
+        $response .= htmlspecialchars($content, ENT_COMPAT, 'UTF-8');
+        $response .= '</span>';
+
+        return $response;
     }
 }
