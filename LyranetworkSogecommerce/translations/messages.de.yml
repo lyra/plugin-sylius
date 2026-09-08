@@ -1,55 +1,18 @@
 sylius_sogecommerce_plugin:
   ui:
-    sogecommerce_payment_method_title: Zahlung per Sogecommerce
-    sogecommerce_developed_by: Entwickelt von
-    sogecommerce_support_email: 'E-Mail-Adresse: '
-    sogecommerce_click_here: 'Klicken Sie hier'
-    sogecommerce_module_version: 'Modulversion: '
-    sogecommerce_documentation_link: 'Klicken Sie, um die Modul-Konfigurationsdokumentation zu finden: '
-    sogecommerce_advanced_options: ZAHLUNGSARTEN
-    sogecommerce_payment_options: ERWEITERTE OPTIONEN
-    sogecommerce_rest_api_keys:
-      label: REST API SCHLÛSSEL
-      desc: 'REST API keys are available in your Sogecommerce Back Office (menu: Settings > Shops >  keys).'
-    sogecommerce_site_id:
-      label: Shop ID
-      helptext: Die Kennung von Sogecommerce bereitgestellt.
-    sogecommerce_mode:
-      label: Modus
-      helptext: Kontextmodus dieses Moduls.
-    sogecommerce_private_test_key:
-      label: Testpasswort
-    sogecommerce_private_prod_key:
-      label: Passwort Produktion
-    sogecommerce_public_test_key:
-      label: Öffentlicher Schlüssel (Test)
-    sogecommerce_public_prod_key:
-      label: Öffentlicher Produktionsschlüssel
-    sogecommerce_hmac_test_key:
-      label: Schlüssel HMAC-SHA-256 für Test
-    sogecommerce_hmac_prod_key:
-      label: Schlüssel HMAC-SHA-256 für Produktion
+    sogecommerce_widget_desc: "Passen Sie das Erscheinungsbild Ihrer Zahlungsformulare in Echtzeit mit unserem intuitiven Tool an. Passen Sie Farben, Schriftarten und Felder über eine visuelle Oberfläche an und sehen Sie das Ergebnis sofort auf allen Geräten. Einfach und effizient beschleunigt es die Validierung und Bereitstellung und gewährleistet gleichzeitig ein optimales Benutzererlebnis."
+    sogecommerce_open_widget: "Zahlungsformular konfigurieren"
+    sogecommerce_payment_method_title: "Zahlung per Sogecommerce"
+    sogecommerce_plugin_credits: "Plugin-Credits"
+    sogecommerce_developed_by: "Entwickelt von"
+    sogecommerce_contact: "Kundensupport "
+    sogecommerce_support_client: "kontaktieren"
+    sogecommerce_here: "hier"
+    sogecommerce_module_version: "Modulversion: "
+    sogecommerce_documentation_link: "Zugriff auf die Konfigurationsdokumentation des Moduls: "
     sogecommerce_rest_check_url:
-      label: API REST Benachrichtigung-URL
-      helptext: URL, die Sie in Ihre Sogecommerce Back Office kopieren sollen > Einstellung > Regeln der Benachrichtigungen. Unter Multistore Modus, die URL Bestätigung ist die gleiche für alle Geschäfte.
-    sogecommerce_payment_data_entry_mode:
-      label: Eingabemodus für Zahlungsdaten
-      helptext: Wählen Sie aus, wie die Zahlungsdaten eingegeben werden. Achtung, um eingebettete Zahlungsfelder zu verwenden, müssen Sie diese Option bei Sogecommerce unterschrieben haben.
-    sogecommerce_rest_popin_mode:
-      label: Display in a pop-in
-      helptext: This option allows to display the embedded payment fields in a pop-in.
-    sogecommerce_rest_theme:
-      label: Thema
-      helptext: Select a theme to use to display the embedded payment fields.
-    sogecommerce_rest_compact_mode:
-      label: Kompakter Modus
-      helptext: Diese Option ermöglicht es, die Zahlungsfelder in einem kompakten Modus anzuzeigen.
-    sogecommerce_rest_attempts:
-      label: Payment attempts number for cards
-      helptext: Maximum number of payment by card retries after a failed payment (between 0 and 2). If blank, the gateway default value is 2.
-    sogecommerce_oneclick_payment:
-      label: Zahlung per Alias
-      helptext: This option allows to pay orders without re-entering bank data at each payment. The « payment by token » option should be enabled on your Sogecommerce Back Office store to use this feature.
+      label: "API REST Benachrichtigung-URL"
+      helptext: "URL, die Sie in Ihre Sogecommerce Back Office kopieren sollen > Einstellung > Regeln der Benachrichtigungen. Unter Multistore Modus, die URL Bestätigung ist die gleiche für alle Geschäfte."
     transaction_id: "Transaktion ID: "
     transaction_uuid: "Transaktion UUID: "
     card_brand: "Kartenmarke: "
@@ -59,20 +22,9 @@ sylius_sogecommerce_plugin:
       customer_wallet:
         title: "Payment methods"
         error: "No saved methods found."
-  config:
-    all: ALLE
-    test: TEST
-    production: PRODUKTION
-    embedded:
-      mode_embedded: Eingebettete Zahlungsfelder auf Händlerwebseite (REST-API)
-      mode_embedded_ext_with_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite mit Logos (REST-API)
-      mode_embedded_ext_without_logos: Eingebettete Zahlungsfelder erweitert auf Händlerwebseite ohne Logos (REST-API)
-    theme:
-      neon: Neon
-      classic: Classic
   payment:
-    fatal: Ein Fehler ist während dem Zahlungsvorgang unterlaufen.
-    check_url_warn: Die automatische Bestätigung hat nicht funktioniert. Haben Sie die Benachrichtigung-URL im Back Office Sogecommerce richtig eingestellt?
+    fatal: "Ein Fehler ist während dem Zahlungsvorgang unterlaufen."
+    check_url_warn: "Die automatische Bestätigung hat nicht funktioniert. Haben Sie die Benachrichtigung-URL im Back Office Sogecommerce richtig eingestellt?"
     prodfaq: "UMSTELLUNG AUF PRODUKTIONSUMFELD: Sie möchten wissen, wie Sie auf Produktionsumfeld umstellen können, bitte lesen Sie die Kapitel « Weiter zur Testphase » und « Verschieben des Shops in den Produktionsumfeld » in der Dokumentation des Moduls."
   refund:
     error:

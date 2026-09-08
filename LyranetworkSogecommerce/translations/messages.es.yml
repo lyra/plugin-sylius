@@ -1,55 +1,18 @@
 sylius_sogecommerce_plugin:
   ui:
-    sogecommerce_payment_method_title: Pago con Sogecommerce
-    sogecommerce_developed_by: Desarrollado por
-    sogecommerce_support_email: 'Contáctenos: '
-    sogecommerce_click_here: 'Haga clic aquí'
-    sogecommerce_module_version: 'Versión del módulo: '
-    sogecommerce_documentation_link: 'Haga clic para ver la documentación de la configuración del módulo: '
-    sogecommerce_advanced_options: OPCIONES AVANZADAS
-    sogecommerce_payment_options: OPCIONES DE PAGO
-    sogecommerce_rest_api_keys:
-      label: CLAVES DE API REST
-      desc: 'Las claves de API REST están disponibles en el Back Office Sogecommerce (menú: Configuración > Tiendas > Claves de API REST).'
-    sogecommerce_site_id:
-      label: ID de tienda
-      helptext: El identificador proporcionado por Sogecommerce.
-    sogecommerce_mode:
-      label: Modo
-      helptext: El modo de contexto de este módulo.
-    sogecommerce_private_test_key:
-      label: Contraseña de test
-    sogecommerce_private_prod_key:
-      label: Contraseña de producción
-    sogecommerce_public_test_key:
-      label: Clave pública de test
-    sogecommerce_public_prod_key:
-      label: Clave pública de producción
-    sogecommerce_hmac_test_key:
-      label: Clave HMAC-SHA-256 de test
-    sogecommerce_hmac_prod_key:
-      label: Clave HMAC-SHA-256 de producción
+    sogecommerce_widget_desc: "Personalice en tiempo real la apariencia de sus formularios de pago con nuestra herramienta intuitiva. Ajuste colores, fuentes y campos a través de una interfaz visual y visualice inmediatamente el resultado en todos los dispositivos. Simple y eficaz, acelera la validación y el despliegue garantizando una experiencia de usuario óptima."
+    sogecommerce_open_widget: "Configurar el formulario de pago"
+    sogecommerce_payment_method_title: "Pago con Sogecommerce"
+    sogecommerce_plugin_credits: "Créditos del plugin"
+    sogecommerce_developed_by: "Desarrollado por"
+    sogecommerce_contact: "Contactar "
+    sogecommerce_support_client: "con el soporte al cliente"
+    sogecommerce_here: "aquí"
+    sogecommerce_module_version: "Versión del módulo: "
+    sogecommerce_documentation_link: "Acceso a la documentación de configuración del módulo: "
     sogecommerce_rest_check_url:
-      label: URL de notificación de API REST
-      helptext: URL a copiar en el Back Office Sogecommerce > Configuración > Reglas de notificación. En modo multitienda, la URL de notificación es la misma para todas las tiendas.
-    sogecommerce_payment_data_entry_mode:
-      label: Modo de ingreso de datos de pago
-      helptext: Seleccione la forma en que se ingresarán los datos de pago. Atención, para usar los campos de pago incrustados, debe asegurarse de estar suscrito a esta opción con Sogecommerce.
-    sogecommerce_rest_popin_mode:
-      label: Mostrar en una ventana pop-in
-      helptext: Esta opción permite mostrar los campos de pago incrustados en una ventana pop-in.
-    sogecommerce_rest_theme:
-      label: Tema
-      helptext: Seleccione un tema para usar para mostrar los campos de pago incrustados
-    sogecommerce_rest_compact_mode:
-      label: Modo compacto
-      helptext: Esta opción muestra los campos de pago incrustados en modo compacto.
-    sogecommerce_rest_attempts:
-      label: Número de intentos de pago con tarjeta
-      helptext: Número máximo de intentos de pago con tarjeta después de un pago fallido (entre 0 y 2). Si está en blanco, el valor por defecto del portal es 2.
-    sogecommerce_oneclick_payment:
-      label: Pago por token
-      helptext: Esta opción permite pagar pedidos sin reingresar datos bancarios en cada pago. La opción « Pago por token » debe estar habilitada en su tienda Back Office Sogecommerce para usar esta función.
+      label: "URL de notificación de API REST"
+      helptext: "URL a copiar en el Back Office Sogecommerce > Configuración > Reglas de notificación. En modo multitienda, la URL de notificación es la misma para todas las tiendas."
     transaction_id: "UUID de transacción: "
     transaction_uuid: "ID de transacción: "
     card_brand: "Marca de tarjeta: "
@@ -58,20 +21,9 @@ sylius_sogecommerce_plugin:
       customer_wallet:
         title: "Métodos de pago"
         error: "No se encontraron métodos guardados."
-  config:
-    all: ALL
-    test: TEST
-    production: PRODUCTION
-    embedded:
-      mode_embedded: Campos de pago incrustados en el sitio web vendedor (API REST)
-      mode_embedded_ext_with_logos: Campos de pago extendidos incrustados en el sitio web vendedor con los logotipos (API REST)
-      mode_embedded_ext_without_logos: Campos de pago extendidos incrustados en el sitio web vendedor sin los logotipos (API REST)
-    theme:
-      neon: Neon
-      classic: Classic
   payment:
-    fatal: Ocurrió un error en el proceso de pago.
-    check_url_warn: La validación automática no ha funcionado. ¿Configuró correctamente la URL de notificación en su Back Office Sogecommerce?
+    fatal: "Ocurrió un error en el proceso de pago."
+    check_url_warn: "La validación automática no ha funcionado. ¿Configuró correctamente la URL de notificación en su Back Office Sogecommerce?"
     prodfaq: "IR A PRODUCTION: Si desea saber cómo poner su tienda en modo production, lea los capítulos « Proceder a la fase de prueba » y « Paso de una tienda al modo producción » en la documentación del módulo."
   refund:
     error:

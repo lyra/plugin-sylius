@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Sogecommerce\Service;
 
 use Lyranetwork\Sogecommerce\Repository\PaymentMethodRepositoryInterface;
-use Lyranetwork\Sogecommerce\Sdk\Tools;
+use Lyranetwork\Sogecommerce\Sdk\Tools as SogecommerceTools;
 
 /**
  * Service for retrieving payment gateway configuration values.
@@ -42,7 +42,7 @@ final class ConfigService
             return "";
         }
 
-        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(Tools::FACTORY_NAME, $instanceCode);
+        $paymentMethod = $this->paymentMethodRepository->findByGatewayNameAndCode(SogecommerceTools::FACTORY_NAME, $instanceCode);
         if (! $paymentMethod) {
             return "";
         }

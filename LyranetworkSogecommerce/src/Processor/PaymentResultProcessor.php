@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Lyranetwork\Sogecommerce\Processor;
 
 use Lyranetwork\Sogecommerce\Sdk\RestHelper;
-use Lyranetwork\Sogecommerce\Sdk\Tools;
+use Lyranetwork\Sogecommerce\Sdk\Tools as SogecommerceTools;
 use Lyranetwork\Sogecommerce\Sdk\Form\Api as SogecommerceApi;
 
 use Sylius\Abstraction\StateMachine\StateMachineInterface;
@@ -98,10 +98,9 @@ final class PaymentResultProcessor {
      */
     private function updateTransactionDetails(array &$details, array $answer): void
     {
-        $details['sogecommerce_factory_name'] = Tools::FACTORY_NAME;
-        $details['transactions'] = isset($details['transactions']) && is_array($details['transactions']) 
-            ? $details['transactions']
-            : [];
+        $details['sogecommerce_factory_name'] = SogecommerceTools::FACTORY_NAME;
+        $details['transactions'] = isset($details['transactions']) && is_array($details['transactions'])
+            ? $details['transactions'] : [];
 
         $transactions = $this->restHelper->getProperty($answer, 'transactions');
 
@@ -125,7 +124,6 @@ final class PaymentResultProcessor {
     private function getTransaction(array $answer): array
     {
         $transactions = $this->restHelper->getProperty($answer, 'transactions');
-    
         if (is_array($transactions) && ! empty($transactions)) {
             return $transactions[0];
         }

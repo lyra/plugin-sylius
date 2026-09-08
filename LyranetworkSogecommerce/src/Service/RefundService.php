@@ -12,7 +12,6 @@ declare(strict_types=1);
 
 namespace Lyranetwork\Sogecommerce\Service;
 
-use Lyranetwork\Sogecommerce\Form\Type\SyliusGatewayConfigurationType as GatewayConfiguration;
 use Lyranetwork\Sogecommerce\Sdk\RefundProcessor as SogecommerceRefundProcessor;
 use Lyranetwork\Sogecommerce\Sdk\RestHelper;
 use Lyranetwork\Sogecommerce\Sdk\Tools as SogecommerceTools;
@@ -30,7 +29,6 @@ final class RefundService
 {
     public function __construct(
         private RestHelper $restHelper,
-        private ConfigService $configService,
         private SogecommerceRefundProcessor $refundProcessor
     ) {
     }
@@ -45,11 +43,11 @@ final class RefundService
      * @param string $paymentMethodCode The payment method code/instance identifier
      * @param mixed  $order             The order entity to be refunded
      * @param string $userInfo          User information (typically admin user details initiating the refund)
-     * @param int    $amount            The refund amount in the smallest currency unit (e.g., cents)
+     * @param float $amount            The refund amount
      *
      * @return bool True if the refund was successful, false otherwise
      */
-    public function refund($paymentMethodCode, $order, $userInfo, $amount): bool
+    public function refund(string $paymentMethodCode, mixed $order, string $userInfo, float $amount): bool
     {
         $sogecommerceOrderInfo = new SogecommerceOrderInfo();
         $sogecommerceOrderInfo->setOrderRemoteId($order->getNumber());
@@ -62,8 +60,8 @@ final class RefundService
         $refundApi = new SogecommerceRefund(
             $this->refundProcessor->getProcessor(),
             $this->restHelper->getPrivateKey($paymentMethodCode),
-            SogecommerceTools::getDefault('REST_URL'),
-            $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'site_id', $paymentMethodCode),
+            $this->restHelper->getRestUrl($paymentMethodCode),
+            $this->restHelper->getShopId($paymentMethodCode),
             'Sylius'
         );
 

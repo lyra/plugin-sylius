@@ -1,6 +1,17 @@
-
 sogecommerce_sylius_account_customer_wallet:
   path: /{_locale}/sogecommerce/account/customer-wallet
   methods: [POST, GET]
   defaults:
     _controller: 'Lyranetwork\Sogecommerce\Controller\CustomerWalletController::savedCardsAction'
+
+sogecommerce_rest_configuration_widget_token:
+  path: /sogecommerce/rest/configuration/widget-token
+  methods: [POST]
+  defaults:
+    _controller: 'Lyranetwork\Sogecommerce\Controller\RestConfigurationController::getWidgetToken'
+
+sogecommerce_rest_configuration_default_form_configuration:
+  path: /sogecommerce/rest/configuration/default-config
+  methods: [GET]
+  defaults:
+    _controller: 'Lyranetwork\Sogecommerce\Controller\RestConfigurationController::getDefaultConfiguration'

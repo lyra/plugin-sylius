@@ -7,8 +7,12 @@
  * @license   https://opensource.org/licenses/mit-license.html The MIT License (MIT)
  #}
 
-{% set form = hookable_metadata.context.form.gatewayConfig.config.sogecommerce_rest_api_hmac_test_key %}
+{% set form = hookable_metadata.context.form.gatewayConfig.config.sogecommerce_rest_api_check_url %}
 
 <div class="col-12">
-    {{ form_row(form, sylius_test_form_attribute('config-sogecommerce-rest-api-hmac-test-key')) }}
+    {{ form_row(form, sylius_test_form_attribute('config-sogecommerce-rest-api-check-url')) }}
+</div>
+
+<div>
+    {% include '@LyranetworkSogecommercePlugin/plugin_metadata.html.twig' %}
 </div>

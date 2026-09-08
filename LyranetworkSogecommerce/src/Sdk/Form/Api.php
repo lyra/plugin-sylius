@@ -98,24 +98,29 @@ class Api
     /**
      * Return the list of currencies recognized by the payment gateway.
      *
+     * @param string $whiteLabel
      * @return array[int][Lyranetwork\Sogecommerce\Sdk\Form\Currency]
      */
-    public static function getSupportedCurrencies()
+    public static function getSupportedCurrencies($whiteLabel = '')
     {
-        $currencies = array(
+        $currencies = array();
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel')) {
+            $currencies = \Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel::getSupportedCurrencies($whiteLabel);
+        } else {
+            $currencies = array(
             array('AUD', '036', 2), array('BRL', '986', 2), array('CAD', '124', 2), array('CHF', '756', 2),
             array('CNY', '156', 2), array('CZK', '203', 2), array('DKK', '208', 2), array('EUR', '978', 2),
             array('GBP', '826', 2), array('HKD', '344', 2), array('HUF', '348', 2), array('IDR', '360', 0),
-            array('INR', '356', 2), array('JPY', '392', 0), array('KHR', '116', 0), array('KRW', '410', 0),
+            array('INR', '356', 2), array('JPY', '392', 0), array('KHR', '116', 2), array('KRW', '410', 0),
             array('KWD', '414', 3), array('MAD', '504', 2), array('MXN', '484', 2), array('MYR', '458', 2),
             array('NOK', '578', 2), array('NZD', '554', 2), array('PHP', '608', 2), array('PLN', '985', 2),
             array('RON', '946', 2), array('RUB', '643', 2), array('SEK', '752', 2), array('SGD', '702', 2),
             array('THB', '764', 2), array('TND', '788', 3), array('TRY', '949', 2), array('TWD', '901', 2),
             array('USD', '840', 2), array('ZAR', '710', 2)
-        );
+            );
+        }
 
         $supported_currencies = array();
-
         foreach ($currencies as $currency) {
             $supported_currencies[] = new Currency($currency[0], $currency[1], $currency[2]);
         }
@@ -127,11 +132,12 @@ class Api
      * Return a currency from its 3-letters ISO code.
      *
      * @param string $alpha3
+     * @param string $whiteLabel
      * @return \Lyranetwork\Sogecommerce\Sdk\Form\Currency|null
      */
-    public static function findCurrencyByAlphaCode($alpha3)
+    public static function findCurrencyByAlphaCode($alpha3, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Sogecommerce\Sdk\Form\Currency $currency
@@ -148,11 +154,12 @@ class Api
      * Returns a currency form its numeric ISO code.
      *
      * @param int $numeric
+     * @param string $whiteLabel
      * @return \Lyranetwork\Sogecommerce\Sdk\Form\Currency|null
      */
-    public static function findCurrencyByNumCode($numeric)
+    public static function findCurrencyByNumCode($numeric, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Sogecommerce\Sdk\Form\Currency $currency
@@ -169,11 +176,12 @@ class Api
      * Return a currency from its 3-letters or numeric ISO code.
      *
      * @param string $code
+     * @param string $whiteLabel
      * @return \Lyranetwork\Sogecommerce\Sdk\Form\Currency|null
      */
-    public static function findCurrency($code)
+    public static function findCurrency($code, $whiteLabel = '')
     {
-        $list = self::getSupportedCurrencies();
+        $list = self::getSupportedCurrencies($whiteLabel);
         foreach ($list as $currency) {
             /**
              * @var \Lyranetwork\Sogecommerce\Sdk\Form\Currency $currency
@@ -190,21 +198,27 @@ class Api
      * Returns currency numeric ISO code from its 3-letters code.
      *
      * @param string $alpha3
+     * @param string $whiteLabel
      * @return string|null
      */
-    public static function getCurrencyNumCode($alpha3)
+    public static function getCurrencyNumCode($alpha3, $whiteLabel = '')
     {
-        $currency = self::findCurrencyByAlphaCode($alpha3);
+        $currency = self::findCurrencyByAlphaCode($alpha3, $whiteLabel);
         return ($currency instanceof Currency) ? $currency->getNum() : null;
     }
 
     /**
      * Returns an array of card types accepted by the payment gateway.
      *
+     * @param string $whiteLabel
      * @return array[string][string]
      */
-    public static function getSupportedCardTypes()
+    public static function getSupportedCardTypes($whiteLabel = '')
     {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel')) {
+            return \Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel::getSupportedCardTypes($whiteLabel);
+        }
+
         return array(
             'CB' => 'CB', 'E-CARTEBLEUE' => 'e-Carte Bleue', 'MAESTRO' => 'Maestro', 'MASTERCARD' => 'Mastercard',
             'VISA' => 'Visa', 'VISA_ELECTRON' => 'Visa Electron', 'VPAY' => 'V PAY', 'AMEX' => 'American Express',
@@ -245,7 +259,7 @@ class Api
             'PAYPAL' => 'PayPal', 'PAYPAL_BNPL' => 'PayPal Pay Later', 'PAYPAL_BNPL_SB' => 'PayPal Pay Later Sandbox',
             'PAYPAL_SB' => 'PayPal Sandbox', 'PICWIC' => 'Carte Picwic', 'PICWIC_SB' => 'Carte Picwic (sandbox)',
             'S-MONEY' => 'S-money', 'SAMSUNG_PAY' => 'Samsung Pay', 'SCT' => 'Virement SEPA', 'SDD' => 'Prélèvement SEPA', 'SODEXO' => 'Pass Restaurant',
-            'SOFICARTE' => 'Soficarte', 'SOFORT_BANKING' => 'Sofort', 'SYGMA' => 'Sygma', 'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut',
+            'SOFICARTE' => 'Soficarte', 'SYGMA' => 'Sygma', 'TRUFFAUT_CDX' => 'Carte Cadeau Truffaut',
             'VILLAVERDE' => 'Carte Cadeau VillaVerde', 'VILLAVERDE_SB' => 'Carte Cadeau VillaVerde (sandbox)', 'WERO' => 'Wero'
         );
     }
@@ -273,6 +287,7 @@ class Api
     {
         return array(
             'INITIAL',
+            'CAPTURE_PENDING',
             'WAITING_AUTHORISATION',
             'WAITING_AUTHORISATION_TO_VALIDATE',
             'UNDER_VERIFICATION',
@@ -432,10 +447,15 @@ class Api
     /**
      * Returns an array of the online documentation URI of the payment module.
      *
+     * @param string $whiteLabel
      * @return array[string][string]
      */
-    public static function getOnlineDocUri()
+    public static function getOnlineDocUri($whiteLabel = '')
     {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel')) {
+            return \Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel::getOnlineDocUri($whiteLabel);
+        }
+
         return array(
             'fr' => 'https://sogecommerce.societegenerale.eu/doc/fr-FR/plugins/',
             'en' => 'https://sogecommerce.societegenerale.eu/doc/en-EN/plugins/'
@@ -507,6 +527,7 @@ class Api
             'empty_cart' => array(false, 'Empty cart detected before order processing.'),
             'unknown_status' => array(false, 'Unknown order status.'),
             'amount_error' => array(false, 'Total paid is different from order amount.'),
+            'abandoned_ignored' => array(false, 'Payment abandoned or Expired but order cycle is not closed.'),
             'ok' => array(true, ''),
             'ko' => array(false, '')
         );
@@ -535,5 +556,71 @@ class Api
         $response .= '</span>';
 
         return $response;
+    }
+
+    /**
+     * Get a white label-specific property value from the WhiteLabel class.
+     *
+     * Dynamically calls the getter method corresponding to the given property name
+     * on the WhiteLabel class and returns the value associated with the given white label key.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @param string $property the property name to retrieve (e.g. 'features', 'gatewayUrl')
+     * @return mixed|null the property value for the given white label, or null if not found
+     */
+    public static function getWhiteLabelProperty($whiteLabel, $property)
+    {
+        if (! empty($whiteLabel) && class_exists('\Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel')) {
+            $method = 'get' . ucfirst($property);
+            if (method_exists('\Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel', $method)) {
+                $values = \Lyranetwork\Sogecommerce\Sdk\Form\WhiteLabel::$method();
+                if (is_array($values) && array_key_exists($whiteLabel, $values)) {
+                    return $values[$whiteLabel];
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get a white label-specific URL, falling back to the default URL if not found.
+     *
+     * Looks up the URL for the given type from the WhiteLabel class first; if not found,
+     * falls back to the predefined default URLs for supported types.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @param string $type the URL type ('gatewayUrl', 'restUrl', 'staticUrl', 'logoUrl')
+     * @return string|null the URL for the given type, or null if the type is not recognized
+     */
+    public static function getWhiteLabelUrl($whiteLabel, $type)
+    {
+        $urls = array(
+            'gatewayUrl' => 'https://sogecommerce.societegenerale.eu/vads-payment/',
+            'restUrl' => 'https://api-sogecommerce.societegenerale.eu/api-payment/',
+            'staticUrl' => 'https://static-sogecommerce.societegenerale.eu/static/',
+            'logoUrl' => 'https://sogecommerce.societegenerale.eu/static/latest/images/type-carte/'
+        );
+
+        $url = self::getWhiteLabelProperty($whiteLabel, $type);
+        if ($url !== null) {
+            return $url;
+        }
+
+        return $urls[$type] ?? null;
+    }
+
+    /**
+     * Get the features array for a given white label.
+     *
+     * Returns the features associated with the white label from the WhiteLabel class,
+     * or an empty array if the white label is not found or has no features defined.
+     *
+     * @param string $whiteLabel the white label identifier
+     * @return array the features array for the given white label, or an empty array
+     */
+    public static function getWhiteLabelFeatures($whiteLabel)
+    {
+        return self::getWhiteLabelProperty($whiteLabel, 'features') ?? [];
     }
 }

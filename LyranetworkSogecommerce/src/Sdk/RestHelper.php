@@ -54,6 +54,22 @@ final class RestHelper
     }
 
     /**
+     * Retrieves the shop ID for the specified payment method instance.
+     *
+     * Uses the active model's shop ID if available, falling back to
+     * the configured site ID from the database.
+     *
+     * @param string $instanceCode The payment method instance code
+     * @return string The shop ID
+     */
+    public function getShopId(string $instanceCode): string
+    {
+        $activeModel = $this->getActiveModel($instanceCode);
+
+        return $activeModel['shopConfig']['shopId'] ?? $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'site_id', $instanceCode);
+    }
+
+    /**
      * Retrieves the private key for the specified payment method instance.
      *
      * @param string $instanceCode The payment method instance code
@@ -83,15 +99,32 @@ final class RestHelper
      */
     public function getReturnKey(string $instanceCode): string
     {
-        return $this->getKey('hmac', $instanceCode);
+        return $this->getKey('sha', $instanceCode);
     }
 
     private function getKey(string $type, string $instanceCode): string
     {
-        $ctxMode = $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'context_mode', $instanceCode);
-        $key = ($ctxMode == 'TEST') ? '_test_key' : '_prod_key';
+        $activeModel = $this->getActiveModel($instanceCode);
+        $ctxMode = $this->getContextMode($instanceCode);
 
-        return $this->configService->get(GatewayConfiguration::$REST_FIELDS . $type . $key, $instanceCode);
+        return $activeModel['shopConfig']['keys'][$ctxMode][$type . 'Key'] ?? '';
+    }
+
+    /**
+     * Retrieves the context mode (test or production) for the specified payment method instance.
+     *
+     * First checks the active widget model's shop mode, then falls back to the configured
+     * context mode from the database. If neither is available, returns the default context mode.
+     *
+     * @param string $instanceCode The payment method instance code
+     * @return string The context mode ('TEST' or 'PRODUCTION')
+     */
+    public function getContextMode(string $instanceCode): string
+    {
+        $activeModel = $this->getActiveModel($instanceCode);
+        $ctxMode = strtolower($activeModel['shopMode'] ?? $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'context_mode', $instanceCode));
+
+        return ! empty($ctxMode) ? $ctxMode : strtolower(SogecommerceTools::getDefault('CTX_MODE'));
     }
 
     /**
@@ -149,7 +182,7 @@ final class RestHelper
                     'lastName' => $customer->getLastName()
                 ]
             ],
-            'contrib' => Tools::getContrib(),
+            'contrib' => SogecommerceTools::getContrib(),
             'currency' => $currency,
             'metadata' => [
                 'fromAccount' => true
@@ -216,11 +249,11 @@ final class RestHelper
 
     private function getRestApiFormTokenData(?object $order, string $instanceCode, object $paymentRequestHash): bool|string
     {
-        if (! $this->validateOrder($order)) {
+        if (! $this->validateOrder($order, $instanceCode)) {
             return false;
         }
 
-        $request = $this->prepareRequest($order);
+        $request = $this->prepareRequest($order, $instanceCode);
         $data = $this->getFormTokenData($order, $request, $instanceCode, $paymentRequestHash);
 
         return json_encode($data);
@@ -230,9 +263,10 @@ final class RestHelper
      * Validates order before token creation.
      *
      * @param object|null $order The order to validate
+     * @param string $instanceCode The payment instance code
      * @return bool True if valid, false otherwise
      */
-    private function validateOrder(?object $order): bool
+    private function validateOrder(?object $order, string $instanceCode): bool
     {
         if (! $order || ! $order->getNumber()) {
             $this->logger->error('Cannot create a form token. Empty order passed.');
@@ -246,7 +280,8 @@ final class RestHelper
             return false;
         }
 
-        if (! SogecommerceApi::findCurrencyByAlphaCode($order->getCurrencyCode())) {
+        $whiteLabel = $this->getWhiteLabel($instanceCode);
+        if (! SogecommerceApi::findCurrencyByAlphaCode($order->getCurrencyCode(), $whiteLabel)) {
             $this->logger->error('Cannot create a form token. Unsupported currency passed.');
 
             return false;
@@ -312,9 +347,11 @@ final class RestHelper
             $data['customer']['shoppingCart']['shippingAmount'] = $shippingAmount;
         }
 
+        $activeModel = $this->getActiveModel($instanceCode);
+
         // Set Number of attempts in case of rejected payment.
-        $restAttempts = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'rest_attempts', $instanceCode);
-        if (is_numeric($restAttempts)) {
+        $restAttempts = isset($activeModel['shopConfig']['wsData']['transactionOptions']) ? $activeModel['shopConfig']['wsData']['transactionOptions']['cardOptions']['retry'] : null;
+        if ($restAttempts && is_numeric($restAttempts)) {
             $data['transactionOptions']['cardOptions']['retry'] = $restAttempts;
         }
 
@@ -342,8 +379,7 @@ final class RestHelper
         }
 
         $customer = $this->customerRepository->findOneBy(['id' => $request->get('cust_id')]);
-        $oneclickEnabled = $this->configService->get(GatewayConfiguration::$ADVANCED_FIELDS . 'oneclick_payment', $instanceCode);
-
+        $oneclickEnabled = $this->isOneclickEnabled($instanceCode);
         if ($oneclickEnabled && $customer && $customer->getUser() !== null) {
             $data['formAction'] = 'CUSTOMER_WALLET';
         }
@@ -351,7 +387,7 @@ final class RestHelper
         return $data;
     }
 
-    private function prepareRequest(object $order): SogecommerceRequest
+    private function prepareRequest(object $order, string $instanceCode): SogecommerceRequest
     {
         $request = new SogecommerceRequest();
 
@@ -360,7 +396,9 @@ final class RestHelper
 
         // Retrieve amount.
         $total = $order->getTotal();
-        $currency = SogecommerceApi::findCurrencyByAlphaCode($order->getCurrencyCode());
+
+        $whiteLabel = $this->getWhiteLabel($instanceCode);
+        $currency = SogecommerceApi::findCurrencyByAlphaCode($order->getCurrencyCode(), $whiteLabel);
 
         $customer = $order->getCustomer();
         $billingAddress = $order->getBillingAddress();
@@ -370,7 +408,7 @@ final class RestHelper
             // Order info.
             'amount' => $total,
             'order_id' => $order->getNumber(),
-            'contrib' => Tools::getContrib(),
+            'contrib' => SogecommerceTools::getContrib(),
 
             // Misc data.
             'currency' => $currency->getAlpha3(),
@@ -475,11 +513,81 @@ final class RestHelper
         return null;
     }
 
+    /**
+     * Get the active widget model for the given instance code.
+     *
+     * @param string $instanceCode The instance code.
+     * @return array|null The active model data as an array, or null if not found.
+     */
+    public function getActiveModel(string $instanceCode): ?array
+    {
+        $formConfig = json_decode($this->configService->get(GatewayConfiguration::$REST_FIELDS . 'widget', $instanceCode), true);
+
+        $activeId = $formConfig['activeModel'] ?? null;
+        $models = $formConfig['models'] ?? null;
+
+        if (! $activeId || ! $models || ! is_array($models)) {
+            return null;
+        }
+
+        $indexedModels = array_column($models, null, 'id');
+
+        return $indexedModels[$activeId] ?? null;
+    }
+
+    /**
+     * Check if one-click payment is enabled for the given instance code.
+     *
+     * @param string $instanceCode The instance code.
+     * @return bool True if one-click is enabled, false otherwise.
+     */
+    public function isOneClickEnabled(string $instanceCode): bool
+    {
+        $formConfig = $this->getActiveModel($instanceCode);
+
+        return ($formConfig['shopConfig']['wsData']['formAction'] ?? '') === 'CUSTOMER_WALLET';
+    }
+
+    /**
+     * Return the absolute URL to the JS and CSS static assets.
+     *
+     * @return string
+     */
+    public function getStaticUrl($instanceCode): string
+    {
+        return SogecommerceApi::getWhiteLabelUrl($this->getWhiteLabel($instanceCode), 'staticUrl') ?? SogecommerceTools::$STATIC_URL;
+    }
+
+    /**
+     * Return the absolute URL to the REST API URL.
+     *
+     * @return string
+     */
+    public function getRestUrl(string $instanceCode): string
+    {
+        return SogecommerceApi::getWhiteLabelUrl($this->getWhiteLabel($instanceCode), 'restUrl') ?? SogecommerceTools::$REST_URL;
+    }
+
+    public function getWhiteLabel(string $instanceCode): string
+    {
+        if (! (SogecommerceTools::$pluginFeatures['whitelabelall'] ?? false)) {
+            return '';
+        }
+
+        $activeModel = $this->getActiveModel($instanceCode);
+        $whiteLabel = $activeModel['shopConfig']['payzenWhiteLabel'] ?? '';
+        if ($whiteLabel !== '' && $whiteLabel !== 'EU') {
+            return $whiteLabel;
+        }
+
+        return '';
+    }
+
     private function createFormToken(string $params, string $metadata, string $instanceCode, string $webService = 'CreatePayment'): bool|string
     {
         $client = new SogecommerceRest(
-            SogecommerceTools::getDefault('REST_URL'),
-            $this->configService->get(GatewayConfiguration::$REST_FIELDS . 'site_id', $instanceCode),
+            $this->getRestUrl($instanceCode),
+            $this->getShopId($instanceCode),
             $this->getPrivateKey($instanceCode)
         );
 
